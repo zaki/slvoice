@@ -31,7 +31,11 @@ SET (SOCKETDIR ${CMAKE_SOURCE_DIR}/sockets)
 SET (TINYXMLDIR ${CMAKE_SOURCE_DIR}/tinyxml)
 
 SET (VOICESRC 
-    ${VOICEDIR}/main.cpp)
+    ${VOICEDIR}/main.cpp
+    ${VOICEDIR}/sip.cpp
+    ${VOICEDIR}/server.cpp
+    ${VOICEDIR}/state.cpp
+    ${VOICEDIR}/messaging.cpp)
 
 SET (SOCKETSRC 
     ${SOCKETDIR}/Sockets.cpp)

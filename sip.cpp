@@ -3,7 +3,8 @@
  *			Ryan McDougall -- 2008
  */
 
-#include <messaging.hpp>
+#include <main.h>
+#include <sip.hpp>
 
 //=============================================================================
 /* Callback called by the library upon receiving incoming call */

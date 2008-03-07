@@ -6,6 +6,9 @@
 #ifndef _SIP_HPP
 #define _SIP_HPP
 
+#include <pjsua-lib/pjsua.h>
+using namespace std;
+
 //=============================================================================
 // Voice classes
 

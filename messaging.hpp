@@ -6,6 +6,9 @@
 #ifndef _MESSAGING_HPP_
 #define _MESSAGING_HPP_
 
+#include <tinyxml/tinyxml.h>
+using namespace std;
+
 //=============================================================================
 // Message Constants
 
@@ -142,7 +145,6 @@ struct RequestItem
 };
 
 typedef list <const RequestItem *> RequestQueue;
-
 
 //=============================================================================
 // Functions

@@ -3,6 +3,7 @@
  *			Ryan McDougall -- 2008
  */
 
+#include <main.h>
 #include <state.hpp>
 
 //=============================================================================
@@ -100,8 +101,8 @@ SessionState::SessionState ()
     SIPUserInfo uinfo ("test0", "example.com");
     SIPConference *bridge;
 
-    context <StateMachine>().bridge 
-        = bridge = new SIPConference (sinfo);
+    context <StateMachine>().bridge.reset 
+        (bridge = new SIPConference (sinfo));
 
     bridge-> Register (uinfo);
     bridge-> Join ();

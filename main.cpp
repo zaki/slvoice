@@ -3,30 +3,7 @@
  *			Ryan McDougall -- 20070101
  */
 
-#include <iostream>
-#include <sstream>
-#include <list>
-
-#include <cstdlib>
-#include <cstring>
-
-#include <tinyxml/tinyxml.h>
-#include <sockets/Sockets.h>
-#include <pjsua-lib/pjsua.h>
-
-#include <boost/mpl/list.hpp>
-#include <boost/statechart/event.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
-
-using namespace std;
-using namespace boost::statechart;
-
-#include <messaging.hpp>
-#include <sip.hpp>
-#include <state.hpp>
-#include <server.hpp>
+#include <main.h>
 
 
 //=============================================================================
@@ -42,7 +19,7 @@ int main (int argc, char **argv)
     if ((argc == 2) && (get_short_option (argv[1]) == 'h'))
         print_usage_and_exit (argv);
 
-    int port (default_port);
+    int port (glb_default_port);
     if (argc > 1) 
     {
         if (argv [1][0] != '-') 

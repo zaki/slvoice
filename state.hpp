@@ -6,6 +6,15 @@
 #ifndef _STATE_HPP_
 #define _STATE_HPP_
 
+#include <boost/mpl/list.hpp>
+#include <boost/statechart/event.hpp>
+#include <boost/statechart/custom_reaction.hpp>
+#include <boost/statechart/state_machine.hpp>
+#include <boost/statechart/simple_state.hpp>
+
+using namespace boost::statechart;
+using namespace std;
+
 //=============================================================================
 // State machine
 

@@ -6,6 +6,12 @@
 #ifndef _SERVER_HPP_
 #define _SERVER_HPP_
 
+#include <sockets/Sockets.h>
+using namespace std;
+
+struct ViewerEvent;
+enum ActionType;
+
 const int glb_default_port (44124);
 
 //=============================================================================
@@ -14,10 +20,7 @@ const int glb_default_port (44124);
 class Server
 {
     public:
-        Server (int port = glb_default_port) 
-            : state_ (this) port_ (port), 
-            bufsize_ (4096), buf_ (new char [bufsize_]); 
-
+        Server (int port = glb_default_port);
         ~Server ();
         
         void Start ();

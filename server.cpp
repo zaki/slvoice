@@ -3,14 +3,18 @@
  *			Ryan McDougall -- 2008
  */
 
+#include <main.h>
 #include <server.hpp>
 
 //=============================================================================
-Server::Server (int port) 
+Server::Server (int port) : 
+    state_ (this), 
+    port_ (port), 
+    bufsize_ (4096), 
+    buf_ (new char [bufsize_])
 {
     server_.listen (port_);
     sock_.reset (new TCPSocketWrapper (server_.accept ()));
-    state_.socket = sock_.get();
     state_.initiate ();
 }
 
