@@ -178,193 +178,6 @@ auto_ptr <const Request> parse_connection_request (const TiXmlDocument& doc);
 auto_ptr <const Request> parse_session_request (const TiXmlDocument& doc);
 
 //=============================================================================
-// State machine
-
-struct StateMachine;
-struct StartState;
-struct ConnectorState;
-struct AccountState;
-struct SessionState;
-struct StopState;
-
-struct ViewerEvent { RequestQueue messages; };
-
-struct StartEvent : public ViewerEvent, event <StartEvent> {};
-struct AccountEvent : public ViewerEvent, event <AccountEvent> {};
-struct ConnectionEvent : public ViewerEvent, event <ConnectionEvent> {};
-struct SessionEvent : public ViewerEvent, event <SessionEvent> {};
-struct StopEvent : public ViewerEvent, event <StopEvent> {};
-
-//struct MessageReceivedEvent : public event <MessageReceivedEvent> {};
-
-struct StateMachine : state_machine <StateMachine, StartState> 
-{
-    StateMachine () : socket (NULL) {}
-    StateMachine (TCPSocketWrapper *s) : socket (s) {}
-    TCPSocketWrapper *socket;
-};
-
-struct StartState : simple_state <StartState, StateMachine> 
-{
-    typedef custom_reaction <ConnectionEvent> reactions;
-
-    StartState () { cout << "start entered" << endl; }
-    ~StartState () { cout << "start exited" << endl; }
-
-    result react (const ConnectionEvent& ev) 
-    { 
-        cout << "start state react" << endl;
-        ostringstream mesg;
-
-        ResponseMessage getcap (AuxGetCaptureDevices1String), 
-                        getrend (AuxGetRenderDevices1String), 
-                        conncreate (ConnectorCreate1String);
-
-        conncreate.handle = "xxxx";
-
-        mesg << format_response (getcap);
-        mesg << endmesg;
-        mesg << format_response (getrend);
-        mesg << endmesg;
-        mesg << format_response (conncreate);
-        mesg << endmesg;
-
-        context <StateMachine>().socket->
-            write (mesg.str().c_str(), mesg.str().size());
-
-        return transit <ConnectorState> ();
-    }
-};
-
-struct ConnectorState : simple_state <ConnectorState, StateMachine> 
-{
-    typedef custom_reaction <AccountEvent> reactions;
-
-    ConnectorState () { cout << "connector entered" << endl; }
-    ~ConnectorState () { cout << "connector exited" << endl; }
-
-    result react (const AccountEvent& ev) 
-    {
-        cout << "connector state react" << endl;
-        ostringstream mesg;
-
-        ResponseMessage login (AccountLogin1String);
-        EventMessage loginstate (LoginStateChangeEventString);
-        
-        login.handle = "xxxx";
-        loginstate.state = 1;
-
-        mesg << format_response (login);
-        mesg << endmesg;
-        mesg << format_response (loginstate);
-        mesg << endmesg;
-
-        context <StateMachine>().socket->
-            write (mesg.str().c_str(), mesg.str().size());
-
-        return transit <AccountState> ();
-    }
-};
-
-struct AccountState : simple_state <AccountState, StateMachine> 
-{
-    typedef custom_reaction <SessionEvent> reactions;
-
-    AccountState () { cout << "account entered" << endl; }
-    ~AccountState () { cout << "account exited" << endl; }
-
-    result react (const SessionEvent& ev) 
-    { 
-        cout << "account state react" << endl;
-        ostringstream mesg;
-
-        ResponseMessage sessioncreate (SessionCreate1String);
-        EventMessage sessionstate (SessionStateChangeEventString),
-                     partstate (ParticipantStateChangeEventString),
-                     partprop (ParticipantPropertiesEventString);
-
-        sessioncreate.handle = "xxxx";
-        sessionstate.state = 4;
-        partstate.state = 7;
-
-        mesg << format_response (sessioncreate);
-        mesg << endmesg;
-        mesg << format_response (sessionstate);
-        mesg << endmesg;
-        mesg << format_response (partstate);
-        mesg << endmesg;
-        mesg << format_response (partprop);
-        mesg << endmesg;
-
-        context <StateMachine>().socket->
-            write (mesg.str().c_str(), mesg.str().size());
-
-        return transit <SessionState> ();
-    }
-};
-
-struct SessionState : simple_state <SessionState, StateMachine> 
-{
-    typedef custom_reaction <StopEvent> reactions;
-
-    SessionState () 
-    { 
-        // TODO: this function should echo the current session info
-        cout << "session entered" << endl; 
-    }
-    
-    ~SessionState () 
-    { 
-        ostringstream mesg;
-
-        ResponseMessage sessionterm (SessionTerminate1String);
-        EventMessage sessionstate (SessionStateChangeEventString);
-
-        mesg << format_response (sessionterm);
-        mesg << endmesg;
-        mesg << format_response (sessionstate);
-        mesg << endmesg;
-
-        cout << mesg.str() << endl;
-
-        context <StateMachine>().socket->
-            write (mesg.str().c_str(), mesg.str().size());
-
-        cout << "session exited" << endl; 
-    }
-
-    result react (const StopEvent& ev) { return transit <StopState> (); }
-};
-
-struct StopState : simple_state <StopState, StateMachine> 
-{
-    StopState () 
-    { 
-        //ostringstream mesg;
-
-        //EventMessage loginstate (LoginStateChangeEventString);
-        //ResponseMessage accountlogout (AccountLogout1String),
-        //                connshutdown (ConnectorInitiateShutdown1String);
-
-        //mesg << format_response (accountlogout);
-        //mesg << endmesg;
-        //mesg << format_response (loginstate);
-        //mesg << endmesg;
-        //mesg << format_response (connshutdown);
-        //mesg << endmesg;
-
-        //cout << mesg.str() << endl;
-
-        //context <StateMachine>().socket->
-        //    write (mesg.str().c_str(), mesg.str().size());
-
-        cout << "stopped entered" << endl; 
-    }
-    
-    ~StopState () { cout << "stopped exited" << endl; }
-};
-
-//=============================================================================
 // voice classes
 struct SIPUserInfo
 {
@@ -555,6 +368,7 @@ class Server
             server_.listen (port_);
             sock_.reset (new TCPSocketWrapper (server_.accept ()));
             state_.socket = sock_.get();
+            state_.bridge = &bridge_;
             state_.initiate ();
         }
 
@@ -592,6 +406,8 @@ class Server
                 delete *i++;
             delete buf_;
         }
+        
+        void Send (const string& m) { sock_->write (m.c_str(), m.size()); }
 
     private:
 
@@ -681,13 +497,6 @@ int main (int argc, char **argv)
         if (argv [1][0] != '-') 
             port = atoi (argv [1]);
     }
-
-    // connect to conference
-    //SIPServerInfo sinfo ("conference", "10.8.1.149");
-    //SIPUserInfo uinfo ("test0", "example.com");
-
-    //conference.Register (sinfo, uinfo);
-    //conference.Join ();
 
     Server server (port);
     server.Start ();
