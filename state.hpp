@@ -9,6 +9,7 @@
 //=============================================================================
 // State machine
 
+struct Server;
 struct StateMachine;
 struct StartState;
 struct ConnectorState;
@@ -59,7 +60,7 @@ struct AccountState : simple_state <AccountState, StateMachine>
     AccountState ();
     ~AccountState ();
 
-    result react (const SessionEvent& ev) 
+    result react (const SessionEvent& ev);
 };
 
 struct SessionState : simple_state <SessionState, StateMachine> 
