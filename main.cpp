@@ -26,8 +26,16 @@ int main (int argc, char **argv)
             port = atoi (argv [1]);
     }
 
-    Server server (port);
-    server.Start ();
+    try
+    {
+        Server server (port);
+        server.Start ();
+    }
+    catch (exception &e)
+    {
+        cerr << argv[0] << " failed due to " << e.what() << endl;
+        throw;
+    }
 
     return EXIT_SUCCESS;
 }

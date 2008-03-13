@@ -18,6 +18,7 @@ Server::Server (int port) :
     {
         buf_.reset (new char [bufsize_]);
 
+        socketsInit (); // for winsock compat
         server_.listen (port_);
         sock_.reset (new TCPSocketWrapper (server_.accept ()));
 
@@ -44,6 +45,8 @@ Server::~Server ()
         server_.close();
     }
     catch (...) {}
+        
+    socketsEnd (); // for winsock compat
 }
 
 //=============================================================================
