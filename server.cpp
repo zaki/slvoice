@@ -9,29 +9,49 @@
 //=============================================================================
 Server::Server (int port) : 
     state_ (this), 
+    sock_ (NULL),
     port_ (port), 
     bufsize_ (4096), 
-    buf_ (new char [bufsize_])
+    buf_ (NULL)
 {
-    server_.listen (port_);
-    sock_.reset (new TCPSocketWrapper (server_.accept ()));
-    state_.initiate ();
+    try
+    {
+        buf_.reset (new char [bufsize_]);
+
+        server_.listen (port_);
+        sock_.reset (new TCPSocketWrapper (server_.accept ()));
+
+        state_.initiate ();
+    }
+    catch (exception &e)
+    {
+        cerr << "unable to create server: " << e.what() << endl;
+        server_.close();
+        throw;
+    }
 }
 
 //=============================================================================
 Server::~Server () 
 { 
-    server_.close();
-    sock_->close();
-
     RequestQueue::iterator i = queue_.begin();
     while (i != queue_.end())
         delete *i++;
+
+    try 
+    {
+        if (sock_.get()) sock_->close();
+        server_.close();
+    }
+    catch (...) {}
 }
 
 //=============================================================================
 void Server::Start ()
 {
+    if (!(sock_.get()))
+        throw SocketLogicException ("server has no connection");
+
     char *buf (buf_.get());
 
     state_.process_event (StartEvent());
@@ -59,6 +79,9 @@ void Server::Start ()
 //=============================================================================
 void Server::Send (const string& m) 
 { 
+    if (!(sock_.get()))
+        throw SocketLogicException ("server has no connection");
+
     sock_->write (m.c_str(), m.size()); 
 }
 
