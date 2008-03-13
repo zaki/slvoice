@@ -5,25 +5,6 @@ PROJECT (voiceforvw)
 
 SET (CMAKE_BUILD_TYPE Debug)
 
-# macros
-# PJSIP is inconsistent in naming across platforms
-MACRO (FIND_PJSIP_LIBRARY N P)
-    FIND_LIBRARY (${N}_LIB 
-        NAMES 
-        ${N} 
-        "${N}-${PJTARGET}" 
-        "lib${N}" 
-        "lib${N}-${PJTARGET}"
-        "${N}-lib"
-        "${N}-lib-${PJTARGET}"
-        "${N}lib"
-        "${N}lib-${PJTARGET}"
-        "${N}-core"
-        "${N}-core-${PJTARGET}"
-        PATHS ${PJDIR}/${P}/lib)
-    SET (PJLIBS ${PJLIBS} ${${N}_LIB})
-ENDMACRO (FIND_PJSIP_LIBRARY)
-
 # included source variables
 SET (VOICEDIR ${CMAKE_SOURCE_DIR}/.)
 SET (PJDIR ${CMAKE_SOURCE_DIR}/pjproject)
@@ -89,6 +70,24 @@ IF (UNIX)
     #ENDFOREACH (L)
 ENDIF (UNIX)
     
+# PJSIP is inconsistent in naming across platforms
+MACRO (FIND_PJSIP_LIBRARY N P)
+    FIND_LIBRARY (${N}_LIB 
+        NAMES 
+        ${N} 
+        "${N}-${PJTARGET}" 
+        "lib${N}" 
+        "lib${N}-${PJTARGET}"
+        "${N}-lib"
+        "${N}-lib-${PJTARGET}"
+        "${N}lib"
+        "${N}lib-${PJTARGET}"
+        "${N}-core"
+        "${N}-core-${PJTARGET}"
+        PATHS ${PJDIR}/${P}/lib)
+    SET (PJLIBS ${PJLIBS} ${${N}_LIB})
+ENDMACRO (FIND_PJSIP_LIBRARY)
+
 # included PJSIP libraries
 FIND_PJSIP_LIBRARY (pjsua pjsip)
 FIND_PJSIP_LIBRARY (pjsip-ua pjsip)
