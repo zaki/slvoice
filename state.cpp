@@ -91,7 +91,8 @@ result AccountState::react (const SessionEvent& ev)
 }
 
 //=============================================================================
-SessionState::SessionState () 
+SessionState::SessionState (my_context ctx)
+: my_base (ctx) // required because we call context() from a constructor
 { 
     // TODO: this function should echo the current session info
     cout << "session entered" << endl; 

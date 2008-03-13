@@ -11,6 +11,7 @@
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/simple_state.hpp>
+#include <boost/statechart/state.hpp>
 
 using namespace boost::statechart;
 using namespace std;
@@ -18,7 +19,7 @@ using namespace std;
 //=============================================================================
 // State machine
 
-struct Server;
+class Server;
 struct StateMachine;
 struct StartState;
 struct ConnectorState;
@@ -72,11 +73,11 @@ struct AccountState : simple_state <AccountState, StateMachine>
     result react (const SessionEvent& ev);
 };
 
-struct SessionState : simple_state <SessionState, StateMachine> 
+struct SessionState : state <SessionState, StateMachine> 
 {
     typedef custom_reaction <StopEvent> reactions;
 
-    SessionState ();
+    SessionState (my_context ctx);
     ~SessionState (); 
 
     result react (const StopEvent& ev);
