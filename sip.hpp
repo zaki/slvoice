@@ -68,10 +68,4 @@ class SIPConference
         void operator= (const SIPConference&);
 };
 
-
-void on_incoming_call (pjsua_acc_id, pjsua_call_id, pjsip_rx_data *);
-void on_call_state (pjsua_call_id, pjsip_event *);
-void on_call_media_state (pjsua_call_id);
-void error_exit (const char *, pj_status_t);
-
 #endif //_SIP_HPP

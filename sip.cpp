@@ -5,10 +5,22 @@
 
 #include <main.h>
 #include <sip.hpp>
+#include <fstream>
+
+
+//=============================================================================
+/* Custom log function */
+static void my_pj_log_ (int level, const char *data, int len)
+{
+    static ofstream log_ ("my_pj_log.txt");
+
+    if (!log_) throw std::runtime_error ("unable to write to log file");
+    if (level < pj_log_get_level()) log_ << data << endl;
+}
 
 //=============================================================================
 /* Callback called by the library upon receiving incoming call */
-void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
+static void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
         pjsip_rx_data *rdata)
 {
     pjsua_call_info ci;
@@ -23,7 +35,7 @@ void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
 
 //=============================================================================
 /* Callback called by the library when call's state has changed */
-void on_call_state (pjsua_call_id call_id, pjsip_event *e)
+static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
 {
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
@@ -34,7 +46,7 @@ void on_call_state (pjsua_call_id call_id, pjsip_event *e)
 
 //=============================================================================
 /* Callback called by the library when call's media state has changed */
-void on_call_media_state (pjsua_call_id call_id)
+static void on_call_media_state (pjsua_call_id call_id)
 {
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
@@ -48,7 +60,7 @@ void on_call_media_state (pjsua_call_id call_id)
 
 //=============================================================================
 /* Display error and exit application */
-void error_exit (const char *title, pj_status_t status)
+static void error_exit (const char *title, pj_status_t status)
 {
     pjsua_perror ("voice app", title, status);
     pjsua_destroy ();
@@ -126,7 +138,9 @@ void SIPConference::start_sip_stack_ ()
     status = pjsua_create ();
     if (status != PJ_SUCCESS) 
         error_exit ("Error in pjsua_create()", status);
-
+    
+    pj_log_set_log_func (my_pj_log_);
+    
     pjsua_config cfg;
     pjsua_config_default (&cfg);
 
