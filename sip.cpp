@@ -75,6 +75,7 @@ SIPConference::SIPConference ()
 
 //=============================================================================
 SIPConference::SIPConference (const SIPServerInfo& s)
+: server_ (s)
 { 
     start_sip_stack_(); 
 }
@@ -93,14 +94,14 @@ void SIPConference::Register (const SIPUserInfo& user)
     string temp_useruri (user_.get_uri());
     string temp_username (user_.name);
     string temp_userpasswd (user_.password);
-    string temp_serveruri (server_.get_uri());
+    string temp_serverreguri (server_.get_reg_uri());
     string temp_serverdomain (server_.domain);
 
     pjsua_acc_config cfg;
     pjsua_acc_config_default (&cfg);
 
     cfg.id = pj_str (const_cast <char*> (temp_useruri.c_str()));
-    cfg.reg_uri = pj_str (const_cast <char*> (temp_serveruri.c_str()));
+    cfg.reg_uri = pj_str (const_cast <char*> (temp_serverreguri.c_str()));
 
     cfg.cred_count = 1;
     cfg.cred_info[0].scheme = pj_str ("digest");
@@ -117,7 +118,7 @@ void SIPConference::Register (const SIPUserInfo& user)
 //=============================================================================
 void SIPConference::Join () 
 { 
-    string temp_serveruri (server_.get_uri());
+    string temp_serveruri (server_.get_conf_uri());
 
     pj_str_t uri = pj_str (const_cast <char*> (temp_serveruri.c_str()));
 

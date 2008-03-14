@@ -99,7 +99,7 @@ SessionState::SessionState (my_context ctx)
 
     // connect to conference
     SIPServerInfo sinfo ("conference", "10.8.1.149");
-    SIPUserInfo uinfo ("test0", "example.com");
+    SIPUserInfo uinfo ("test0", "10.8.1.149");
     SIPConference *bridge;
 
     context <StateMachine>().bridge.reset 

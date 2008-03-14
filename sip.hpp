@@ -28,13 +28,14 @@ struct SIPUserInfo
 struct SIPServerInfo
 {
     SIPServerInfo () {}
-    SIPServerInfo (const string& c, const string& d) 
+	SIPServerInfo (const string& c, const string& d) 
         : conference (c), domain (d) {}
 
     string conference;
     string domain;
     
-    string get_uri () const { return "sip:" + conference + "@" + domain; }
+    string get_conf_uri () const { return "sip:" + conference + "@" + domain; }
+    string get_reg_uri () const { return "sip:" + domain; }
 };
 
 
