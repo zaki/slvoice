@@ -131,8 +131,8 @@ istream& operator>> (istream& in, SIPServerInfo& srv)
 //=============================================================================
 auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename)
 {
-    SIPServerInfo sinfo;// ("conference", "10.8.1.149");
-    SIPUserInfo uinfo;// ("test0", "10.8.1.149");
+    SIPServerInfo sinfo;
+    SIPUserInfo uinfo;
 
     ifstream file (filename.c_str());
     if (!file) throw runtime_error ("unable to open sip.conf file");

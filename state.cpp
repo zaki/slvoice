@@ -98,8 +98,15 @@ SessionState::SessionState (my_context ctx) :
     cout << "session entered" << endl; 
 
     // connect to conference
-    context <StateMachine>().bridge = 
-        new_sip_conference_from_file ("sip.conf");
+    try
+    {
+        context <StateMachine>().bridge = 
+            new_sip_conference_from_file ("sip.conf");
+    }
+    catch (exception& e)
+    {
+        cerr << e.what() << endl;
+    }
 }
 
 SessionState::~SessionState () 

@@ -31,3 +31,10 @@ Linux
     2. Build the application
         a. cmake .
         b. make
+
+2. Connecting to a SIP conference
+    - in the same directory as the executable file, create a file called
+      "sip.conf" that has a conference SIP URI on the first line, and a
+      registered user SIP URI on the second line.
+
+    For example: echo -e "sip:conference@example.com\nsip:user@example.com" | cat > sip.conf
