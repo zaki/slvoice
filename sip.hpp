@@ -69,4 +69,9 @@ class SIPConference
         void operator= (const SIPConference&);
 };
 
+istream& operator>> (istream& in, const SIPUserInfo& usr);
+istream& operator>> (istream& in, const SIPServerInfo& srv);
+
+auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename);
+
 #endif //_SIP_HPP

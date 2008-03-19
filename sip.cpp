@@ -14,7 +14,7 @@ static void my_pj_log_ (int level, const char *data, int len)
 {
     static ofstream log_ ("my_pj_log.txt");
 
-    if (!log_) throw std::runtime_error ("unable to write to log file");
+    if (!log_) throw runtime_error ("unable to write to log file");
     if (level < pj_log_get_level()) log_ << data << endl;
 }
 
@@ -68,14 +68,95 @@ static void error_exit (const char *title, pj_status_t status)
 }
 
 //=============================================================================
+static string get_line_ (istream& in)
+{
+    string line;
+    
+    ios_base::fmtflags ff (in.flags());
+    in.setf (ios_base::skipws);
+    getline (in, line); 
+    in.flags (ff);
+    
+    return line;
+}
+
+static string take_after_ (string pre, string s)
+{
+    size_t p (s.find (pre));
+    return (p != string::npos)? s.substr (p + pre.size()) : string();
+}
+
+static string take_before_ (string pre, string s)
+{
+    size_t p (s.find (pre));
+    return (p != string::npos)? s.substr (0, p) : s;
+}
+
+static pair <string,string> parse_sip_uri_ (string uri)
+{
+    static const string sip_ ("sip:");
+    static const string at_ ("@");
+
+    string addr (take_after_ (sip_, uri));
+    string target (take_before_ (at_, addr));
+    string domain (take_after_ (at_, addr));
+
+    return make_pair (target, domain);
+}
+
+//=============================================================================
+istream& operator>> (istream& in, SIPUserInfo& usr)
+{
+    string line (get_line_ (in));
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    usr.name = result.first;
+    usr.domain = result.second;
+
+    return in;
+}
+
+//=============================================================================
+istream& operator>> (istream& in, SIPServerInfo& srv)
+{
+    string line (get_line_ (in));
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    srv.conference = result.first;
+    srv.domain = result.second;
+
+    return in;
+}
+
+//=============================================================================
+auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename)
+{
+    SIPServerInfo sinfo;// ("conference", "10.8.1.149");
+    SIPUserInfo uinfo;// ("test0", "10.8.1.149");
+
+    ifstream file (filename.c_str());
+    if (!file) throw runtime_error ("unable to open sip.conf file");
+
+    file >> sinfo;
+    file >> uinfo;
+
+    auto_ptr <SIPConference> bridge (new SIPConference (sinfo));
+
+    bridge-> Register (uinfo);
+    bridge-> Join ();
+
+    return bridge;
+}
+
+//=============================================================================
 SIPConference::SIPConference () 
 { 
     start_sip_stack_(); 
 }
 
 //=============================================================================
-SIPConference::SIPConference (const SIPServerInfo& s)
-: server_ (s)
+SIPConference::SIPConference (const SIPServerInfo& s) : 
+    server_ (s)
 { 
     start_sip_stack_(); 
 }

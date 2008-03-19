@@ -91,22 +91,15 @@ result AccountState::react (const SessionEvent& ev)
 }
 
 //=============================================================================
-SessionState::SessionState (my_context ctx)
-: my_base (ctx) // required because we call context() from a constructor
+SessionState::SessionState (my_context ctx) : 
+    my_base (ctx) // required because we call context() from a constructor
 { 
     // TODO: this function should echo the current session info
     cout << "session entered" << endl; 
 
     // connect to conference
-    SIPServerInfo sinfo ("conference", "10.8.1.149");
-    SIPUserInfo uinfo ("test0", "10.8.1.149");
-    SIPConference *bridge;
-
-    context <StateMachine>().bridge.reset 
-        (bridge = new SIPConference (sinfo));
-
-    bridge-> Register (uinfo);
-    bridge-> Join ();
+    context <StateMachine>().bridge = 
+        new_sip_conference_from_file ("sip.conf");
 }
 
 SessionState::~SessionState () 
