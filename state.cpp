@@ -78,25 +78,26 @@ result AccountState::react (const SessionEvent& ev)
 
     sessionstate.state = 4;
     sessionstate.params.push_back (make_pair ("SessionHandle", handle));
-    sessionstate.params.push_back (make_pair ("URI", "sip:dummy@example.com"));
-    sessionstate.params.push_back (make_pair ("IsChannel", "true"));
-    sessionstate.params.push_back (make_pair ("ChannelName", "Foobar"));
     sessionstate.status_code = 200;
 
     partstate.state = 7;
     partstate.params.push_back (make_pair ("SessionHandle", handle));
+    partstate.status_code = 0;
+
+    /* Not needed perhaps
     partstate.params.push_back (make_pair ("ParticipantURI", "sip:participant@example.com"));
     partstate.params.push_back (make_pair ("AccountName", "JoeBlow"));
     partstate.params.push_back (make_pair ("ParticipantType", "0"));
-    partstate.status_code = 0;
-
+    sessionstate.params.push_back (make_pair ("URI", "sip:dummy@example.com"));
+    sessionstate.params.push_back (make_pair ("IsChannel", "true"));
+    sessionstate.params.push_back (make_pair ("ChannelName", "Foobar"));
     partprop.params.push_back (make_pair ("SessionHandle", handle));
     partprop.params.push_back (make_pair ("ParticipantURI", "sip:participant@example.com"));
     partprop.params.push_back (make_pair ("IsLocallyMuted", "false"));
     partprop.params.push_back (make_pair ("IsModeratorMuted", "false"));
     partprop.params.push_back (make_pair ("IsSpeaking", "true"));
     partprop.params.push_back (make_pair ("Volume", "50"));
-    partprop.params.push_back (make_pair ("Energy", "0.4"));
+    partprop.params.push_back (make_pair ("Energy", "0.4"));*/
 
     mesg << format_response (sessioncreate);
     mesg << endmesg;
