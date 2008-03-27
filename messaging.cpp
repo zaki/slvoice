@@ -29,6 +29,20 @@ format_response (const EventMessage& ev)
         InsertEndChild (TiXmlText (ss.str()));
     ss.str ("");
 
+    if (ev.params.size())
+    {
+        EventMessage::ParameterList::const_iterator 
+            i (ev.params.begin()),
+              end (ev.params.end());
+
+        for (; i != end; ++i)
+        {
+            TiXmlElement param (i->first);
+            param.InsertEndChild (TiXmlText (i->second));
+            root->InsertEndChild (param);
+        }
+    }
+
     ss << doc;
 
     return ss.str();

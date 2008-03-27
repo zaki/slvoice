@@ -10,7 +10,9 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <utility>
 #include <list>
+#include <vector>
 
 #include <cstdlib>
 #include <cstring>

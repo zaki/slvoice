@@ -79,12 +79,16 @@ enum ActionType
 // Response Objects
 struct EventMessage
 {
+    typedef vector <pair <string,string> > ParameterList;
+
     EventMessage (const string& t) 
         : type (t), status_code (0), state (0) {}
 
     string type;
     int status_code;
     int state;
+
+    ParameterList params;
 };
 
 struct ResponseMessage

@@ -72,8 +72,9 @@ result AccountState::react (const SessionEvent& ev)
                  partstate (ParticipantStateChangeEventString),
                  partprop (ParticipantPropertiesEventString);
 
-    sessioncreate.handle = "xxxx";
     sessionstate.state = 4;
+    sessionstate.params.push_back (make_pair ("URI", "sip:dummy@example.com"));
+    sessioncreate.handle = "xxxx";
     partstate.state = 7;
 
     mesg << format_response (sessioncreate);
@@ -94,7 +95,6 @@ result AccountState::react (const SessionEvent& ev)
 SessionState::SessionState (my_context ctx) : 
     my_base (ctx) // required because we call context() from a constructor
 { 
-    // TODO: this function should echo the current session info
     cout << "session entered" << endl; 
     ostringstream mesg;
 
@@ -118,7 +118,6 @@ SessionState::SessionState (my_context ctx) :
     mesg << format_response (renderdev);
     mesg << endmesg;
 
-    cout << "sending " << mesg.str() << endl;
     context <StateMachine>().server-> Send (mesg.str());
     
     // connect to conference
