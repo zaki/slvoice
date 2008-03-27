@@ -85,6 +85,7 @@ struct EventMessage
         : type (t), status_code (0), state (0) {}
 
     string type;
+
     int status_code;
     int state;
 
