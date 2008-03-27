@@ -72,10 +72,23 @@ result AccountState::react (const SessionEvent& ev)
                  partstate (ParticipantStateChangeEventString),
                  partprop (ParticipantPropertiesEventString);
 
+    sessioncreate.handle = "xxxx";
+
     sessionstate.state = 4;
     sessionstate.params.push_back (make_pair ("URI", "sip:dummy@example.com"));
-    sessioncreate.handle = "xxxx";
+    sessionstate.params.push_back (make_pair ("IsChannel", "true"));
+    sessionstate.params.push_back (make_pair ("ChannelName", "Foobar"));
+
     partstate.state = 7;
+    partstate.params.push_back (make_pair ("ParticipantURI", "sip:participant@example.com"));
+    partstate.params.push_back (make_pair ("AccountName", "JoeBlow"));
+
+    partprop.params.push_back (make_pair ("ParticipantURI", "sip:participant@example.com"));
+    partprop.params.push_back (make_pair ("IsLocallyMuted", "false"));
+    partprop.params.push_back (make_pair ("IsModeratorMuted", "false"));
+    partprop.params.push_back (make_pair ("IsSpeaking", "true"));
+    partprop.params.push_back (make_pair ("Volume", "50"));
+    partprop.params.push_back (make_pair ("Energy", "0.4"));
 
     mesg << format_response (sessioncreate);
     mesg << endmesg;
