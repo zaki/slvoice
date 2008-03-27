@@ -139,6 +139,7 @@ auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename)
 
     file >> sinfo;
     file >> uinfo;
+    file.close();
 
     auto_ptr <SIPConference> bridge (new SIPConference (sinfo));
 

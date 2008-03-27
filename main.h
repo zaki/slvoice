@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <list>
 
 #include <cstdlib>
@@ -16,6 +17,7 @@
 
 #include <messaging.hpp>
 #include <sip.hpp>
+#include <voice.hpp>
 #include <state.hpp>
 #include <server.hpp>
 

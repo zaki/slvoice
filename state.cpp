@@ -96,14 +96,38 @@ SessionState::SessionState (my_context ctx) :
 { 
     // TODO: this function should echo the current session info
     cout << "session entered" << endl; 
+    ostringstream mesg;
 
+    ResponseMessage mutemic (ConnectorMuteLocalMic1String),
+                    speakermic (ConnectorMuteLocalSpeaker1String),
+                    speakervol (ConnectorSetLocalSpeakerVolume1String),
+                    micvol (ConnectorSetLocalMicVolume1String),
+                    capdev (AuxSetCaptureDevice1String),
+                    renderdev (AuxSetRenderDevice1String);
+
+    mesg << format_response (mutemic);
+    mesg << endmesg;
+    mesg << format_response (speakermic);
+    mesg << endmesg;
+    mesg << format_response (speakervol);
+    mesg << endmesg;
+    mesg << format_response (micvol);
+    mesg << endmesg;
+    mesg << format_response (capdev);
+    mesg << endmesg;
+    mesg << format_response (renderdev);
+    mesg << endmesg;
+
+    cout << "sending " << mesg.str() << endl;
+    context <StateMachine>().server-> Send (mesg.str());
+    
     // connect to conference
     try
     {
         context <StateMachine>().bridge = 
             new_sip_conference_from_file ("sip.conf");
     }
-    catch (exception& e)
+    catch (runtime_error& e)
     {
         cerr << e.what() << endl;
     }

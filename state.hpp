@@ -38,9 +38,10 @@ struct StopEvent : public ViewerEvent, event <StopEvent> {};
 struct StateMachine : state_machine <StateMachine, StartState> 
 {
     StateMachine (Server *s) : server (s), bridge (NULL) {}
+    VoiceState voice; // the current voice state
 
-    Server *server;
-    auto_ptr <SIPConference> bridge;
+    Server *server; // for sending messages across the network
+    auto_ptr <SIPConference> bridge; // for creating a conference bridge
 };
 
 struct StartState : simple_state <StartState, StateMachine> 
