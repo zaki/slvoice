@@ -1,3 +1,4 @@
+
 /* sip.hpp -- sip definition
  *
  *			Ryan McDougall -- 2008
@@ -37,7 +38,6 @@ struct SIPServerInfo
     string get_conf_uri () const { return "sip:" + conference + "@" + domain; }
     string get_reg_uri () const { return "sip:" + domain; }
 };
-
 
 class SIPConference
 {

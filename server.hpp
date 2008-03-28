@@ -9,9 +9,6 @@
 #include <sockets/Sockets.h>
 using namespace std;
 
-struct ViewerEvent;
-enum ActionType;
-
 const int glb_default_port (44124);
 
 //=============================================================================
@@ -27,8 +24,9 @@ class Server
         void Send (const string& m);
 
     private:
+        void enqueue_request_ (char* mesg);
         void pop_messages_on_event_ (ViewerEvent& ev);
-        void issue_events_ (ActionType type);
+        void process_request_queue_ ();
 
     private:
         RequestQueue queue_;

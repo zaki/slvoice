@@ -8,6 +8,7 @@
 
 using namespace std;
 
+
 //=============================================================================
 // voice state
 struct VoiceOrientation
@@ -19,14 +20,17 @@ struct VoiceOrientation
     float up [3];
     float left [3];
 
-    VoiceOrientation ()
-    {
-        fill_n (position, 3, 0.0f);
-        fill_n (velocity, 3, 0.0f);
-        fill_n (at, 3, 0.0f);
-        fill_n (up, 3, 0.0f);
-        fill_n (left, 3, 0.0f);
-    }
+    VoiceOrientation ();
+    VoiceOrientation (const VoiceOrientation& copy);
+    VoiceOrientation& operator= (const VoiceOrientation& rhs);
+
+    void swap (VoiceOrientation& rhs);
+
+    void set_position (const float v [3]) { copy (v, v+3, position); }
+    void set_velocity (const float v [3]) { copy (v, v+3, velocity); }
+    void set_at (const float v [3]) { copy (v, v+3, at); }
+    void set_up (const float v [3]) { copy (v, v+3, up); }
+    void set_left (const float v [3]) { copy (v, v+3, left); }
 };
 
 struct VoiceState

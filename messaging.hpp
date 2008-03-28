@@ -1,4 +1,4 @@
-/* messaging.hpp -- messaging definition
+/* messaging.hpp -- messaging module
  *
  *			Ryan McDougall -- 2008
  */
@@ -111,11 +111,18 @@ struct ResponseMessage
 // TODO: these are meant to be filled in when a request is parsed
 struct Request 
 {
+    Request (ActionType t, int id = 0) 
+        : type (t), sequenceid (id) {}
+
+    ActionType type;
     int sequenceid;
 };
 
 struct Account : public Request
 {
+    Account (ActionType t, int id = 0) 
+        : Request (t, id) {}
+
     string name;
     string password;
     string uri;
@@ -125,12 +132,18 @@ struct Account : public Request
 
 struct Connection : public Request
 {
+    Connection (ActionType t, int id = 0) 
+        : Request (t, id) {}
+
     string handle;
     string account_server;
 };
 
 struct Session : public Request
 {
+    Session (ActionType t, int id = 0) 
+        : Request (t, id) {}
+
     string name;
     string password;
     string uri;
@@ -140,16 +153,16 @@ struct Session : public Request
     string hash_algorithm;
 };
 
-struct RequestItem
+struct Position : public Request
 {
-    RequestItem (auto_ptr <const Request> p, ActionType t) 
-        : params (p), type (t) {}
+    Position (ActionType t, int id = 0) 
+        : Request (t, id) {}
 
-    auto_ptr <const Request> params;
-    ActionType type;
+    VoiceOrientation speaker;
+    VoiceOrientation listener;
 };
 
-typedef list <const RequestItem *> RequestQueue;
+typedef list <const Request *> RequestQueue;
 
 //=============================================================================
 // Functions
@@ -158,8 +171,5 @@ ActionType get_action_type (const TiXmlDocument& doc);
 string format_response (const ResponseMessage& resp);
 string format_response (const EventMessage& ev);
 auto_ptr <const Request> parse_request (const TiXmlDocument& doc);
-auto_ptr <const Request> parse_account_request (const TiXmlDocument& doc);
-auto_ptr <const Request> parse_connection_request (const TiXmlDocument& doc);
-auto_ptr <const Request> parse_session_request (const TiXmlDocument& doc);
 
 #endif //_MESSAGING_HPP_

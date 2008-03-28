@@ -33,6 +33,7 @@ struct StartEvent : public ViewerEvent, event <StartEvent> {};
 struct AccountEvent : public ViewerEvent, event <AccountEvent> {};
 struct ConnectionEvent : public ViewerEvent, event <ConnectionEvent> {};
 struct SessionEvent : public ViewerEvent, event <SessionEvent> {};
+struct PositionEvent : public ViewerEvent, event <PositionEvent> {};
 struct StopEvent : public ViewerEvent, event <StopEvent> {};
 
 struct StateMachine : state_machine <StateMachine, StartState> 
@@ -81,6 +82,7 @@ struct SessionState : state <SessionState, StateMachine>
     SessionState (my_context ctx);
     ~SessionState (); 
 
+    result react (const PositionEvent& ev);
     result react (const StopEvent& ev);
 };
 

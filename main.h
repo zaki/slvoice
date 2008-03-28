@@ -17,9 +17,9 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <voice.hpp>
 #include <messaging.hpp>
 #include <sip.hpp>
-#include <voice.hpp>
 #include <state.hpp>
 #include <server.hpp>
 

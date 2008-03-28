@@ -45,7 +45,7 @@ Server::~Server ()
         server_.close();
     }
     catch (...) {}
-        
+
     socketsEnd (); // for winsock compat
 }
 
@@ -62,20 +62,13 @@ void Server::Start ()
     size_t nread (0);
     for (;;)
     {
-        ActionType type;
-        TiXmlDocument doc;
-
         memset (buf, 0, bufsize_);
         nread = sock_->read (buf, bufsize_);
         if (nread <= 0) break;
         cout << "received: " << buf << endl;
 
-        doc.Parse (buf);
-        type = get_action_type (doc);
-
-        queue_.push_back (new RequestItem (parse_request (doc), type)); 
-
-        issue_events_ (type);
+        enqueue_request_ (buf);
+        process_request_queue_();
     }
 }
 
@@ -89,6 +82,16 @@ void Server::Send (const string& m)
 }
 
 //=============================================================================
+void Server::enqueue_request_ (char* mesg)
+{
+    TiXmlDocument doc;
+    doc.Parse (mesg);
+
+    auto_ptr <const Request> req (parse_request (doc));
+    queue_.push_back (req.release());
+}
+
+//=============================================================================
 void Server::pop_messages_on_event_ (ViewerEvent& ev)
 {
     ev.messages.splice 
@@ -97,9 +100,9 @@ void Server::pop_messages_on_event_ (ViewerEvent& ev)
 }
 
 //=============================================================================
-void Server::issue_events_ (ActionType type)
+void Server::process_request_queue_ ()
 {
-    switch (type)
+    switch (queue_.back()->type)
     {
         case AccountLogin1:
             {
@@ -128,6 +131,14 @@ void Server::issue_events_ (ActionType type)
         case SessionTerminate1:
             {
                 StopEvent ev;
+                pop_messages_on_event_ (ev);
+                state_.process_event (ev);
+            }
+            break;
+
+        case SessionSet3DPosition1:
+            {
+                PositionEvent ev;
                 pop_messages_on_event_ (ev);
                 state_.process_event (ev);
             }

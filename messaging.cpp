@@ -161,7 +161,7 @@ get_action_type (const TiXmlDocument& doc)
 }
 
 //=============================================================================
-int 
+static int 
 get_request_sequence_id (const TiXmlDocument& doc)
 {
     int result, id;
@@ -177,7 +177,7 @@ get_request_sequence_id (const TiXmlDocument& doc)
 }
 
 //=============================================================================
-string 
+static string 
 get_request_parameter (const TiXmlDocument& doc, const string& param)
 {
     const TiXmlElement *e (doc.RootElement()-> FirstChildElement (param));
@@ -188,6 +188,132 @@ get_request_parameter (const TiXmlDocument& doc, const string& param)
         cerr << "failed to parse parameter " << param << endl;
         return string();
     }
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_account_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Account> req (new Account (AccountLogin1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_connection_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Connection> req (new Connection (ConnectorCreate1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+    req->account_server = get_request_parameter (doc, "AccountManagementServer");
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_session_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Session> req (new Session (SessionCreate1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const float>
+parse_vector (const TiXmlElement *vec)
+{
+    auto_ptr <float> handle (new float [3]);
+    float *array (handle.get());
+
+    vec-> QueryFloatAttribute ("X", array+0);
+    vec-> QueryFloatAttribute ("Y", array+1);
+    vec-> QueryFloatAttribute ("Z", array+2);
+
+    return auto_ptr <const float> (handle);
+}
+
+//=============================================================================
+static auto_ptr <const VoiceOrientation>
+parse_voice_orientation (const TiXmlElement *pos)
+{
+    auto_ptr <VoiceOrientation> voice (new VoiceOrientation);
+    auto_ptr <const float> handle;
+    const TiXmlElement *e;
+
+    e = pos-> FirstChildElement ("Position");
+    if (!e) throw runtime_error ("cannot parse 3d position");
+    else
+    {
+        handle = parse_vector (e);
+        voice->set_position (handle.get());
+    }
+
+    e = pos-> FirstChildElement ("Velocity");
+    if (!e) throw runtime_error ("cannot parse 3d velocity");
+    else
+    {
+        handle = parse_vector (e);
+        voice->set_velocity (handle.get());
+    }
+
+    e = pos-> FirstChildElement ("AtOrientation");
+    if (!e) throw runtime_error ("cannot parse 3d at orientation");
+    else
+    {
+        handle = parse_vector (e);
+        voice->set_at (handle.get());
+    }
+
+    e = pos-> FirstChildElement ("UpOrientation");
+    if (!e) throw runtime_error ("cannot parse 3d up orientation");
+    else
+    {
+        handle = parse_vector (e);
+        voice->set_up (handle.get());
+    }
+
+    e = pos-> FirstChildElement ("LeftOrientation");
+    if (!e) throw runtime_error ("cannot parse 3d left orientation");
+    else
+    {
+        handle = parse_vector (e);
+        voice->set_left (handle.get());
+    }
+
+    return auto_ptr <const VoiceOrientation> (voice);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_position_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Position> req (new Position (SessionSet3DPosition1));
+    auto_ptr <const VoiceOrientation> speakerpos, listenerpos;
+    const TiXmlElement *speaker, *listener; 
+
+    req->sequenceid = get_request_sequence_id (doc);
+
+    speaker = doc.RootElement()-> FirstChildElement ("SpeakerPosition");
+    if (!speaker)
+        throw runtime_error ("cannot parse speaker position");
+
+    listener = doc.RootElement()-> FirstChildElement ("ListenerPosition");
+    if (!listener)
+        throw runtime_error ("cannot parse listener position");
+        
+    speakerpos = parse_voice_orientation (speaker);
+    listenerpos = parse_voice_orientation (listener);
+
+    req->speaker = *speakerpos;
+    req->listener = *listenerpos;
+
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
@@ -205,42 +331,11 @@ parse_request (const TiXmlDocument& doc)
         case SessionCreate1:
             return parse_session_request (doc);
 
+        case SessionSet3DPosition1:
+            return parse_position_request (doc);
+
         default:
             cerr << "unable to parse request " << get_action_type (doc) << endl;
             return auto_ptr <const Request> (NULL);
     }
-}
-
-//=============================================================================
-auto_ptr <const Request> 
-parse_account_request (const TiXmlDocument& doc)
-{
-    auto_ptr <Account> req (new Account);
-
-    req->sequenceid = get_request_sequence_id (doc);
-
-    return auto_ptr <const Request> (req);
-}
-
-//=============================================================================
-auto_ptr <const Request> 
-parse_connection_request (const TiXmlDocument& doc)
-{
-    auto_ptr <Connection> req (new Connection);
-
-    req->sequenceid = get_request_sequence_id (doc);
-    req->account_server = get_request_parameter (doc, "AccountManagementServer");
-
-    return auto_ptr <const Request> (req);
-}
-
-//=============================================================================
-auto_ptr <const Request> 
-parse_session_request (const TiXmlDocument& doc)
-{
-    auto_ptr <Session> req (new Session);
-
-    req->sequenceid = get_request_sequence_id (doc);
-
-    return auto_ptr <const Request> (req);
 }
