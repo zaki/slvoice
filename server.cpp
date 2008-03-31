@@ -88,7 +88,7 @@ void Server::enqueue_request_ (char* mesg)
     doc.Parse (mesg);
 
     auto_ptr <const Request> req (parse_request (doc));
-    queue_.push_back (req.release());
+    if (req.get()) queue_.push_back (req.release());
 }
 
 //=============================================================================
