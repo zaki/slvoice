@@ -7,8 +7,17 @@
 #include <state.hpp>
 
 //=============================================================================
-StartState::StartState () { cout << "start entered" << endl; }
-StartState::~StartState () { cout << "start exited" << endl; }
+StartState::StartState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "start entered" << endl; 
+}
+
+StartState::~StartState () 
+{ 
+    cout << "start exited" << endl; 
+}
 
 result StartState::react (const ConnectionEvent& ev) 
 { 
@@ -28,14 +37,23 @@ result StartState::react (const ConnectionEvent& ev)
     mesg << format_response (conncreate);
     mesg << endmesg;
 
-    context <StateMachine>().server-> Send (mesg.str());
+    machine.server-> Send (mesg.str());
 
     return transit <ConnectorState> ();
 }
 
 //=============================================================================
-ConnectorState::ConnectorState () { cout << "connector entered" << endl; }
-ConnectorState::~ConnectorState () { cout << "connector exited" << endl; }
+ConnectorState::ConnectorState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "connector entered" << endl; 
+}
+
+ConnectorState::~ConnectorState () 
+{ 
+    cout << "connector exited" << endl; 
+}
 
 result ConnectorState::react (const AccountEvent& ev) 
 {
@@ -54,14 +72,23 @@ result ConnectorState::react (const AccountEvent& ev)
     mesg << format_response (loginstate);
     mesg << endmesg;
 
-    context <StateMachine>().server-> Send (mesg.str());
+    machine.server-> Send (mesg.str());
 
     return transit <AccountState> ();
 }
 
 //=============================================================================
-AccountState::AccountState () { cout << "account entered" << endl; }
-AccountState::~AccountState () { cout << "account exited" << endl; }
+AccountState::AccountState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "account entered" << endl; 
+}
+
+AccountState::~AccountState () 
+{ 
+    cout << "account exited" << endl; 
+}
 
 result AccountState::react (const SessionEvent& ev) 
 { 
@@ -91,14 +118,15 @@ result AccountState::react (const SessionEvent& ev)
     mesg << format_response (partprop);
     mesg << endmesg;
 
-    context <StateMachine>().server-> Send (mesg.str());
+    machine.server-> Send (mesg.str());
 
     return transit <SessionState> ();
 }
 
 //=============================================================================
 SessionState::SessionState (my_context ctx) : 
-    my_base (ctx) // required because we call context() from a constructor
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
 { 
     cout << "session entered" << endl; 
 
@@ -135,8 +163,18 @@ SessionState::~SessionState ()
 
 result SessionState::react (const PositionEvent& ev) 
 { 
-    //voice.listener = ev.messages.listener;
-    //voice.speaker = ev.messages.speaker;
+    const Request *req (ev.messages.back());
+    if (req->type == SessionSet3DPosition1)
+    {
+        const Position *pos (static_cast <const Position*> (req));
+
+        machine.voice.speaker = pos->speaker;
+        machine.voice.listener = pos->listener;
+
+        cout << machine.voice.listener.position[0] << ", "
+            << machine.voice.listener.position[1] << ", "
+            << machine.voice.listener.position[2] << ", " << endl;
+    }
 
     return discard_event (); 
 }
@@ -147,7 +185,9 @@ result SessionState::react (const StopEvent& ev)
 }
 
 //=============================================================================
-StopState::StopState () 
+StopState::StopState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
 { 
     //ostringstream mesg;
 
@@ -169,4 +209,7 @@ StopState::StopState ()
     cout << "stopped entered" << endl; 
 }
 
-StopState::~StopState () { cout << "stopped exited" << endl; }
+StopState::~StopState () 
+{ 
+    cout << "stopped exited" << endl; 
+}

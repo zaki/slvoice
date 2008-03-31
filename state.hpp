@@ -10,7 +10,6 @@
 #include <boost/statechart/event.hpp>
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
 #include <boost/statechart/state.hpp>
 
 using namespace boost::statechart;
@@ -39,40 +38,46 @@ struct StopEvent : public ViewerEvent, event <StopEvent> {};
 struct StateMachine : state_machine <StateMachine, StartState> 
 {
     StateMachine (Server *s) : server (s), bridge (NULL) {}
+    
     VoiceState voice; // the current voice state
-
     Server *server; // for sending messages across the network
     auto_ptr <SIPConference> bridge; // for creating a conference bridge
 };
 
-struct StartState : simple_state <StartState, StateMachine> 
+struct StartState : state <StartState, StateMachine> 
 {
     typedef custom_reaction <ConnectionEvent> reactions;
 
-    StartState ();
+    StartState (my_context ctx);
     ~StartState ();
 
     result react (const ConnectionEvent& ev);
+
+    StateMachine& machine;
 };
 
-struct ConnectorState : simple_state <ConnectorState, StateMachine> 
+struct ConnectorState : state <ConnectorState, StateMachine> 
 {
     typedef custom_reaction <AccountEvent> reactions;
 
-    ConnectorState ();
+    ConnectorState (my_context ctx);
     ~ConnectorState ();
 
     result react (const AccountEvent& ev);
+
+    StateMachine& machine;
 };
 
-struct AccountState : simple_state <AccountState, StateMachine> 
+struct AccountState : state <AccountState, StateMachine> 
 {
     typedef custom_reaction <SessionEvent> reactions;
 
-    AccountState ();
+    AccountState (my_context ctx);
     ~AccountState ();
 
     result react (const SessionEvent& ev);
+
+    StateMachine& machine;
 };
 
 struct SessionState : state <SessionState, StateMachine> 
@@ -84,12 +89,16 @@ struct SessionState : state <SessionState, StateMachine>
 
     result react (const PositionEvent& ev);
     result react (const StopEvent& ev);
+
+    StateMachine& machine;
 };
 
-struct StopState : simple_state <StopState, StateMachine> 
+struct StopState : state <StopState, StateMachine> 
 {
-    StopState ();
+    StopState (my_context ctx);
     ~StopState ();
+
+    StateMachine& machine;
 };
 
 #endif //_STATE_HPP_

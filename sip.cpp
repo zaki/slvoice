@@ -129,7 +129,8 @@ istream& operator>> (istream& in, SIPServerInfo& srv)
 }
 
 //=============================================================================
-auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename)
+auto_ptr <SIPConference> 
+new_sip_conference_from_file (const string& filename)
 {
     SIPServerInfo sinfo;
     SIPUserInfo uinfo;
