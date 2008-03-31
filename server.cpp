@@ -102,6 +102,9 @@ void Server::pop_messages_on_event_ (ViewerEvent& ev)
 //=============================================================================
 void Server::process_request_queue_ ()
 {
+    if (queue_.size() == 0)
+        return;
+
     switch (queue_.back()->type)
     {
         case AccountLogin1:
