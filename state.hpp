@@ -82,7 +82,7 @@ struct AccountState : state <AccountState, StateMachine>
 
 struct SessionState : state <SessionState, StateMachine> 
 {
-    typedef mpl::list 
+    typedef boost::mpl::list 
         <custom_reaction <StopEvent>, 
         custom_reaction <PositionEvent> > reactions;
 
