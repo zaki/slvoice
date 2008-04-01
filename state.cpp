@@ -170,10 +170,6 @@ result SessionState::react (const PositionEvent& ev)
 
         machine.voice.speaker = pos->speaker;
         machine.voice.listener = pos->listener;
-
-        cout << machine.voice.listener.position[0] << ", "
-            << machine.voice.listener.position[1] << ", "
-            << machine.voice.listener.position[2] << ", " << endl;
     }
 
     return discard_event (); 

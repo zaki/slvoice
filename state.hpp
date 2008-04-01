@@ -82,7 +82,9 @@ struct AccountState : state <AccountState, StateMachine>
 
 struct SessionState : state <SessionState, StateMachine> 
 {
-    typedef custom_reaction <StopEvent> reactions;
+    typedef mpl::list 
+        <custom_reaction <StopEvent>, 
+        custom_reaction <PositionEvent> > reactions;
 
     SessionState (my_context ctx);
     ~SessionState (); 
