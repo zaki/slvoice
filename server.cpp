@@ -88,7 +88,9 @@ void Server::enqueue_request_ (char* mesg)
     doc.Parse (mesg);
 
     auto_ptr <const Request> req (parse_request (doc));
-    if (req.get()) queue_.push_back (req.release());
+
+    if (req.get()) // is null on parse failure
+        queue_.push_back (req.release());
 }
 
 //=============================================================================
@@ -131,17 +133,19 @@ void Server::process_request_queue_ ()
             }
             break;
 
-        case SessionTerminate1:
+        case SessionSet3DPosition1:
             {
-                StopEvent ev;
+                PositionEvent ev;
                 pop_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
 
-        case SessionSet3DPosition1:
+        case AccountLogout1:
+        case ConnectorInitiateShutdown1:
+        case SessionTerminate1:
             {
-                PositionEvent ev;
+                StopEvent ev;
                 pop_messages_on_event_ (ev);
                 state_.process_event (ev);
             }

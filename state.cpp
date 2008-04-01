@@ -162,14 +162,15 @@ SessionState::~SessionState ()
 
 result SessionState::react (const PositionEvent& ev) 
 { 
-    /*const Request *req (ev.messages.back());
+    const Request *req (ev.messages.back());
     if (req->type == SessionSet3DPosition1)
     {
-        const Position *pos (static_cast <const Position*> (req));
+        const PositionSetRequest *pos 
+            (static_cast <const PositionSetRequest*> (req));
 
         machine.voice.speaker = pos->speaker;
         machine.voice.listener = pos->listener;
-    }*/
+    }
 
     return discard_event (); 
 }
