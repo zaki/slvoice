@@ -133,8 +133,7 @@ SessionState::SessionState (my_context ctx) :
     // connect to conference
     try
     {
-        context <StateMachine>().bridge = 
-            new_sip_conference_from_file ("sip.conf");
+        machine.bridge = new_sip_conference_from_file ("sip.conf");
     }
     catch (runtime_error& e)
     {
@@ -156,7 +155,7 @@ SessionState::~SessionState ()
 
     cout << mesg.str() << endl;
 
-    context <StateMachine>().server-> Send (mesg.str());
+    machine.server-> Send (mesg.str());
 
     cout << "session exited" << endl; 
 }
@@ -185,22 +184,22 @@ StopState::StopState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    //ostringstream mesg;
+    ostringstream mesg;
 
-    //EventMessage loginstate (LoginStateChangeEventString);
-    //ResponseMessage accountlogout (AccountLogout1String),
-    //                connshutdown (ConnectorInitiateShutdown1String);
+    EventMessage loginstate (LoginStateChangeEventString);
+    ResponseMessage accountlogout (AccountLogout1String),
+                    connshutdown (ConnectorInitiateShutdown1String);
 
-    //mesg << format_response (accountlogout);
-    //mesg << endmesg;
-    //mesg << format_response (loginstate);
-    //mesg << endmesg;
-    //mesg << format_response (connshutdown);
-    //mesg << endmesg;
+    mesg << format_response (accountlogout);
+    mesg << endmesg;
+    mesg << format_response (loginstate);
+    mesg << endmesg;
+    mesg << format_response (connshutdown);
+    mesg << endmesg;
 
-    //cout << mesg.str() << endl;
+    cout << mesg.str() << endl;
 
-    //context <StateMachine>().server-> Send (mesg.str());
+    machine.server-> Send (mesg.str());
 
     cout << "stopped entered" << endl; 
 }

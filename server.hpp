@@ -41,7 +41,6 @@ class Server
         auto_ptr <char> buf_;
 
     private:
-        Server ();
         Server (const Server&);
         void operator= (const Server&);
 };
