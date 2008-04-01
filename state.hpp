@@ -89,8 +89,8 @@ struct SessionState : state <SessionState, StateMachine>
     SessionState (my_context ctx);
     ~SessionState (); 
 
-    result react (const PositionEvent& ev);
     result react (const StopEvent& ev);
+    result react (const PositionEvent& ev);
 
     StateMachine& machine;
 };
