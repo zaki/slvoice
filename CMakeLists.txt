@@ -17,7 +17,7 @@ SET (VOICESRC
     ${VOICEDIR}/server.cpp
     ${VOICEDIR}/state.cpp
     ${VOICEDIR}/messaging.cpp
-    ${VOICEDIR}/voice.cpp)
+    ${VOICEDIR}/parameters.cpp)
 
 SET (SOCKETSRC 
     ${SOCKETDIR}/Sockets.cpp)

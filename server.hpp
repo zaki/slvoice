@@ -7,7 +7,6 @@
 #define _SERVER_HPP_
 
 #include <sockets/Sockets.h>
-using namespace std;
 
 const int glb_default_port (44124);
 

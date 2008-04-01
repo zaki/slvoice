@@ -13,7 +13,6 @@
 #include <boost/statechart/state.hpp>
 
 using namespace boost::statechart;
-using namespace std;
 
 //=============================================================================
 // State machine
@@ -39,7 +38,11 @@ struct StateMachine : state_machine <StateMachine, StartState>
 {
     StateMachine (Server *s) : server (s), bridge (NULL) {}
     
-    VoiceState voice; // the current voice state
+    Voice voice; // the current voice state
+    Account account; // the current account state
+    Connection connection; // the current connector state
+    Session session; // the current session state
+
     Server *server; // for sending messages across the network
     auto_ptr <SIPConference> bridge; // for creating a conference bridge
 };

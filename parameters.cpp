@@ -4,7 +4,7 @@
  */
 
 #include <main.h>
-#include <voice.hpp>
+#include <parameters.hpp>
 #include <cstring>
 
 //=============================================================================

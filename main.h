@@ -17,12 +17,12 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <voice.hpp>
+using namespace std;
+
+#include <parameters.hpp>
 #include <messaging.hpp>
 #include <sip.hpp>
 #include <state.hpp>
 #include <server.hpp>
-
-using namespace std;
 
 #endif //_MAIN_H_

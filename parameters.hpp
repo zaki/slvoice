@@ -6,8 +6,6 @@
 #ifndef _VOICE_HPP_
 #define _VOICE_HPP_
 
-using namespace std;
-
 
 //=============================================================================
 // voice state
@@ -33,7 +31,7 @@ struct VoiceOrientation
     void set_left (const float v [3]) { copy (v, v+3, left); }
 };
 
-struct VoiceState
+struct Voice
 {
     float mic_volume;
     float mic_mute;
@@ -44,12 +42,38 @@ struct VoiceState
     VoiceOrientation listener;
     VoiceOrientation speaker;
 
-    VoiceState () :
+    Voice () :
         mic_volume (0.0f),
         mic_mute (0.0f),
         speaker_volume (0.0f),
         speaker_mute (0.0f)
     {}
+};
+
+struct Account
+{
+    string name;
+    string password;
+    string uri;
+    string handle;
+    string connector_handle;
+};
+
+struct Connection
+{
+    string handle;
+    string account_server;
+};
+
+struct Session
+{
+    string name;
+    string password;
+    string uri;
+    string handle;
+    string connector_handle;
+    string account_handle;
+    string hash_algorithm;
 };
 
 #endif //_VOICE_HPP_

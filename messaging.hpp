@@ -7,7 +7,6 @@
 #define _MESSAGING_HPP_
 
 #include <tinyxml/tinyxml.h>
-using namespace std;
 
 //=============================================================================
 // Message Constants
@@ -118,10 +117,10 @@ struct Request
     int sequenceid;
 };
 
-struct Account : public Request
+struct AccountLoginRequest : public Request
 {
-    Account (ActionType t, int id = 0) 
-        : Request (t, id) {}
+    AccountLoginRequest (int id = 0) 
+        : Request (AccountLogin1, id) {}
 
     string name;
     string password;
@@ -130,19 +129,19 @@ struct Account : public Request
     string connector_handle;
 };
 
-struct Connection : public Request
+struct ConnectionCreateRequest : public Request
 {
-    Connection (ActionType t, int id = 0) 
-        : Request (t, id) {}
+    ConnectionCreateRequest (int id = 0) 
+        : Request (ConnectorCreate1, id) {}
 
     string handle;
     string account_server;
 };
 
-struct Session : public Request
+struct SessionCreateRequest : public Request
 {
-    Session (ActionType t, int id = 0) 
-        : Request (t, id) {}
+    SessionCreateRequest (int id = 0) 
+        : Request (SessionCreate1, id) {}
 
     string name;
     string password;
@@ -153,13 +152,35 @@ struct Session : public Request
     string hash_algorithm;
 };
 
-struct Position : public Request
+struct PositionSetRequest : public Request
 {
-    Position (ActionType t, int id = 0) 
-        : Request (t, id) {}
+    PositionSetRequest (int id = 0) 
+        : Request (SessionSet3DPosition1, id) {}
 
     VoiceOrientation speaker;
     VoiceOrientation listener;
+};
+
+struct AccountLogoutRequest : public Request
+{
+    AccountLogoutRequest (int id = 0) 
+        : Request (AccountLogout1, id) {}
+
+    string handle;
+};
+struct ConnectionTerminateRequest : public Request
+{
+    ConnectionTerminateRequest (int id = 0) 
+        : Request (ConnectorInitiateShutdown1, id) {}
+
+    string handle;
+};
+struct SessionTerminateRequest : public Request
+{
+    SessionTerminateRequest (int id = 0) 
+        : Request (SessionTerminate1, id) {}
+
+    string handle;
 };
 
 typedef list <const Request *> RequestQueue;
