@@ -63,10 +63,19 @@ void Server::Start ()
     for (;;)
     {
         memset (buf, 0, bufsize_);
-        nread = sock_->read (buf, bufsize_);
-        if (nread <= 0) break;
-        cout << "received: " << buf << endl;
+        
+        try { nread = sock_->read (buf, bufsize_); }
+        catch (SocketRunTimeException& e) 
+        { 
+            // TODO: viewer can occasionally quit uncleanly
+            // can we do better than ignoring the exception and quitting?
+            return; 
+        }
 
+        if (nread <= 0) 
+            return;
+
+        cout << "received: " << buf << endl;
         enqueue_request_ (buf);
         process_request_queue_();
     }

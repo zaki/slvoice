@@ -38,3 +38,10 @@ Linux
       registered user SIP URI on the second line.
 
     For example: echo -e "sip:conference@example.com\nsip:user@example.com" | cat > sip.conf
+
+3. Setting up to work with OpenSim
+    - ensure that your OpenSim.ini contains the following section:
+        [Voice]
+        enabled = true
+        account_management_server = https://account-server.example.com
+        sip_domain = sip.example.com
