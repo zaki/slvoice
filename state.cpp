@@ -77,6 +77,11 @@ result ConnectorState::react (const AccountEvent& ev)
     return transit <AccountState> ();
 }
 
+result ConnectorState::react (const StopEvent& ev) 
+{ 
+    return transit <StopState> (); 
+}
+
 //=============================================================================
 AccountState::AccountState (my_context ctx) : 
     my_base (ctx), // required because we call context() from a constructor
@@ -121,6 +126,11 @@ result AccountState::react (const SessionEvent& ev)
     machine.server-> Send (mesg.str());
 
     return transit <SessionState> ();
+}
+
+result AccountState::react (const StopEvent& ev) 
+{ 
+    return transit <StopState> (); 
 }
 
 //=============================================================================

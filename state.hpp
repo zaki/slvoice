@@ -61,11 +61,14 @@ struct StartState : state <StartState, StateMachine>
 
 struct ConnectorState : state <ConnectorState, StateMachine> 
 {
-    typedef custom_reaction <AccountEvent> reactions;
+    typedef boost::mpl::list 
+        <custom_reaction <StopEvent>, 
+        custom_reaction <AccountEvent> > reactions;
 
     ConnectorState (my_context ctx);
     ~ConnectorState ();
 
+    result react (const StopEvent& ev);
     result react (const AccountEvent& ev);
 
     StateMachine& machine;
@@ -73,11 +76,14 @@ struct ConnectorState : state <ConnectorState, StateMachine>
 
 struct AccountState : state <AccountState, StateMachine> 
 {
-    typedef custom_reaction <SessionEvent> reactions;
+    typedef boost::mpl::list 
+        <custom_reaction <StopEvent>, 
+        custom_reaction <SessionEvent> > reactions;
 
     AccountState (my_context ctx);
     ~AccountState ();
 
+    result react (const StopEvent& ev);
     result react (const SessionEvent& ev);
 
     StateMachine& machine;
