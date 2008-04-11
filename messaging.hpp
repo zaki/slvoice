@@ -113,8 +113,12 @@ struct Request
     Request (ActionType t, int id = 0) 
         : type (t), sequenceid (id) {}
 
-    ActionType type;
+    ActionType type; 
     int sequenceid;
+    
+    // non-empty if request references a resource with a handle
+    // the meaning of the handle is relative to the type
+    string handle; 
 };
 
 struct AccountLoginRequest : public Request
@@ -125,7 +129,6 @@ struct AccountLoginRequest : public Request
     string name;
     string password;
     string uri;
-    string handle;
     string connector_handle;
 };
 
@@ -134,7 +137,6 @@ struct ConnectionCreateRequest : public Request
     ConnectionCreateRequest (int id = 0) 
         : Request (ConnectorCreate1, id) {}
 
-    string handle;
     string account_server;
 };
 
@@ -146,7 +148,6 @@ struct SessionCreateRequest : public Request
     string name;
     string password;
     string uri;
-    string handle;
     string connector_handle;
     string account_handle;
     string hash_algorithm;
@@ -159,28 +160,6 @@ struct PositionSetRequest : public Request
 
     VoiceOrientation speaker;
     VoiceOrientation listener;
-};
-
-struct AccountLogoutRequest : public Request
-{
-    AccountLogoutRequest (int id = 0) 
-        : Request (AccountLogout1, id) {}
-
-    string handle;
-};
-struct ConnectionTerminateRequest : public Request
-{
-    ConnectionTerminateRequest (int id = 0) 
-        : Request (ConnectorInitiateShutdown1, id) {}
-
-    string handle;
-};
-struct SessionTerminateRequest : public Request
-{
-    SessionTerminateRequest (int id = 0) 
-        : Request (SessionTerminate1, id) {}
-
-    string handle;
 };
 
 typedef list <const Request *> RequestQueue;

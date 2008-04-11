@@ -135,6 +135,19 @@ parse_account_login_request (const TiXmlDocument& doc)
     auto_ptr <AccountLoginRequest> req (new AccountLoginRequest);
 
     req->sequenceid = get_request_sequence_id (doc);
+    req->handle = get_request_parameter (doc, "ConnectorHandle");
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_account_logout_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Request> req (new Request (AccountLogout1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+    req->handle = get_request_parameter (doc, "AccountHandle");
 
     return auto_ptr <const Request> (req);
 }
@@ -146,7 +159,21 @@ parse_connection_create_request (const TiXmlDocument& doc)
     auto_ptr <ConnectionCreateRequest> req (new ConnectionCreateRequest);
 
     req->sequenceid = get_request_sequence_id (doc);
+    req->handle = get_request_parameter (doc, "AccountHandle");
+
     req->account_server = get_request_parameter (doc, "AccountManagementServer");
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_connection_shutdown_request (const TiXmlDocument& doc)
+{
+    auto_ptr <Request> req (new Request (ConnectorInitiateShutdown1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+    req->handle = get_request_parameter (doc, "ConnectorHandle");
 
     return auto_ptr <const Request> (req);
 }
@@ -158,6 +185,7 @@ parse_session_create_request (const TiXmlDocument& doc)
     auto_ptr <SessionCreateRequest> req (new SessionCreateRequest);
 
     req->sequenceid = get_request_sequence_id (doc);
+    req->handle = get_request_parameter (doc, "AccountHandle");
 
     return auto_ptr <const Request> (req);
 }
@@ -166,7 +194,7 @@ parse_session_create_request (const TiXmlDocument& doc)
 static auto_ptr <const Request> 
 parse_session_terminate_request (const TiXmlDocument& doc)
 {
-    auto_ptr <SessionTerminateRequest> req (new SessionTerminateRequest);
+    auto_ptr <Request> req (new Request (SessionTerminate1));
 
     req->sequenceid = get_request_sequence_id (doc);
     req->handle = get_request_parameter (doc, "SessionHandle");
@@ -291,6 +319,12 @@ parse_request (const TiXmlDocument& doc)
 
         case SessionTerminate1:
             return parse_session_terminate_request (doc);
+
+        case AccountLogout1:
+            return parse_account_login_request (doc);
+
+        case ConnectorInitiateShutdown1:
+            return parse_connection_shutdown_request (doc);
 
         default:
             cerr << "==== unable to parse request " << type << " ====" << endl;
