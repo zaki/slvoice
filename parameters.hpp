@@ -34,10 +34,10 @@ struct VoiceOrientation
 struct Voice
 {
     float mic_volume;
-    float mic_mute;
+    bool mic_mute;
 
     float speaker_volume;
-    float speaker_mute;
+    bool speaker_mute;
 
     VoiceOrientation listener;
     VoiceOrientation speaker;

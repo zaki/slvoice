@@ -159,7 +159,6 @@ parse_connection_create_request (const TiXmlDocument& doc)
     auto_ptr <ConnectionCreateRequest> req (new ConnectionCreateRequest);
 
     req->sequenceid = get_request_sequence_id (doc);
-    req->handle = get_request_parameter (doc, "AccountHandle");
 
     req->account_server = get_request_parameter (doc, "AccountManagementServer");
 
@@ -198,6 +197,18 @@ parse_session_terminate_request (const TiXmlDocument& doc)
 
     req->sequenceid = get_request_sequence_id (doc);
     req->handle = get_request_parameter (doc, "SessionHandle");
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+static auto_ptr <const Request> 
+parse_mute_mic (const TiXmlDocument& doc)
+{
+    auto_ptr <Request> req (new Request (ConnectorMuteLocalMic1));
+
+    req->sequenceid = get_request_sequence_id (doc);
+    req-> = get_request_parameter (doc, "Value");
 
     return auto_ptr <const Request> (req);
 }

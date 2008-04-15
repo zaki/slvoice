@@ -26,8 +26,7 @@ static void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
 
-    cout << "Incoming call from " 
-        << ci.remote_info.slen << ci.remote_info.ptr << endl;
+    cout << "Incoming call from " << ci.remote_info.ptr << endl;
 
     /* Automatically answer incoming calls with 200/OK */
     pjsua_call_answer (call_id, 200, NULL, NULL);
@@ -40,8 +39,7 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
 
-    cout << "Call " << call_id << "state= " 
-        << ci.state_text.slen << ci.state_text.ptr << endl;
+    cout << "Call " << call_id << " state= " << ci.state_text.ptr << endl;
 }
 
 //=============================================================================
