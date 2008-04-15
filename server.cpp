@@ -160,6 +160,17 @@ void Server::process_request_queue_ ()
             }
             break;
 
+        case ConnectorMuteLocalMic1:
+        case ConnectorMuteLocalSpeaker1:
+        case ConnectorSetLocalMicVolume1:
+        case ConnectorSetLocalSpeakerVolume1:
+            {
+                HardwareSetEvent ev;
+                pop_messages_on_event_ (ev);
+                state_.process_event (ev);
+            }
+            break;
+
         default:
             {
                 //MessageReceivedEvent ev;

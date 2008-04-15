@@ -32,6 +32,7 @@ struct AccountEvent : public ViewerEvent, event <AccountEvent> {};
 struct ConnectionEvent : public ViewerEvent, event <ConnectionEvent> {};
 struct SessionEvent : public ViewerEvent, event <SessionEvent> {};
 struct PositionEvent : public ViewerEvent, event <PositionEvent> {};
+struct HardwareSetEvent : public ViewerEvent, event <HardwareSetEvent> {};
 struct StopEvent : public ViewerEvent, event <StopEvent> {};
 
 struct StateMachine : state_machine <StateMachine, StartState> 
@@ -93,12 +94,14 @@ struct SessionState : state <SessionState, StateMachine>
 {
     typedef boost::mpl::list 
         <custom_reaction <StopEvent>, 
+        custom_reaction <HardwareSetEvent>, 
         custom_reaction <PositionEvent> > reactions;
 
     SessionState (my_context ctx);
     ~SessionState (); 
 
     result react (const StopEvent& ev);
+    result react (const HardwareSetEvent& ev);
     result react (const PositionEvent& ev);
 
     StateMachine& machine;

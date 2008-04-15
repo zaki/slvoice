@@ -121,9 +121,9 @@ struct Request
     string handle; 
 };
 
-struct SetHardwareRequest : public Request
+struct HardwareSetRequest : public Request
 {
-    SetHardwareRequest (ActionType t, int id = 0) 
+    HardwareSetRequest (ActionType t, int id = 0) 
         : Request (t, id) {}
 
     string micmute;

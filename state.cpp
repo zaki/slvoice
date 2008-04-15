@@ -5,6 +5,7 @@
 
 #include <main.h>
 #include <state.hpp>
+#include <boost/lexical_cast.hpp>
 
 //=============================================================================
 StartState::StartState (my_context ctx) : 
@@ -180,6 +181,50 @@ result SessionState::react (const PositionEvent& ev)
 
         machine.voice.speaker = pos->speaker;
         machine.voice.listener = pos->listener;
+    }
+
+    return discard_event (); 
+}
+
+result SessionState::react (const HardwareSetEvent& ev) 
+{ 
+    const Request *req (ev.messages.back());
+    const HardwareSetRequest *set 
+        (static_cast <const HardwareSetRequest*> (req));
+
+    try
+    {
+        if ((req->type == ConnectorMuteLocalMic1) 
+                && set->micmute.size())
+
+            machine.voice.mic_mute = 
+                boost::lexical_cast <bool> (set->micmute);
+
+        
+        if ((req->type == ConnectorSetLocalMicVolume1) 
+                && set->micvol.size())
+
+            machine.voice.mic_volume = 
+                boost::lexical_cast <float> (set->micvol);
+
+        
+        if ((req->type == ConnectorMuteLocalSpeaker1) 
+                && set->speakermute.size())
+
+            machine.voice.speaker_mute = 
+                boost::lexical_cast <bool> (set->speakermute);
+
+        
+        if ((req->type == ConnectorSetLocalSpeakerVolume1) 
+                && set->speakervol.size())
+
+            machine.voice.speaker_volume = 
+                boost::lexical_cast <float> (set->speakervol);
+    }
+    
+    catch (boost::bad_lexical_cast& e) 
+    {
+        cout << "unable to parse hardware setting " << e.what() << endl;
     }
 
     return discard_event (); 
