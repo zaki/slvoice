@@ -205,10 +205,11 @@ parse_session_terminate_request (const TiXmlDocument& doc)
 static auto_ptr <const Request> 
 parse_mute_mic (const TiXmlDocument& doc)
 {
-    auto_ptr <Request> req (new Request (ConnectorMuteLocalMic1));
+    auto_ptr <SetHardwareRequest> req 
+        (new SetHardwareRequest (ConnectorMuteLocalMic1));
 
     req->sequenceid = get_request_sequence_id (doc);
-    req-> = get_request_parameter (doc, "Value");
+    req->micmute = get_request_parameter (doc, "Value");
 
     return auto_ptr <const Request> (req);
 }
