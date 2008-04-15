@@ -194,36 +194,43 @@ result SessionState::react (const HardwareSetEvent& ev)
 
     try
     {
+        stringstream ss;
+        ss << boolalpha;
+
         if ((req->type == ConnectorMuteLocalMic1) 
                 && set->micmute.size())
-
-            machine.voice.mic_mute = 
-                boost::lexical_cast <bool> (set->micmute);
+        {
+            ss.str (set->micmute);
+            ss >> machine.voice.mic_mute;
+        }
 
         
         if ((req->type == ConnectorSetLocalMicVolume1) 
                 && set->micvol.size())
-
-            machine.voice.mic_volume = 
-                boost::lexical_cast <float> (set->micvol);
-
+        {
+            ss.str (set->micvol);
+            ss >> machine.voice.mic_volume;
+        }
         
         if ((req->type == ConnectorMuteLocalSpeaker1) 
                 && set->speakermute.size())
-
-            machine.voice.speaker_mute = 
-                boost::lexical_cast <bool> (set->speakermute);
-
+        {
+            ss.str (set->speakermute);
+            ss >> machine.voice.speaker_mute;
+        }
         
         if ((req->type == ConnectorSetLocalSpeakerVolume1) 
                 && set->speakervol.size())
-
-            machine.voice.speaker_volume = 
-                boost::lexical_cast <float> (set->speakervol);
+        {
+            ss.str (set->speakervol);
+            ss >> machine.voice.speaker_volume;
+        }
     }
     
     catch (boost::bad_lexical_cast& e) 
     {
+        // we're assuming that failure to parse one legit 
+        // field is a sign that something serious is broken so just discard
         cout << "unable to parse hardware setting " << e.what() << endl;
     }
 
