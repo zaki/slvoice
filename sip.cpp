@@ -5,7 +5,6 @@
 
 #include <main.h>
 #include <sip.hpp>
-#include <fstream>
 
 
 //=============================================================================
@@ -39,7 +38,36 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
 
+    StateMachine& sm (glb_server->GetStateMachine());
+    
     cout << "Call " << call_id << " state= " << ci.state_text.ptr << endl;
+    /*PJSIP_INV_STATE_NULL 	Before INVITE is sent or received
+      PJSIP_INV_STATE_CALLING 	After INVITE is sent
+      PJSIP_INV_STATE_INCOMING 	After INVITE is received.
+      PJSIP_INV_STATE_EARLY 	After response with To tag.
+      PJSIP_INV_STATE_CONNECTING 	After 2xx is sent/received.
+      PJSIP_INV_STATE_CONFIRMED 	After ACK is sent/received.
+      PJSIP_INV_STATE_DISCONNECTED 	Session is terminated.*/
+
+    switch (ci.state)
+    {
+        case PJSIP_INV_STATE_CONFIRMED:
+            {
+                DialSucceedEvent ev;
+                sm.process_event (ev);
+            }
+            break;
+
+        case PJSIP_INV_STATE_DISCONNECTED:
+            {
+                DialFailedEvent ev;
+                sm.process_event (ev);
+            }
+            break;
+
+        default:
+            break;
+    }
 }
 
 //=============================================================================
@@ -63,89 +91,6 @@ static void error_exit (const char *title, pj_status_t status)
     pjsua_perror ("voice app", title, status);
     pjsua_destroy ();
     exit (1);
-}
-
-//=============================================================================
-static string get_line_ (istream& in)
-{
-    string line;
-    
-    ios_base::fmtflags ff (in.flags());
-    in.setf (ios_base::skipws);
-    getline (in, line); 
-    in.flags (ff);
-    
-    return line;
-}
-
-static string take_after_ (string pre, string s)
-{
-    size_t p (s.find (pre));
-    return (p != string::npos)? s.substr (p + pre.size()) : string();
-}
-
-static string take_before_ (string pre, string s)
-{
-    size_t p (s.find (pre));
-    return (p != string::npos)? s.substr (0, p) : s;
-}
-
-static pair <string,string> parse_sip_uri_ (string uri)
-{
-    static const string sip_ ("sip:");
-    static const string at_ ("@");
-
-    string addr (take_after_ (sip_, uri));
-    string target (take_before_ (at_, addr));
-    string domain (take_after_ (at_, addr));
-
-    return make_pair (target, domain);
-}
-
-//=============================================================================
-istream& operator>> (istream& in, SIPUserInfo& usr)
-{
-    string line (get_line_ (in));
-    pair <string,string> result (parse_sip_uri_ (line));
-
-    usr.name = result.first;
-    usr.domain = result.second;
-
-    return in;
-}
-
-//=============================================================================
-istream& operator>> (istream& in, SIPServerInfo& srv)
-{
-    string line (get_line_ (in));
-    pair <string,string> result (parse_sip_uri_ (line));
-
-    srv.conference = result.first;
-    srv.domain = result.second;
-
-    return in;
-}
-
-//=============================================================================
-auto_ptr <SIPConference> 
-new_sip_conference_from_file (const string& filename)
-{
-    SIPServerInfo sinfo;
-    SIPUserInfo uinfo;
-
-    ifstream file (filename.c_str());
-    if (!file) throw runtime_error ("unable to open sip.conf file");
-
-    file >> sinfo;
-    file >> uinfo;
-    file.close();
-
-    auto_ptr <SIPConference> bridge (new SIPConference (sinfo));
-
-    bridge-> Register (uinfo);
-    bridge-> Join ();
-
-    return bridge;
 }
 
 //=============================================================================
@@ -253,3 +198,63 @@ void SIPConference::stop_sip_stack_ ()
     pjsua_destroy (); 
 }
 
+//=============================================================================
+static string get_line_ (istream& in)
+{
+    string line;
+    
+    ios_base::fmtflags ff (in.flags());
+    in.setf (ios_base::skipws);
+    getline (in, line); 
+    in.flags (ff);
+    
+    return line;
+}
+
+static string take_after_ (string pre, string s)
+{
+    size_t p (s.find (pre));
+    return (p != string::npos)? s.substr (p + pre.size()) : string();
+}
+
+static string take_before_ (string pre, string s)
+{
+    size_t p (s.find (pre));
+    return (p != string::npos)? s.substr (0, p) : s;
+}
+
+static pair <string,string> parse_sip_uri_ (string uri)
+{
+    static const string sip_ ("sip:");
+    static const string at_ ("@");
+
+    string addr (take_after_ (sip_, uri));
+    string target (take_before_ (at_, addr));
+    string domain (take_after_ (at_, addr));
+
+    return make_pair (target, domain);
+}
+
+//=============================================================================
+istream& operator>> (istream& in, SIPUserInfo& usr)
+{
+    string line (get_line_ (in));
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    usr.name = result.first;
+    usr.domain = result.second;
+
+    return in;
+}
+
+//=============================================================================
+istream& operator>> (istream& in, SIPServerInfo& srv)
+{
+    string line (get_line_ (in));
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    srv.conference = result.first;
+    srv.domain = result.second;
+
+    return in;
+}

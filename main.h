@@ -8,6 +8,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <utility>
@@ -24,5 +25,9 @@ using namespace std;
 #include <sip.hpp>
 #include <state.hpp>
 #include <server.hpp>
+
+// global reference to server instance 
+// created in main.cpp
+extern Server *glb_server;
 
 #endif //_MAIN_H_

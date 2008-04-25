@@ -23,6 +23,7 @@ struct StartState;
 struct ConnectorState;
 struct AccountState;
 struct SessionState;
+struct DialingState;
 struct StopState;
 
 struct ViewerEvent { RequestQueue messages; };
@@ -33,19 +34,16 @@ struct ConnectionEvent : public ViewerEvent, event <ConnectionEvent> {};
 struct SessionEvent : public ViewerEvent, event <SessionEvent> {};
 struct PositionEvent : public ViewerEvent, event <PositionEvent> {};
 struct HardwareSetEvent : public ViewerEvent, event <HardwareSetEvent> {};
+struct DialFailedEvent : public ViewerEvent, event <DialFailedEvent> {};
+struct DialSucceedEvent : public ViewerEvent, event <DialSucceedEvent> {};
 struct StopEvent : public ViewerEvent, event <StopEvent> {};
 
 struct StateMachine : state_machine <StateMachine, StartState> 
 {
-    StateMachine (Server *s) : server (s), bridge (NULL) {}
-    
     Voice voice; // the current voice state
     Account account; // the current account state
     Connection connection; // the current connector state
     Session session; // the current session state
-
-    Server *server; // for sending messages across the network
-    auto_ptr <SIPConference> bridge; // for creating a conference bridge
 };
 
 struct StartState : state <StartState, StateMachine> 
@@ -106,6 +104,22 @@ struct SessionState : state <SessionState, StateMachine>
 
     StateMachine& machine;
 };
+
+struct DialingState : state <DialingState, StateMachine> 
+{
+    typedef boost::mpl::list 
+        <custom_reaction <DialSucceedEvent>, 
+        custom_reaction <DialFailedEvent> > reactions;
+
+    DialingState (my_context ctx);
+    ~DialingState (); 
+
+    result react (const DialSucceedEvent& ev);
+    result react (const DialFailedEvent& ev);
+
+    StateMachine& machine;
+};
+
 
 struct StopState : state <StopState, StateMachine> 
 {

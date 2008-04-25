@@ -38,7 +38,7 @@ result StartState::react (const ConnectionEvent& ev)
     mesg << format_response (conncreate);
     mesg << endmesg;
 
-    machine.server-> Send (mesg.str());
+    glb_server-> Send (mesg.str());
 
     return transit <ConnectorState> ();
 }
@@ -73,7 +73,7 @@ result ConnectorState::react (const AccountEvent& ev)
     mesg << format_response (loginstate);
     mesg << endmesg;
 
-    machine.server-> Send (mesg.str());
+    glb_server-> Send (mesg.str());
 
     return transit <AccountState> ();
 }
@@ -124,12 +124,45 @@ result AccountState::react (const SessionEvent& ev)
     mesg << format_response (partprop);
     mesg << endmesg;
 
-    machine.server-> Send (mesg.str());
+    glb_server-> Send (mesg.str());
 
-    return transit <SessionState> ();
+    return transit <DialingState> ();
 }
 
 result AccountState::react (const StopEvent& ev) 
+{ 
+    return transit <StopState> (); 
+}
+
+//=============================================================================
+DialingState::DialingState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "dialing entered" << endl; 
+
+    // connect to conference
+    try
+    {
+        glb_server-> Conference ("sip.conf");
+    }
+    catch (runtime_error& e)
+    {
+        cerr << e.what() << endl;
+    }
+}
+
+DialingState::~DialingState () 
+{ 
+    cout << "dialing exited" << endl; 
+}
+
+result DialingState::react (const DialSucceedEvent& ev) 
+{ 
+    return transit <SessionState> (); 
+}
+
+result DialingState::react (const DialFailedEvent& ev) 
 { 
     return transit <StopState> (); 
 }
@@ -140,16 +173,6 @@ SessionState::SessionState (my_context ctx) :
     machine (context <StateMachine>())
 { 
     cout << "session entered" << endl; 
-
-    // connect to conference
-    try
-    {
-        machine.bridge = new_sip_conference_from_file ("sip.conf");
-    }
-    catch (runtime_error& e)
-    {
-        cerr << e.what() << endl;
-    }
 }
 
 SessionState::~SessionState () 
@@ -166,14 +189,14 @@ SessionState::~SessionState ()
 
     cout << mesg.str() << endl;
 
-    machine.server-> Send (mesg.str());
+    glb_server-> Send (mesg.str());
 
     cout << "session exited" << endl; 
 }
 
 result SessionState::react (const PositionEvent& ev) 
 { 
-    const Request *req (ev.messages.back());
+    const Request *req (ev.messages.back()); // last msg triggered the event
     if (req->type == SessionSet3DPosition1)
     {
         const PositionSetRequest *pos 
@@ -188,7 +211,7 @@ result SessionState::react (const PositionEvent& ev)
 
 result SessionState::react (const HardwareSetEvent& ev) 
 { 
-    const Request *req (ev.messages.back());
+    const Request *req (ev.messages.back()); // last msg triggered the event
     const HardwareSetRequest *set 
         (static_cast <const HardwareSetRequest*> (req));
 
@@ -262,7 +285,7 @@ StopState::StopState (my_context ctx) :
 
     cout << mesg.str() << endl;
 
-    machine.server-> Send (mesg.str());
+    glb_server-> Send (mesg.str());
 
     cout << "stopped entered" << endl; 
 }

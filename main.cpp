@@ -6,6 +6,11 @@
 #include <main.h>
 
 
+// global reference to server instance
+// used to send messages from state machine or SIP stack
+Server *glb_server (NULL);
+
+
 //=============================================================================
 // program functions
 void dump_to_stdout (TiXmlNode* pParent, unsigned int indent = 0);
@@ -28,8 +33,8 @@ int main (int argc, char **argv)
 
     try
     {
-        Server server (port);
-        server.Start ();
+        glb_server = new Server (port);
+        glb_server-> Start ();
     }
     catch (exception &e)
     {
@@ -37,6 +42,7 @@ int main (int argc, char **argv)
         throw;
     }
 
+    // Server leaks, but should always have exactly the same lifetime as app
     return EXIT_SUCCESS;
 }
 

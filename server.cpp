@@ -8,7 +8,6 @@
 
 //=============================================================================
 Server::Server (int port) : 
-    state_ (this), 
     sock_ (NULL),
     port_ (port), 
     bufsize_ (4096), 
@@ -87,7 +86,26 @@ void Server::Send (const string& m)
     if (!(sock_.get()))
         throw SocketLogicException ("server has no connection");
 
+    cout << m << endl;
     sock_->write (m.c_str(), m.size()); 
+}
+
+//=============================================================================
+void Server::Conference (const string& filename)
+{
+    SIPServerInfo sinfo;
+    SIPUserInfo uinfo;
+
+    ifstream file (filename.c_str());
+    if (!file) throw runtime_error ("unable to open sip.conf file");
+
+    file >> sinfo;
+    file >> uinfo;
+    file.close();
+
+    activeconference_.reset (new SIPConference (sinfo));
+    activeconference_-> Register (uinfo);
+    activeconference_-> Join ();
 }
 
 //=============================================================================
@@ -179,4 +197,3 @@ void Server::process_request_queue_ ()
             break;
     }
 }
-

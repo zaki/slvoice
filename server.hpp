@@ -20,7 +20,10 @@ class Server
         ~Server ();
         
         void Start ();
-        void Send (const string& m);
+        void Send (const string&);
+        void Conference (const string&);
+
+        StateMachine& GetStateMachine () { return state_; }
 
     private:
         void enqueue_request_ (char* mesg);
@@ -28,16 +31,18 @@ class Server
         void process_request_queue_ ();
 
     private:
-        RequestQueue queue_;
-        StateMachine state_;
-
-        TCPSocketWrapper server_;
-        auto_ptr <TCPSocketWrapper> sock_;
-
-    private:
         const int port_;
         const size_t bufsize_;
         auto_ptr <char> buf_;
+
+        TCPSocketWrapper server_;
+        auto_ptr <TCPSocketWrapper> sock_;
+        
+        RequestQueue queue_;
+
+    private:
+        StateMachine state_;
+        auto_ptr <SIPConference> activeconference_;
 
     private:
         Server (const Server&);

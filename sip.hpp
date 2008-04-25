@@ -44,10 +44,10 @@ class SIPConference
         typedef list <SIPUserInfo> SIPUserList;
 
         SIPConference (); 
-        SIPConference (const SIPServerInfo& s);
+        SIPConference (const SIPServerInfo&);
         ~SIPConference (); 
 
-        void Register (const SIPUserInfo& user); 
+        void Register (const SIPUserInfo&); 
         void Join (); 
         void Leave (); 
 
@@ -68,9 +68,7 @@ class SIPConference
         void operator= (const SIPConference&);
 };
 
-istream& operator>> (istream& in, const SIPUserInfo& usr);
-istream& operator>> (istream& in, const SIPServerInfo& srv);
-
-auto_ptr <SIPConference> new_sip_conference_from_file (const string& filename);
+istream& operator>> (istream&, SIPUserInfo&);
+istream& operator>> (istream&, SIPServerInfo&);
 
 #endif //_SIP_HPP
