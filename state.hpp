@@ -20,30 +20,32 @@ using namespace boost::statechart;
 class Server;
 struct StateMachine;
 struct StartState;
-struct ConnectorState;
+struct ConnectionState;
 struct AccountState;
 struct SessionState;
 struct DialingState;
 struct StopState;
 
-struct ViewerEvent { RequestQueue messages; };
+struct Event { RequestQueue messages; };
 
-struct StartEvent : public ViewerEvent, event <StartEvent> {};
-struct AccountEvent : public ViewerEvent, event <AccountEvent> {};
-struct ConnectionEvent : public ViewerEvent, event <ConnectionEvent> {};
-struct SessionEvent : public ViewerEvent, event <SessionEvent> {};
-struct PositionEvent : public ViewerEvent, event <PositionEvent> {};
-struct HardwareSetEvent : public ViewerEvent, event <HardwareSetEvent> {};
-struct DialFailedEvent : public ViewerEvent, event <DialFailedEvent> {};
-struct DialSucceedEvent : public ViewerEvent, event <DialSucceedEvent> {};
-struct StopEvent : public ViewerEvent, event <StopEvent> {};
+struct StartEvent : public Event, event <StartEvent> {};
+struct AccountEvent : public Event, event <AccountEvent> {};
+struct ConnectionEvent : public Event, event <ConnectionEvent> {};
+struct SessionEvent : public Event, event <SessionEvent> {};
+struct PositionEvent : public Event, event <PositionEvent> {};
+struct AudioEvent : public Event, event <AudioEvent> {};
+struct DialFailedEvent : public Event, event <DialFailedEvent> {};
+struct DialSucceedEvent : public Event, event <DialSucceedEvent> {};
+struct StopEvent : public Event, event <StopEvent> {};
 
 struct StateMachine : state_machine <StateMachine, StartState> 
 {
-    Voice voice; // the current voice state
+    Audio audio; // the current audio state
     Account account; // the current account state
     Connection connection; // the current connector state
     Session session; // the current session state
+    Orientation speaker; // the position of the speaking voice
+    Orientation listener; // the position of the listener to the speaker
 };
 
 struct StartState : state <StartState, StateMachine> 
@@ -58,14 +60,14 @@ struct StartState : state <StartState, StateMachine>
     StateMachine& machine;
 };
 
-struct ConnectorState : state <ConnectorState, StateMachine> 
+struct ConnectionState : state <ConnectionState, StateMachine> 
 {
     typedef boost::mpl::list 
         <custom_reaction <StopEvent>, 
         custom_reaction <AccountEvent> > reactions;
 
-    ConnectorState (my_context ctx);
-    ~ConnectorState ();
+    ConnectionState (my_context ctx);
+    ~ConnectionState ();
 
     result react (const StopEvent& ev);
     result react (const AccountEvent& ev);
@@ -92,14 +94,14 @@ struct SessionState : state <SessionState, StateMachine>
 {
     typedef boost::mpl::list 
         <custom_reaction <StopEvent>, 
-        custom_reaction <HardwareSetEvent>, 
+        custom_reaction <AudioEvent>, 
         custom_reaction <PositionEvent> > reactions;
 
     SessionState (my_context ctx);
     ~SessionState (); 
 
     result react (const StopEvent& ev);
-    result react (const HardwareSetEvent& ev);
+    result react (const AudioEvent& ev);
     result react (const PositionEvent& ev);
 
     StateMachine& machine;

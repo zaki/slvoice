@@ -1,4 +1,4 @@
-/* messaging.hpp -- messaging module
+/* parsing.hpp -- parsing module
  *
  *			Ryan McDougall -- 2008
  */
@@ -80,13 +80,13 @@ enum ActionType
 struct Request 
 {
         Request (ActionType t, int id = 0) 
-            : type_ (t), sequenceid_ (id) {}
+            : Type (t), SequenceId (id) {}
 
         int SequenceId;
         ActionType Type; 
 
         virtual void SetState (Account& state) const;
-        virtual void SetState (Connector& state) const;
+        virtual void SetState (Connection& state) const;
         virtual void SetState (Session& state) const;
         virtual void SetState (Audio& state) const;
         virtual void SetState (Orientation& state) const;
@@ -170,14 +170,6 @@ struct AuxSetRenderDeviceRequest : public Request
             : Request (AuxSetRenderDevice1, id) {}
 
         // TODO: a list of Rend devs
-};
-
-struct AuxSetMicLevelRequest : public Request 
-{
-        AuxSetMicLevelRequest (int id = 0)
-            : Request (AuxSetMicLevel1, id) {}
-
-        string Level;
 };
 
 struct AuxSetSpeakerLevelRequest : public Request 
@@ -351,12 +343,16 @@ class RequestParser
 
     private:
         int get_sequence_id_ ();
+        string get_action_ ();
         ActionType get_action_type_ ();
 
-        TiXmlElement* get_root_element_ (const string&);
-        TiXmlElement* get_element_ (const TiXmlElement*, const string&);
+        const TiXmlElement* get_root_element_ (const string&);
+        const TiXmlElement* get_element_ (const TiXmlElement*, const string&);
         string get_root_text_ (const string&);
         string get_text_ (const TiXmlElement*, const string&);
+
+        void parse_vector_ (const TiXmlElement *vector, float buf [3]);
+        Orientation parse_voice_orientation_ (const TiXmlElement *orient);
 
     private:
         auto_ptr <const Request> parse_AccountLogin_ ();
@@ -389,7 +385,7 @@ class RequestParser
     private:
         RequestParser ();
         RequestParser (const RequestParser&);
-        void operation= (const RequestParser&);
+        void operator= (const RequestParser&);
 };
 
 //=============================================================================

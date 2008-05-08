@@ -27,8 +27,8 @@ class Server
 
     private:
         void enqueue_request_ (char* mesg);
-        void pop_messages_on_event_ (ViewerEvent& ev);
         void process_request_queue_ ();
+        void flush_messages_on_event_ (Event& ev);
 
     private:
         const int port_;

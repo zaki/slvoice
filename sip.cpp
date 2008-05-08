@@ -1,4 +1,4 @@
-/* messaging.cpp -- messaging module
+/* sip.cpp -- sip module
  *
  *			Ryan McDougall -- 2008
  */

@@ -23,6 +23,15 @@ StartState::~StartState ()
 result StartState::react (const ConnectionEvent& ev) 
 { 
     cout << "start state react" << endl;
+    return transit <ConnectionState> ();
+}
+
+//=============================================================================
+ConnectionState::ConnectionState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "connector entered" << endl; 
     ostringstream mesg;
 
     ResponseMessage getcap (AuxGetCaptureDevices1String), 
@@ -39,26 +48,30 @@ result StartState::react (const ConnectionEvent& ev)
     mesg << endmesg;
 
     glb_server-> Send (mesg.str());
-
-    return transit <ConnectorState> ();
 }
 
-//=============================================================================
-ConnectorState::ConnectorState (my_context ctx) : 
-    my_base (ctx), // required because we call context() from a constructor
-    machine (context <StateMachine>())
-{ 
-    cout << "connector entered" << endl; 
-}
-
-ConnectorState::~ConnectorState () 
+ConnectionState::~ConnectionState () 
 { 
     cout << "connector exited" << endl; 
 }
 
-result ConnectorState::react (const AccountEvent& ev) 
+result ConnectionState::react (const AccountEvent& ev) 
 {
     cout << "connector state react" << endl;
+    return transit <AccountState> ();
+}
+
+result ConnectionState::react (const StopEvent& ev) 
+{ 
+    return transit <StopState> (); 
+}
+
+//=============================================================================
+AccountState::AccountState (my_context ctx) : 
+    my_base (ctx), // required because we call context() from a constructor
+    machine (context <StateMachine>())
+{ 
+    cout << "account entered" << endl; 
     ostringstream mesg;
 
     ResponseMessage login (AccountLogin1String);
@@ -74,21 +87,6 @@ result ConnectorState::react (const AccountEvent& ev)
     mesg << endmesg;
 
     glb_server-> Send (mesg.str());
-
-    return transit <AccountState> ();
-}
-
-result ConnectorState::react (const StopEvent& ev) 
-{ 
-    return transit <StopState> (); 
-}
-
-//=============================================================================
-AccountState::AccountState (my_context ctx) : 
-    my_base (ctx), // required because we call context() from a constructor
-    machine (context <StateMachine>())
-{ 
-    cout << "account entered" << endl; 
 }
 
 AccountState::~AccountState () 
@@ -99,33 +97,8 @@ AccountState::~AccountState ()
 result AccountState::react (const SessionEvent& ev) 
 { 
     cout << "account state react" << endl;
-    ostringstream mesg;
 
-    ResponseMessage sessioncreate (SessionCreate1String);
-    EventMessage sessionstate (SessionStateChangeEventString),
-                 partstate (ParticipantStateChangeEventString),
-                 partprop (ParticipantPropertiesEventString);
-
-    string handle ("xxxx");
-    sessioncreate.handle = handle;
-
-    sessionstate.state = 4;
-    sessionstate.params.push_back (make_pair ("SessionHandle", handle));
-
-    partstate.state = 7;
-    partstate.params.push_back (make_pair ("SessionHandle", handle));
-
-    mesg << format_response (sessioncreate);
-    mesg << endmesg;
-    mesg << format_response (sessionstate);
-    mesg << endmesg;
-    mesg << format_response (partstate);
-    mesg << endmesg;
-    mesg << format_response (partprop);
-    mesg << endmesg;
-
-    glb_server-> Send (mesg.str());
-
+    ev.messages.back()-> SetState (machine.session);
     return transit <DialingState> ();
 }
 
@@ -173,6 +146,33 @@ SessionState::SessionState (my_context ctx) :
     machine (context <StateMachine>())
 { 
     cout << "session entered" << endl; 
+    ostringstream mesg;
+
+    ResponseMessage sessioncreate (SessionCreate1String);
+    EventMessage sessionstate (SessionStateChangeEventString),
+                 partstate (ParticipantStateChangeEventString),
+                 partprop (ParticipantPropertiesEventString);
+
+    string handle ("xxxx");
+    sessioncreate.handle = handle;
+
+    sessionstate.state = 4;
+    sessionstate.params.push_back (make_pair ("SessionHandle", handle));
+
+    partstate.state = 7;
+    partstate.params.push_back (make_pair ("SessionHandle", handle));
+
+    mesg << format_response (sessioncreate);
+    mesg << endmesg;
+    mesg << format_response (sessionstate);
+    mesg << endmesg;
+    mesg << format_response (partstate);
+    mesg << endmesg;
+    mesg << format_response (partprop);
+    mesg << endmesg;
+
+    glb_server-> Send (mesg.str());
+
 }
 
 SessionState::~SessionState () 
@@ -196,67 +196,13 @@ SessionState::~SessionState ()
 
 result SessionState::react (const PositionEvent& ev) 
 { 
-    const Request *req (ev.messages.back()); // last msg triggered the event
-    if (req->type == SessionSet3DPosition1)
-    {
-        const PositionSetRequest *pos 
-            (static_cast <const PositionSetRequest*> (req));
-
-        machine.voice.speaker = pos->speaker;
-        machine.voice.listener = pos->listener;
-    }
-
+    //ev.messages.back()-> SetState (machine.);
     return discard_event (); 
 }
 
-result SessionState::react (const HardwareSetEvent& ev) 
+result SessionState::react (const AudioEvent& ev) 
 { 
-    const Request *req (ev.messages.back()); // last msg triggered the event
-    const HardwareSetRequest *set 
-        (static_cast <const HardwareSetRequest*> (req));
-
-    try
-    {
-        stringstream ss;
-        ss << boolalpha;
-
-        if ((req->type == ConnectorMuteLocalMic1) 
-                && set->micmute.size())
-        {
-            ss.str (set->micmute);
-            ss >> machine.voice.mic_mute;
-        }
-
-        
-        if ((req->type == ConnectorSetLocalMicVolume1) 
-                && set->micvol.size())
-        {
-            ss.str (set->micvol);
-            ss >> machine.voice.mic_volume;
-        }
-        
-        if ((req->type == ConnectorMuteLocalSpeaker1) 
-                && set->speakermute.size())
-        {
-            ss.str (set->speakermute);
-            ss >> machine.voice.speaker_mute;
-        }
-        
-        if ((req->type == ConnectorSetLocalSpeakerVolume1) 
-                && set->speakervol.size())
-        {
-            ss.str (set->speakervol);
-            ss >> machine.voice.speaker_volume;
-        }
-    }
-    
-    catch (boost::bad_lexical_cast& e) 
-    {
-        // we're assuming that failure to parse one legit 
-        // field is a sign that something serious is broken so just discard
-        cout << "unable to parse hardware setting " << e.what() << endl;
-    }
-
+    ev.messages.back()-> SetState (machine.audio);
     return discard_event (); 
 }
 

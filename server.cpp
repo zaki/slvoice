@@ -111,21 +111,10 @@ void Server::Conference (const string& filename)
 //=============================================================================
 void Server::enqueue_request_ (char* mesg)
 {
-    TiXmlDocument doc;
-    doc.Parse (mesg);
+    RequestParser parser (mesg);
+    auto_ptr <const Request> req (parser.Parse());
 
-    auto_ptr <const Request> req (parse_request (doc));
-
-    if (req.get()) // is null on parse failure
-        queue_.push_back (req.release());
-}
-
-//=============================================================================
-void Server::pop_messages_on_event_ (ViewerEvent& ev)
-{
-    ev.messages.splice 
-        (ev.messages.end(), 
-         queue_, queue_.begin(), queue_.end());
+    queue_.push_back (req.release());
 }
 
 //=============================================================================
@@ -134,12 +123,12 @@ void Server::process_request_queue_ ()
     if (queue_.size() == 0)
         return;
 
-    switch (queue_.back()->type)
+    switch (queue_.back()->Type)
     {
         case AccountLogin1:
             {
                 AccountEvent ev;
-                pop_messages_on_event_ (ev);
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -147,7 +136,7 @@ void Server::process_request_queue_ ()
         case ConnectorCreate1:
             {
                 ConnectionEvent ev;
-                pop_messages_on_event_ (ev);
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -155,7 +144,7 @@ void Server::process_request_queue_ ()
         case SessionCreate1:
             {
                 SessionEvent ev;
-                pop_messages_on_event_ (ev);
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -163,7 +152,7 @@ void Server::process_request_queue_ ()
         case SessionSet3DPosition1:
             {
                 PositionEvent ev;
-                pop_messages_on_event_ (ev);
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -173,7 +162,7 @@ void Server::process_request_queue_ ()
         case SessionTerminate1:
             {
                 StopEvent ev;
-                pop_messages_on_event_ (ev);
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -183,8 +172,8 @@ void Server::process_request_queue_ ()
         case ConnectorSetLocalMicVolume1:
         case ConnectorSetLocalSpeakerVolume1:
             {
-                HardwareSetEvent ev;
-                pop_messages_on_event_ (ev);
+                AudioEvent ev;
+                flush_messages_on_event_ (ev);
                 state_.process_event (ev);
             }
             break;
@@ -197,3 +186,12 @@ void Server::process_request_queue_ ()
             break;
     }
 }
+
+//=============================================================================
+void Server::flush_messages_on_event_ (Event& ev)
+{
+    ev.messages.splice 
+        (ev.messages.end(), 
+         queue_, queue_.begin(), queue_.end());
+}
+

@@ -8,8 +8,8 @@
 #include <cstring>
 
 //=============================================================================
-static inline void copy_VoiceOrientation_ 
-    (const VoiceOrientation& src, VoiceOrientation& dst)
+static inline void copy_Orientation_ 
+    (const Orientation& src, Orientation& dst)
 {
     static const size_t size_ (3*sizeof(float));
     memcpy (dst.position, src.position, size_);
@@ -19,7 +19,7 @@ static inline void copy_VoiceOrientation_
     memcpy (dst.left, src.left, size_);
 }
 
-VoiceOrientation::VoiceOrientation ()
+Orientation::Orientation ()
 {
     fill_n (position, 3, 0.0f);
     fill_n (velocity, 3, 0.0f);
@@ -28,15 +28,15 @@ VoiceOrientation::VoiceOrientation ()
     fill_n (left, 3, 0.0f);
 }
 
-VoiceOrientation::VoiceOrientation (const VoiceOrientation& rhs)
+Orientation::Orientation (const Orientation& rhs)
 {
-    copy_VoiceOrientation_ (rhs, *this);
+    copy_Orientation_ (rhs, *this);
 }
 
-VoiceOrientation& VoiceOrientation::operator= (const VoiceOrientation& rhs)
+Orientation& Orientation::operator= (const Orientation& rhs)
 {
     if (this != &rhs)
-        copy_VoiceOrientation_ (rhs, *this);
+        copy_Orientation_ (rhs, *this);
 
     return *this;
 }

@@ -1,10 +1,10 @@
-/* messaging.cpp -- messaging module
+/* parsing.cpp -- parsing module
  *
  *			Ryan McDougall -- 2008
  */
 
 #include <main.h>
-#include <messaging.hpp>
+#include <parsing.hpp>
 
 //=============================================================================
 class parse_error : public std::logic_error
@@ -22,49 +22,49 @@ has_substring (const string& str, const char* sub, string::size_type pos = 0)
 }
 
 //=============================================================================
-static inline void
-parse_vector_ (const TiXmlElement *vector, float buf [3])
+void
+RequestParser::parse_vector_ (const TiXmlElement *vector, float buf [3])
 {
-    fill_n (buf, 3, 0,0f);
+    fill_n (buf, 3, 0.0f);
     vector-> QueryFloatAttribute ("X", buf + 0);
     vector-> QueryFloatAttribute ("Y", buf + 1);
     vector-> QueryFloatAttribute ("Z", buf + 2);
 }
 
 //=============================================================================
-static inline Orientation
-parse_voice_orientation_ (const TiXmlElement *orient)
+Orientation
+RequestParser::parse_voice_orientation_ (const TiXmlElement *orient)
 {
     Orientation res;
     float buf [3];
     const TiXmlElement *vec;
 
-    vec = get_text_ (orient, "Position");
-    buf = parse_vector_ (vec, buf);
-    res-> set_position (buf);
+    vec = get_element_ (orient, "Position");
+    parse_vector_ (vec, buf);
+    res.set_position (buf);
 
-    vec = get_text_ (orient, "Velocity");
-    buf = parse_vector_ (vec, buf);
-    res-> set_velocity (buf);
+    vec = get_element_ (orient, "Velocity");
+    parse_vector_ (vec, buf);
+    res.set_velocity (buf);
 
-    vec = get_text_ (orient, "AtOrientation");
-    buf = parse_vector_ (vec, buf);
-    res-> set_at (buf);
+    vec = get_element_ (orient, "AtOrientation");
+    parse_vector_ (vec, buf);
+    res.set_at (buf);
 
-    vec = get_text_ (orient, "UpOrientation");
-    buf = parse_vector_ (vec, buf);
-    res-> set_up (buf);
+    vec = get_element_ (orient, "UpOrientation");
+    parse_vector_ (vec, buf);
+    res.set_up (buf);
 
-    vec = get_text_ (orient, "LeftOrientation");
-    buf = parse_vector_ (vec, buf);
-    res-> set_left (buf);
+    vec = get_element_ (orient, "LeftOrientation");
+    parse_vector_ (vec, buf);
+    res.set_left (buf);
 
     return res;
 }
 
 
 //=============================================================================
-AccountLoginRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AccountLogin_ ()
 {
     AccountLoginRequest *req (new AccountLoginRequest (sequenceid_));
@@ -77,22 +77,22 @@ RequestParser::parse_AccountLogin_ ()
     //req-> ParticipantPropertyFrequency = get_root_text_ ("ParticipantPropertyFrequency");
     //req-> EnableBuddiesAndPresence = get_root_text_ ("EnableBuddiesAndPresence");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AccountLogoutRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AccountLogout_ ()
 {
     AccountLogoutRequest *req (new AccountLogoutRequest (sequenceid_));
 
     req-> AccountHandle = get_root_text_ ("AccountHandle");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxCaptureAudioStartRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStart_ ()
 {
     AuxCaptureAudioStartRequest *req 
@@ -100,83 +100,72 @@ RequestParser::parse_AuxCaptureAudioStart_ ()
 
     req-> Duration = get_root_text_ ("Duration");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxCaptureAudioStopRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStop_ ()
 {
     AuxCaptureAudioStopRequest *req 
         (new AuxCaptureAudioStopRequest (sequenceid_));
     
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxGetCaptureDevicesRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxGetCaptureDevices_ ()
 {
     AuxGetCaptureDevicesRequest *req 
         (new AuxGetCaptureDevicesRequest (sequenceid_));
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxGetRenderDevicesRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxGetRenderDevices_ ()
 {
     AuxGetRenderDevicesRequest *req 
         (new AuxGetRenderDevicesRequest (sequenceid_));
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxSetCaptureDeviceRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxSetCaptureDevice_ ()
 {
     AuxSetCaptureDeviceRequest *req 
         (new AuxSetCaptureDeviceRequest (sequenceid_));
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxSetMicLevelRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxSetMicLevel_ ()
 {
     AuxSetMicLevelRequest *req (new AuxSetMicLevelRequest (sequenceid_));
 
     req-> Level = get_root_text_ ("Level");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxSetRenderDeviceRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxSetRenderDevice_ ()
 {
     AuxSetRenderDeviceRequest *req 
         (new AuxSetRenderDeviceRequest (sequenceid_));
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-AuxSetMicLevelRequest* 
-RequestParser::parse_AuxSetMicLevel_ ()
-{
-    AuxSetMicLevelRequest *req (new AuxSetMicLevelRequest (sequenceid_));
-
-    req-> Level = get_root_text_ ("Level");
-
-    return req;
-}
-
-//=============================================================================
-AuxSetSpeakerLevelRequest* 
+auto_ptr <const Request>
 RequestParser::parse_AuxSetSpeakerLevel_ ()
 {
     AuxSetSpeakerLevelRequest *req 
@@ -184,11 +173,11 @@ RequestParser::parse_AuxSetSpeakerLevel_ ()
 
     req-> Level = get_root_text_ ("Level");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorCreateRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorCreate_ ()
 {
     ConnectorCreateRequest *req (new ConnectorCreateRequest (sequenceid_));
@@ -199,11 +188,11 @@ RequestParser::parse_ConnectorCreate_ ()
     //req-> MinimumPort = get_root_text_ ("MinimumPort");
     //req-> MaximumPort = get_root_text_ ("MaximumPort");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorInitiateShutdownRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorInitiateShutdown_ ()
 {
     ConnectorInitiateShutdownRequest *req 
@@ -211,11 +200,11 @@ RequestParser::parse_ConnectorInitiateShutdown_ ()
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorMuteLocalMicRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorMuteLocalMic_ ()
 {
     ConnectorMuteLocalMicRequest *req 
@@ -224,11 +213,11 @@ RequestParser::parse_ConnectorMuteLocalMic_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorMuteLocalSpeakerRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorMuteLocalSpeaker_ ()
 {
     ConnectorMuteLocalSpeakerRequest *req 
@@ -237,11 +226,11 @@ RequestParser::parse_ConnectorMuteLocalSpeaker_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorSetLocalMicVolumeRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorSetLocalMicVolume_ ()
 {
     ConnectorSetLocalMicVolumeRequest *req 
@@ -250,11 +239,11 @@ RequestParser::parse_ConnectorSetLocalMicVolume_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-ConnectorSetLocalSpeakerVolumeRequest* 
+auto_ptr <const Request>
 RequestParser::parse_ConnectorSetLocalSpeakerVolume_ ()
 {
     ConnectorSetLocalSpeakerVolumeRequest *req 
@@ -263,11 +252,11 @@ RequestParser::parse_ConnectorSetLocalSpeakerVolume_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-SessionCreateRequest* 
+auto_ptr <const Request>
 RequestParser::parse_SessionCreate_ ()
 {
     SessionCreateRequest *req (new SessionCreateRequest (sequenceid_));
@@ -280,11 +269,11 @@ RequestParser::parse_SessionCreate_ ()
     //req-> JoinText = get_root_text_ ("JoinText");
     //req-> PasswordHashAlgorithm = get_root_text_ ("PasswordHashAlgorithm");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-3DPositionRequest* 
+auto_ptr <const Request>
 RequestParser::parse_SessionSet3DPosition_ ()
 {
     SessionSet3DPositionRequest *req 
@@ -300,11 +289,11 @@ RequestParser::parse_SessionSet3DPosition_ ()
     if (!listener)
         throw parse_error ("cannot parse listener position");
         
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-SessionSetParticipantMuteForMeRequest* 
+auto_ptr <const Request>
 RequestParser::parse_SessionSetParticipantMuteForMe_ ()
 {
     SessionSetParticipantMuteForMeRequest *req 
@@ -314,11 +303,11 @@ RequestParser::parse_SessionSetParticipantMuteForMe_ ()
     req-> ParticipantURI = get_root_text_ ("ParticipantURI");
     req-> Mute = get_root_text_ ("Mute");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-SessionSetParticipantVolumeForMeRequest* 
+auto_ptr <const Request>
 RequestParser::parse_SessionSetParticipantVolumeForMe_ ()
 {
     SessionSetParticipantVolumeForMeRequest *req 
@@ -328,24 +317,24 @@ RequestParser::parse_SessionSetParticipantVolumeForMe_ ()
     req-> ParticipantURI = get_root_text_ ("ParticipantURI");
     req-> Volume = get_root_text_ ("Volume");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
-SessionTerminateRequest* 
+auto_ptr <const Request>
 RequestParser::parse_SessionTerminate_ ()
 {
     SessionTerminateRequest *req (new SessionTerminateRequest (sequenceid_));
     
     req-> SessionHandle = get_root_text_ ("SessionHandle");
 
-    return req;
+    return auto_ptr <const Request> (req);
 }
 
 //=============================================================================
 RequestParser::RequestParser (char *message)
 {
-    doc_.Parse (mesg); // parse the XML into DOM object
+    doc_.Parse (message); // parse the XML into DOM object
     sequenceid_ = get_sequence_id_();
     type_ = get_action_type_();
 }
@@ -383,7 +372,7 @@ RequestParser::Parse ()
 }
 
 //=============================================================================
-int RequestParser::get_request_sequence_id_ ()
+int RequestParser::get_sequence_id_ ()
 {
     int res, id;
 
@@ -486,13 +475,13 @@ ActionType RequestParser::get_action_type_ ()
 }
 
 //=============================================================================
-TiXmlElement* 
+const TiXmlElement* 
 RequestParser::get_root_element_ (const string& name)
 {
     return get_element_ (doc_.RootElement(), name);
 }
 
-TiXmlElement* 
+const TiXmlElement* 
 RequestParser::get_element_ (const TiXmlElement *e, const string& name)
 {
     return e-> FirstChildElement (name);
@@ -600,7 +589,7 @@ format_response (const ResponseMessage& resp)
 
 //=============================================================================
 void 
-AccountLoginRequest::SetState (Account& state)
+AccountLoginRequest::SetState (Account& state) const
 {
     stringstream ss;
 
@@ -615,7 +604,7 @@ AccountLoginRequest::SetState (Account& state)
 }
 
 void 
-ConnectorMuteLocalMicRequest::SetState (Audio& state)
+ConnectorMuteLocalMicRequest::SetState (Audio& state) const
 {
     stringstream ss;
     ss << boolalpha;
@@ -625,7 +614,7 @@ ConnectorMuteLocalMicRequest::SetState (Audio& state)
 }
 
 void 
-ConnectorMuteLocalSpeakerRequest::SetState (Audio& state)
+ConnectorMuteLocalSpeakerRequest::SetState (Audio& state) const
 {
     stringstream ss;
     ss << boolalpha;
@@ -635,7 +624,7 @@ ConnectorMuteLocalSpeakerRequest::SetState (Audio& state)
 }
 
 void 
-ConnectorSetLocalMicVolumeRequest::SetState (Audio& state)
+ConnectorSetLocalMicVolumeRequest::SetState (Audio& state) const
 {
     stringstream ss;
         
@@ -644,7 +633,7 @@ ConnectorSetLocalMicVolumeRequest::SetState (Audio& state)
 }
 
 void 
-ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state)
+ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state) const
 {
     stringstream ss;
         
@@ -653,7 +642,7 @@ ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state)
 }
 
 void 
-SessionCreateRequest::SetState (Session& state)
+SessionCreateRequest::SetState (Session& state) const
 {
     stringstream ss;
 
