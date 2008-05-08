@@ -72,7 +72,7 @@ RequestParser::parse_AccountLogin_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> AccountName = get_root_text_ ("AccountName");
     req-> AccountPassword = get_root_text_ ("AccountPassword");
-    req-> AccountURI = get_root_text_ ("AccountURI");
+    //req-> AccountURI = get_root_text_ ("AccountURI");
     //req-> AudioSessionAnswerMode = get_root_text_ ("AudioSessionAnswerMode");
     //req-> ParticipantPropertyFrequency = get_root_text_ ("ParticipantPropertyFrequency");
     //req-> EnableBuddiesAndPresence = get_root_text_ ("EnableBuddiesAndPresence");
@@ -263,8 +263,8 @@ RequestParser::parse_SessionCreate_ ()
 
     req-> AccountHandle = get_root_text_ ("AccountHandle");
     req-> URI = get_root_text_ ("URI");
-    req-> Name = get_root_text_ ("Name");
-    req-> Password = get_root_text_ ("Password");
+    //req-> Name = get_root_text_ ("Name");
+    //req-> Password = get_root_text_ ("Password");
     //req-> JoinAudio = get_root_text_ ("JoinAudio");
     //req-> JoinText = get_root_text_ ("JoinText");
     //req-> PasswordHashAlgorithm = get_root_text_ ("PasswordHashAlgorithm");
@@ -281,6 +281,8 @@ RequestParser::parse_SessionSet3DPosition_ ()
 
     const TiXmlElement *speaker, *listener; 
 
+    // TODO: doesnt parse the XML yet
+    
     speaker = get_root_element_ ("SpeakerPosition");
     if (!speaker)
         throw parse_error ("cannot parse speaker position");
@@ -497,7 +499,7 @@ string
 RequestParser::get_text_ (const TiXmlElement *e, const string& name)
 {
     const TiXmlElement *p (e-> FirstChildElement (name));
-    if (p) return e->GetText ();
+    if (p) return p->GetText ();
     else
         throw parse_error ("failed to get text: " + name);
 }
@@ -586,6 +588,27 @@ format_response (const ResponseMessage& resp)
     return ss.str();
 }
 
+//=============================================================================
+void Request::SetState (Account& state) const
+{
+}
+
+void Request::SetState (Connection& state) const
+{
+}
+
+void Request::SetState (Session& state) const
+{
+}
+
+void Request::SetState (Audio& state) const
+{
+}
+
+void Request::SetState (Orientation& state) const
+{
+}
+
 
 //=============================================================================
 void 
@@ -654,4 +677,10 @@ SessionCreateRequest::SetState (Session& state) const
     
     ss.str (URI);
     ss >> state.uri;
+}
+
+
+void 
+SessionSet3DPositionRequest::SetState (Orientation& state) const
+{
 }
