@@ -110,12 +110,14 @@ struct SessionState : state <SessionState, StateMachine>
 struct DialingState : state <DialingState, StateMachine> 
 {
     typedef boost::mpl::list 
-        <custom_reaction <DialSucceedEvent>, 
+        <custom_reaction <StopEvent>, 
+        custom_reaction <DialSucceedEvent>, 
         custom_reaction <DialFailedEvent> > reactions;
 
     DialingState (my_context ctx);
     ~DialingState (); 
 
+    result react (const StopEvent& ev);
     result react (const DialSucceedEvent& ev);
     result react (const DialFailedEvent& ev);
 

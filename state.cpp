@@ -122,12 +122,18 @@ DialingState::DialingState (my_context ctx) :
     catch (runtime_error& e)
     {
         cerr << e.what() << endl;
+        post_event (StopEvent ());
     }
 }
 
 DialingState::~DialingState () 
 { 
     cout << "dialing exited" << endl; 
+}
+
+result DialingState::react (const StopEvent& ev)
+{
+    return transit <StopState> ();
 }
 
 result DialingState::react (const DialSucceedEvent& ev) 
