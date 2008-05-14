@@ -98,7 +98,7 @@ result AccountState::react (const SessionEvent& ev)
 { 
     cout << "account state react" << endl;
 
-    ev.messages.back()-> SetState (machine.session);
+    ev.messages.back()-> SetState (machine.session); // this should have done the parsing
     return transit <DialingState> ();
 }
 
@@ -117,7 +117,7 @@ DialingState::DialingState (my_context ctx) :
     // connect to conference
     try
     {
-        glb_server-> Conference ("sip.conf");
+        glb_server-> Conference (machine.session);
     }
     catch (runtime_error& e)
     {

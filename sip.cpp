@@ -141,6 +141,26 @@ void SIPConference::Register (const SIPUserInfo& user)
         error_exit ("Error adding account", status);
 }
 
+void SIPConference::Register () // we have to "register" a dummy account with PJSIP, but we don't send a REGISTER to Asterisk
+{
+    pjsua_acc_config cfg;
+    pjsua_acc_config_default (&cfg);
+
+    cfg.id = pj_str (NULL);
+    cfg.reg_uri = pj_str (NULL);
+
+    cfg.cred_count = 1;
+    cfg.cred_info[0].scheme = pj_str ("digest");
+    cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+    cfg.cred_info[0].realm = pj_str (NULL);
+    cfg.cred_info[0].username = pj_str (NULL);
+    cfg.cred_info[0].data = pj_str (NULL);
+
+    status = pjsua_acc_add (&cfg, PJ_TRUE, &acc_id);
+    if (status != PJ_SUCCESS) 
+        error_exit ("Error adding dummy account", status);
+}
+
 //=============================================================================
 void SIPConference::Join () 
 { 
