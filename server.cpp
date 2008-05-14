@@ -109,6 +109,22 @@ void Server::Conference (const string& filename)
 }
 
 //=============================================================================
+void Server::Conference (const Session& session)
+{
+    SIPServerInfo sinfo;
+    SIPUserInfo uinfo;
+    stringstream ss;
+
+    ss.str (session.uri);
+    ss >> sinfo;
+    ss >> uinfo;
+
+    activeconference_.reset (new SIPConference (sinfo));
+    activeconference_-> Register (uinfo);
+    activeconference_-> Join ();
+}
+
+//=============================================================================
 void Server::enqueue_request_ (char* mesg)
 {
     RequestParser parser (mesg);

@@ -22,6 +22,7 @@ class Server
         void Start ();
         void Send (const string&);
         void Conference (const string&);
+        void Conference (const Session&);
 
         StateMachine& GetStateMachine () { return state_; }
 
