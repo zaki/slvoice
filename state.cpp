@@ -12,17 +12,17 @@ StartState::StartState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    cout << "start entered" << endl; 
+	VFVW_LOG("start entered");
 }
 
 StartState::~StartState () 
 { 
-    cout << "start exited" << endl; 
+	VFVW_LOG("start exited");
 }
 
 result StartState::react (const ConnectionEvent& ev) 
 { 
-    cout << "start state react" << endl;
+	VFVW_LOG("start state react");
     return transit <ConnectionState> ();
 }
 
@@ -31,14 +31,15 @@ ConnectionState::ConnectionState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    cout << "connector entered" << endl; 
-    ostringstream mesg;
+	VFVW_LOG("connector entered");
+
+	ostringstream mesg;
 
     ResponseMessage getcap (AuxGetCaptureDevices1String), 
                     getrend (AuxGetRenderDevices1String), 
                     conncreate (ConnectorCreate1String);
 
-    conncreate.handle = "xxxx";
+    conncreate.handle = VFVW_HANDLE;
 
     mesg << format_response (getcap);
     mesg << endmesg;
@@ -52,17 +53,21 @@ ConnectionState::ConnectionState (my_context ctx) :
 
 ConnectionState::~ConnectionState () 
 { 
-    cout << "connector exited" << endl; 
+	VFVW_LOG("connector exited");
 }
 
 result ConnectionState::react (const AccountEvent& ev) 
 {
-    cout << "connector state react" << endl;
+	VFVW_LOG("connector state react (AccountEvent)");
+
+	ev.messages.back()-> SetState (machine.account);
+
     return transit <AccountState> ();
 }
 
 result ConnectionState::react (const StopEvent& ev) 
 { 
+	VFVW_LOG("connector state react (StopEvent)");
     return transit <StopState> (); 
 }
 
@@ -71,13 +76,14 @@ AccountState::AccountState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    cout << "account entered" << endl; 
-    ostringstream mesg;
+	VFVW_LOG("account entered");
+
+	ostringstream mesg;
 
     ResponseMessage login (AccountLogin1String);
     EventMessage loginstate (LoginStateChangeEventString);
 
-    login.handle = "xxxx";
+    login.handle = VFVW_HANDLE;
     loginstate.state = 1;
     loginstate.status_code = 200;
 
@@ -91,15 +97,16 @@ AccountState::AccountState (my_context ctx) :
 
 AccountState::~AccountState () 
 { 
-    cout << "account exited" << endl; 
+	VFVW_LOG("account exited");
 }
 
 result AccountState::react (const SessionEvent& ev) 
 { 
-    cout << "account state react" << endl;
+	VFVW_LOG("account state react (SessionEvent)");
 
     ev.messages.back()-> SetState (machine.session); // this should have done the parsing
-    return transit <DialingState> ();
+
+	return transit <DialingState> ();
 }
 
 result AccountState::react (const StopEvent& ev) 
@@ -112,12 +119,12 @@ DialingState::DialingState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    cout << "dialing entered" << endl; 
+	VFVW_LOG("dialing entered");
 
     // connect to conference
     try
     {
-        glb_server-> Conference (machine.session);
+        glb_server-> Conference (machine.account, machine.session);
     }
     catch (runtime_error& e)
     {
@@ -128,21 +135,24 @@ DialingState::DialingState (my_context ctx) :
 
 DialingState::~DialingState () 
 { 
-    cout << "dialing exited" << endl; 
+	VFVW_LOG("dialing exited");
 }
 
 result DialingState::react (const StopEvent& ev)
 {
+	VFVW_LOG("dialing state react (StopEvent)");
     return transit <StopState> ();
 }
 
 result DialingState::react (const DialSucceedEvent& ev) 
 { 
+	VFVW_LOG("dialing state react (DialSucceedEvent)");
     return transit <SessionState> (); 
 }
 
 result DialingState::react (const DialFailedEvent& ev) 
 { 
+	VFVW_LOG("dialing state react (DialFailedEvent)");
     return transit <StopState> (); 
 }
 
@@ -151,15 +161,16 @@ SessionState::SessionState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    cout << "session entered" << endl; 
-    ostringstream mesg;
+	VFVW_LOG("session entered");
+
+	ostringstream mesg;
 
     ResponseMessage sessioncreate (SessionCreate1String);
     EventMessage sessionstate (SessionStateChangeEventString),
                  partstate (ParticipantStateChangeEventString),
                  partprop (ParticipantPropertiesEventString);
 
-    string handle ("xxxx");
+    string handle (VFVW_HANDLE);
     sessioncreate.handle = handle;
 
     sessionstate.state = 4;
@@ -197,23 +208,29 @@ SessionState::~SessionState ()
 
     glb_server-> Send (mesg.str());
 
-    cout << "session exited" << endl; 
+	VFVW_LOG("session exited");
 }
 
 result SessionState::react (const PositionEvent& ev) 
 { 
+	VFVW_LOG("session state react (PositionEvent)");
     //ev.messages.back()-> SetState (machine.);
     return discard_event (); 
 }
 
 result SessionState::react (const AudioEvent& ev) 
 { 
+	VFVW_LOG("session state react (AudioEvent)");
     ev.messages.back()-> SetState (machine.audio);
+
+	glb_server->AudioControl(machine.session, machine.audio);
+
     return discard_event (); 
 }
 
 result SessionState::react (const StopEvent& ev) 
 { 
+	VFVW_LOG("session state react (StopEvent)");
     return transit <StopState> (); 
 }
 
@@ -222,7 +239,12 @@ StopState::StopState (my_context ctx) :
     my_base (ctx), // required because we call context() from a constructor
     machine (context <StateMachine>())
 { 
-    ostringstream mesg;
+	VFVW_LOG("stop entered");
+
+	ostringstream mesg;
+
+	// disconnect
+    glb_server->Disconnect();
 
     EventMessage loginstate (LoginStateChangeEventString);
     ResponseMessage accountlogout (AccountLogout1String),
@@ -238,11 +260,9 @@ StopState::StopState (my_context ctx) :
     cout << mesg.str() << endl;
 
     glb_server-> Send (mesg.str());
-
-    cout << "stopped entered" << endl; 
 }
 
 StopState::~StopState () 
 { 
-    cout << "stopped exited" << endl; 
+	VFVW_LOG("stop exited");
 }

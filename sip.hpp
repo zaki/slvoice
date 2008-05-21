@@ -9,6 +9,8 @@
 
 #include <pjsua-lib/pjsua.h>
 
+#define VFVW_REALM	"asterisk"
+
 //=============================================================================
 // Voice classes
 
@@ -51,6 +53,9 @@ class SIPConference
         void Join (); 
         void Leave (); 
 
+		void AdjustTranVolume(pjsua_call_id, float);
+		void AdjustRecvVolume(pjsua_call_id, float);
+
     private:
         void start_sip_stack_(); 
         void stop_sip_stack_(); 
@@ -70,5 +75,8 @@ class SIPConference
 
 istream& operator>> (istream&, SIPUserInfo&);
 istream& operator>> (istream&, SIPServerInfo&);
+
+stringstream& operator>> (stringstream&, SIPUserInfo&);
+stringstream& operator>> (stringstream&, SIPServerInfo&);
 
 #endif //_SIP_HPP

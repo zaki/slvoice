@@ -59,9 +59,12 @@ void Server::Start ()
     state_.process_event (StartEvent());
 
     size_t nread (0);
+
+    memset (buf, 0, bufsize_);
+
     for (;;)
     {
-        memset (buf, 0, bufsize_);
+//        memset (buf, 0, bufsize_);
         
         try { nread = sock_->read (buf, bufsize_); }
         catch (SocketRunTimeException& e) 
@@ -74,9 +77,31 @@ void Server::Start ()
         if (nread <= 0) 
             return;
 
-        cout << "received: " << buf << endl;
-        enqueue_request_ (buf);
-        process_request_queue_();
+		*(buf + nread) = 0x00;
+
+//        cout << "received: " << buf << endl;
+		VFVW_LOG("received: %s", buf);
+
+		// TEST
+		char *pos = NULL;
+		char *cur = buf;
+		while (NULL != (pos = strstr(cur, "</Request>"))) {
+
+			*(pos + 10) = 0x00;
+
+			VFVW_LOG("request after divide: %s", cur);
+
+			enqueue_request_ (cur);
+
+			// TODO : multi threads
+			process_request_queue_();
+
+			nread -= strlen(cur);
+
+			cur = pos+10+1;
+
+			// TODO : amatta string
+		}
     }
 }
 
@@ -86,7 +111,8 @@ void Server::Send (const string& m)
     if (!(sock_.get()))
         throw SocketLogicException ("server has no connection");
 
-    cout << m << endl;
+//    cout << m << endl;
+	VFVW_LOG(m.c_str());
     sock_->write (m.c_str(), m.size()); 
 }
 
@@ -109,7 +135,7 @@ void Server::Conference (const string& filename)
 }
 
 //=============================================================================
-void Server::Conference (const Session& session)
+void Server::Conference (const Account& account, const Session& session)
 {
     SIPServerInfo sinfo;
     SIPUserInfo uinfo;
@@ -117,12 +143,47 @@ void Server::Conference (const Session& session)
 
     ss.str (session.uri);
     ss >> sinfo;
-    ss >> uinfo;
 
-    activeconference_.reset (new SIPConference (sinfo));
+	uinfo.name = account.name;
+	uinfo.password = account.password;
+	uinfo.domain = sinfo.domain;
+
+	activeconference_.reset (new SIPConference (sinfo));
     activeconference_-> Register (uinfo);
     activeconference_-> Join ();
 }
+
+//=============================================================================
+void Server::Disconnect()
+{
+    activeconference_->Leave();
+}
+
+//=============================================================================
+void Server::AudioControl(const Session& session, const Audio& audio)
+{
+	float mic_volume = 0.0f;
+	float spk_volume = 0.0f;
+
+	// adjust mic volume
+	if (!audio.mic_mute) {
+		mic_volume = audio.mic_volume;
+		// adjust between SL and PJSIP
+		mic_volume = (mic_volume - VFVW_SL_VOLUME_MIN) 
+						* VFVW_PJ_VOLUME_RANGE / VFVW_SL_VOLUME_RANGE;
+	}
+	activeconference_->AdjustTranVolume(session.call_id, mic_volume);
+
+	// adjust speaker volume
+	if (!audio.speaker_mute) {
+		spk_volume = audio.speaker_volume;
+		// adjust between SL and PJSIP
+		spk_volume = (spk_volume - VFVW_SL_VOLUME_MIN) 
+						* VFVW_PJ_VOLUME_RANGE / VFVW_SL_VOLUME_RANGE;
+	}
+	activeconference_->AdjustRecvVolume(session.call_id, spk_volume);
+}
+
 
 //=============================================================================
 void Server::enqueue_request_ (char* mesg)

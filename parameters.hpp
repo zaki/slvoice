@@ -6,6 +6,8 @@
 #ifndef _VOICE_HPP_
 #define _VOICE_HPP_
 
+#include <pjsua-lib/pjsua.h>
+
 struct Account;
 struct Connection;
 struct Session;
@@ -35,6 +37,8 @@ struct Session
     string uri;
 
     string handle;
+
+	pjsua_call_id call_id;
 };
 
 struct Audio
@@ -47,9 +51,9 @@ struct Audio
 
     Audio () :
         mic_volume (0.0f),
-        mic_mute (0.0f),
+        mic_mute (false),
         speaker_volume (0.0f),
-        speaker_mute (0.0f)
+        speaker_mute (false)
     {}
 };
 

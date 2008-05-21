@@ -6,7 +6,6 @@
 #include <main.h>
 #include <sip.hpp>
 
-
 //=============================================================================
 /* Custom log function */
 static void my_pj_log_ (int level, const char *data, int len)
@@ -40,8 +39,10 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
 
     StateMachine& sm (glb_server->GetStateMachine());
     
-    cout << "Call " << call_id << " state= " << ci.state_text.ptr << endl;
-    /*PJSIP_INV_STATE_NULL 	Before INVITE is sent or received
+//    cout << "Call " << call_id << " state= " << ci.state_text.ptr << endl;
+	VFVW_LOG("Call %d state=%s", call_id, ci.state_text.ptr);
+
+	/*PJSIP_INV_STATE_NULL 	Before INVITE is sent or received
       PJSIP_INV_STATE_CALLING 	After INVITE is sent
       PJSIP_INV_STATE_INCOMING 	After INVITE is received.
       PJSIP_INV_STATE_EARLY 	After response with To tag.
@@ -49,10 +50,13 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
       PJSIP_INV_STATE_CONFIRMED 	After ACK is sent/received.
       PJSIP_INV_STATE_DISCONNECTED 	Session is terminated.*/
 
+	sm.session.call_id = call_id;
+
     switch (ci.state)
     {
         case PJSIP_INV_STATE_CONFIRMED:
             {
+				VFVW_LOG("PJSIP_INV_STATE_CONFIRMED");
                 DialSucceedEvent ev;
                 sm.process_event (ev);
             }
@@ -60,6 +64,7 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e)
 
         case PJSIP_INV_STATE_DISCONNECTED:
             {
+				VFVW_LOG("PJSIP_INV_STATE_DISCONNECTED");
                 DialFailedEvent ev;
                 sm.process_event (ev);
             }
@@ -103,7 +108,7 @@ SIPConference::SIPConference ()
 SIPConference::SIPConference (const SIPServerInfo& s) : 
     server_ (s)
 { 
-    start_sip_stack_(); 
+	start_sip_stack_(); 
 }
 
 //=============================================================================
@@ -127,38 +132,23 @@ void SIPConference::Register (const SIPUserInfo& user)
     pjsua_acc_config_default (&cfg);
 
     cfg.id = pj_str (const_cast <char*> (temp_useruri.c_str()));
-    cfg.reg_uri = pj_str (const_cast <char*> (temp_serverreguri.c_str()));
+
+	// don't send REGISTER
+//    cfg.reg_uri = pj_str (const_cast <char*> (temp_serverreguri.c_str()));
+    cfg.reg_uri = pj_str("");
 
     cfg.cred_count = 1;
     cfg.cred_info[0].scheme = pj_str ("digest");
     cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-    cfg.cred_info[0].realm = pj_str (const_cast <char*> (temp_serverdomain.c_str()));
+//    cfg.cred_info[0].realm = pj_str (const_cast <char*> (temp_serverdomain.c_str()));
+    cfg.cred_info[0].realm = pj_str (VFVW_REALM);
     cfg.cred_info[0].username = pj_str (const_cast <char*> (temp_username.c_str()));
     cfg.cred_info[0].data = pj_str (const_cast <char*> (temp_userpasswd.c_str()));
 
     status = pjsua_acc_add (&cfg, PJ_TRUE, &acc_id);
+
     if (status != PJ_SUCCESS) 
         error_exit ("Error adding account", status);
-}
-
-void SIPConference::Register () // we have to "register" a dummy account with PJSIP, but we don't send a REGISTER to Asterisk
-{
-    pjsua_acc_config cfg;
-    pjsua_acc_config_default (&cfg);
-
-    cfg.id = pj_str (NULL);
-    cfg.reg_uri = pj_str (NULL);
-
-    cfg.cred_count = 1;
-    cfg.cred_info[0].scheme = pj_str ("digest");
-    cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-    cfg.cred_info[0].realm = pj_str (NULL);
-    cfg.cred_info[0].username = pj_str (NULL);
-    cfg.cred_info[0].data = pj_str (NULL);
-
-    status = pjsua_acc_add (&cfg, PJ_TRUE, &acc_id);
-    if (status != PJ_SUCCESS) 
-        error_exit ("Error adding dummy account", status);
 }
 
 //=============================================================================
@@ -177,6 +167,52 @@ void SIPConference::Join ()
 void SIPConference::Leave () 
 { 
     pjsua_call_hangup_all(); 
+}
+
+//=============================================================================
+void SIPConference::AdjustTranVolume(pjsua_call_id call_id, float level)
+{
+	pjsua_call_info ci;
+	pjsua_call_get_info (call_id, &ci);
+
+	VFVW_LOG("AdjustTranVolume call_id=%d,level=%f", call_id, level);
+
+#ifdef DEBUG
+	unsigned tx_level = 0;
+	unsigned rx_level = 0;
+	status = pjsua_conf_get_signal_level(ci.conf_slot, &tx_level, &rx_level);
+    if (status != PJ_SUCCESS) 
+        error_exit ("Error get signal level", status);
+
+	VFVW_LOG("current tx_level=%d,rx_level=%d", tx_level, rx_level);
+#endif
+
+	status = pjsua_conf_adjust_tx_level(ci.conf_slot, level);
+    if (status != PJ_SUCCESS) 
+        error_exit ("Error adjust tx level", status);
+}
+
+//=============================================================================
+void SIPConference::AdjustRecvVolume(pjsua_call_id call_id, float level)
+{
+	pjsua_call_info ci;
+	pjsua_call_get_info (call_id, &ci);
+
+	VFVW_LOG("AdjustRecvVolume call_id=%d,level=%f", call_id, level);
+
+#ifdef DEBUG
+	unsigned tx_level = 0;
+	unsigned rx_level = 0;
+	status = pjsua_conf_get_signal_level(ci.conf_slot, &tx_level, &rx_level);
+    if (status != PJ_SUCCESS) 
+        error_exit ("Error get signal level", status);
+
+	VFVW_LOG("current tx_level=%d,rx_level=%d", tx_level, rx_level);
+#endif
+
+	status = pjsua_conf_adjust_rx_level(ci.conf_slot, level);
+    if (status != PJ_SUCCESS) 
+        error_exit ("Error adjust rx level", status);
 }
 
 //=============================================================================
@@ -271,6 +307,30 @@ istream& operator>> (istream& in, SIPUserInfo& usr)
 istream& operator>> (istream& in, SIPServerInfo& srv)
 {
     string line (get_line_ (in));
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    srv.conference = result.first;
+    srv.domain = result.second;
+
+    return in;
+}
+
+//=============================================================================
+stringstream& operator>> (stringstream& in, SIPUserInfo& usr)
+{
+	string line = in.str();
+    pair <string,string> result (parse_sip_uri_ (line));
+
+    usr.name = result.first;
+    usr.domain = result.second;
+
+    return in;
+}
+
+//=============================================================================
+stringstream& operator>> (stringstream& in, SIPServerInfo& srv)
+{
+	string line = in.str();
     pair <string,string> result (parse_sip_uri_ (line));
 
     srv.conference = result.first;

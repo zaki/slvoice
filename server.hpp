@@ -22,7 +22,9 @@ class Server
         void Start ();
         void Send (const string&);
         void Conference (const string&);
-        void Conference (const Session&);
+        void Conference (const Account&, const Session&);
+		void Disconnect();
+		void AudioControl(const Session&, const Audio&);
 
         StateMachine& GetStateMachine () { return state_; }
 

@@ -6,6 +6,15 @@
 #include <main.h>
 #include <parsing.hpp>
 
+#include "base64.h"
+
+#ifndef WIN32
+// this is for Linux/Unix
+#include <netinet/in.h>
+#else
+#include <winsock2.h>
+#endif
+
 //=============================================================================
 class parse_error : public std::logic_error
 {
@@ -616,67 +625,103 @@ AccountLoginRequest::SetState (Account& state) const
 {
     stringstream ss;
 
-    ss.str (AccountName);
-    ss >> state.name;
+	int nPos;
 
-    ss.str (AccountPassword);
-    ss >> state.password;
-    
-    ss.str (AccountURI);
-    ss >> state.uri;
+	state.name = AccountName;
+
+	if ('x' == state.name.at(0)) {
+
+		state.name = state.name.substr(1);
+
+		nPos = 0;
+		
+		while ((nPos = state.name.find('-', nPos)) != std::string::npos) {
+			state.name.replace(nPos, 1, "+");
+		}
+
+		nPos = 0;
+
+		while ((nPos = state.name.find('_', nPos)) != std::string::npos) {
+			state.name.replace(nPos, 1, "/");
+		}
+
+		// base64 decoding
+		state.name = base64_decode(state.name);
+
+		/*
+		typedef struct _GUID {
+			unsigned long Data1;
+			unsigned short Data2;
+			unsigned short Data3;
+			unsigned char Data4[8];
+		} GUID, UUID;
+		*/
+
+		// TODO : this code is tentative
+
+		char buf[37];
+		memset(buf, 0x00, sizeof(buf));
+
+		const char *in = state.name.c_str();
+
+		snprintf(buf, sizeof(buf)-1, "%08x-%04x-%04x-%04x-%08x%04x", 
+			ntohl(*(unsigned long *)(in)), 
+			ntohs(*(unsigned short*)(in+4)), 
+			ntohs(*(unsigned short*)(in+6)), 
+			ntohs(*(unsigned short*)(in+8)), 
+			ntohl(*(unsigned long *)(in+10)), 
+			ntohs(*(unsigned short*)(in+14))
+		);
+
+		state.name = buf;
+	}
+
+	state.password = AccountPassword;
+	state.uri = AccountURI;
 }
 
 void 
 ConnectorMuteLocalMicRequest::SetState (Audio& state) const
 {
     stringstream ss;
-    ss << boolalpha;
-        
+       
     ss.str (Value);
-    ss >> state.mic_mute;
+    ss >> boolalpha >> state.mic_mute;
+
+	VFVW_LOG("state.mic_mute=%s", (state.mic_mute)?"true":"false");
 }
 
 void 
 ConnectorMuteLocalSpeakerRequest::SetState (Audio& state) const
 {
     stringstream ss;
-    ss << boolalpha;
-        
+
     ss.str (Value);
-    ss >> state.speaker_mute;
+    ss >> boolalpha >> state.speaker_mute;
+
+	VFVW_LOG("state.speaker_mute=%s", (state.speaker_mute)?"true":"false");
 }
 
 void 
 ConnectorSetLocalMicVolumeRequest::SetState (Audio& state) const
 {
-    stringstream ss;
-        
-    ss.str (Value);
-    ss >> state.mic_volume;
+	state.mic_volume = (float)atof(Value.c_str());
+	VFVW_LOG("state.mic_volume=%f", state.mic_volume);
 }
 
 void 
 ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state) const
 {
-    stringstream ss;
-        
-    ss.str (Value);
-    ss >> state.speaker_volume;
+	state.speaker_volume = (float)atof(Value.c_str());
+	VFVW_LOG("state.speaker_volume=%f", state.speaker_volume);
 }
 
 void 
 SessionCreateRequest::SetState (Session& state) const
 {
-    stringstream ss;
-
-    ss.str (Name);
-    ss >> state.name;
-
-    ss.str (Password);
-    ss >> state.password;
-    
-    ss.str (URI);
-    ss >> state.uri;
+	state.name = Name;
+	state.password = Password;
+	state.uri = URI;
 }
 
 
