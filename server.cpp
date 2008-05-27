@@ -51,7 +51,10 @@ Server::~Server ()
 //=============================================================================
 void Server::Start ()
 {
-    if (!(sock_.get()))
+	char *pos;
+	char *cur;
+
+	if (!(sock_.get()))
         throw SocketLogicException ("server has no connection");
 
     char *buf (buf_.get());
@@ -64,8 +67,6 @@ void Server::Start ()
 
     for (;;)
     {
-//        memset (buf, 0, bufsize_);
-        
         try { nread = sock_->read (buf, bufsize_); }
         catch (SocketRunTimeException& e) 
         { 
@@ -80,16 +81,14 @@ void Server::Start ()
 		*(buf + nread) = 0x00;
 
 //        cout << "received: " << buf << endl;
-		VFVW_LOG("received: %s", buf);
+		pos = NULL;
+		cur = buf;
 
-		// TEST
-		char *pos = NULL;
-		char *cur = buf;
-		while (NULL != (pos = strstr(cur, "</Request>"))) {
+		while (NULL != (pos = strstr(cur, VFVW_XMLMSG_DELIM))) {
 
-			*(pos + 10) = 0x00;
+			*pos = 0x00;
 
-			VFVW_LOG("request after divide: %s", cur);
+			VFVW_LOG("received: %s", cur);
 
 			enqueue_request_ (cur);
 
@@ -98,9 +97,7 @@ void Server::Start ()
 
 			nread -= strlen(cur);
 
-			cur = pos+10+1;
-
-			// TODO : amatta string
+			cur = pos + VFVW_XMLMSG_DELIM_LEN;
 		}
     }
 }
