@@ -46,11 +46,11 @@ class SIPConference
         typedef list <SIPUserInfo> SIPUserList;
 
         SIPConference (); 
-        SIPConference (const SIPServerInfo&);
+//        SIPConference (const SIPServerInfo&);
         ~SIPConference (); 
 
         void Register (const SIPUserInfo&); 
-        void Join (); 
+        void Join (const SIPServerInfo&); 
         void Leave (); 
 
 		void AdjustTranVolume(pjsua_call_id, float);

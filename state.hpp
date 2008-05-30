@@ -26,7 +26,12 @@ struct SessionState;
 struct DialingState;
 struct StopState;
 
-struct Event { RequestQueue messages; };
+//struct Event { RequestQueue messages; };
+struct Event 
+{
+	Request *message;
+	ResponseBase *result;
+};
 
 struct StartEvent : public Event, event <StartEvent> {};
 struct AccountEvent : public Event, event <AccountEvent> {};
@@ -127,8 +132,16 @@ struct DialingState : state <DialingState, StateMachine>
 
 struct StopState : state <StopState, StateMachine> 
 {
-    StopState (my_context ctx);
+    typedef boost::mpl::list 
+        <custom_reaction <SessionEvent>, 
+        custom_reaction <StopEvent> > reactions;
+
+	StopState (my_context ctx);
     ~StopState ();
+
+//	result react (const ConnectionEvent& ev);
+	result react (const SessionEvent& ev);
+	result react (const StopEvent& ev);
 
     StateMachine& machine;
 };

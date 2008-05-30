@@ -93,7 +93,9 @@ static void on_call_media_state (pjsua_call_id call_id)
 /* Display error and exit application */
 static void error_exit (const char *title, pj_status_t status)
 {
-    pjsua_perror ("voice app", title, status);
+	VFVW_LOG("pjsip error [%s, %d]", title, status);
+
+	pjsua_perror ("voice app", title, status);
     pjsua_destroy ();
     exit (1);
 }
@@ -101,26 +103,33 @@ static void error_exit (const char *title, pj_status_t status)
 //=============================================================================
 SIPConference::SIPConference () 
 { 
+	VFVW_LOG("entering SIPConference()");
     start_sip_stack_(); 
 }
 
+#if 0
 //=============================================================================
 SIPConference::SIPConference (const SIPServerInfo& s) : 
     server_ (s)
 { 
+	VFVW_LOG("entering SIPConference(const SIPServerInfo&)");
 	start_sip_stack_(); 
 }
+#endif
 
 //=============================================================================
 SIPConference::~SIPConference () 
 { 
+	VFVW_LOG("entering ~SIPConference()");
     stop_sip_stack_(); 
 }
 
 //=============================================================================
 void SIPConference::Register (const SIPUserInfo& user)
 {
-    user_ = user;
+	VFVW_LOG("entering Register(const SIPUserInfo&)");
+
+	user_ = user;
 
     string temp_useruri (user_.get_uri());
     string temp_username (user_.name);
@@ -152,9 +161,13 @@ void SIPConference::Register (const SIPUserInfo& user)
 }
 
 //=============================================================================
-void SIPConference::Join () 
+void SIPConference::Join (const SIPServerInfo& serverInfo) 
 { 
-    string temp_serveruri (server_.get_conf_uri());
+	VFVW_LOG("entering Join()");
+
+	server_ = serverInfo;
+
+	string temp_serveruri (server_.get_conf_uri());
 
     pj_str_t uri = pj_str (const_cast <char*> (temp_serveruri.c_str()));
 
@@ -166,12 +179,15 @@ void SIPConference::Join ()
 //=============================================================================
 void SIPConference::Leave () 
 { 
+	VFVW_LOG("entering Leave()");
     pjsua_call_hangup_all(); 
 }
 
 //=============================================================================
 void SIPConference::AdjustTranVolume(pjsua_call_id call_id, float level)
 {
+	VFVW_LOG("entering AdjustTranVolume()");
+
 	pjsua_call_info ci;
 	pjsua_call_get_info (call_id, &ci);
 
@@ -195,6 +211,8 @@ void SIPConference::AdjustTranVolume(pjsua_call_id call_id, float level)
 //=============================================================================
 void SIPConference::AdjustRecvVolume(pjsua_call_id call_id, float level)
 {
+	VFVW_LOG("entering AdjustRecvVolume()");
+
 	pjsua_call_info ci;
 	pjsua_call_get_info (call_id, &ci);
 
@@ -218,7 +236,9 @@ void SIPConference::AdjustRecvVolume(pjsua_call_id call_id, float level)
 //=============================================================================
 void SIPConference::start_sip_stack_ ()
 {
-    status = pjsua_create ();
+	VFVW_LOG("entering start_sip_stack_()");
+
+	status = pjsua_create ();
     if (status != PJ_SUCCESS) 
         error_exit ("Error in pjsua_create()", status);
     
@@ -251,6 +271,7 @@ void SIPConference::start_sip_stack_ ()
 //=============================================================================
 void SIPConference::stop_sip_stack_ () 
 { 
+	VFVW_LOG("entering stop_sip_stack_()");
     pjsua_destroy (); 
 }
 

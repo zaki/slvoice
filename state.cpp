@@ -23,6 +23,12 @@ StartState::~StartState ()
 result StartState::react (const ConnectionEvent& ev) 
 { 
 	VFVW_LOG("start state react");
+
+	if (ev.message->Type == ConnectorCreate1) {
+		((ConnectorCreateResponse *)ev.result)->ConnectorHandle = VFVW_HANDLE;
+		//((ConnectorCreateResponse *)ev.result)->VersionID = "";	// TODO
+	}
+
     return transit <ConnectionState> ();
 }
 
@@ -33,22 +39,15 @@ ConnectionState::ConnectionState (my_context ctx) :
 { 
 	VFVW_LOG("connector entered");
 
-	ostringstream mesg;
-
-    ResponseMessage getcap (AuxGetCaptureDevices1String), 
-                    getrend (AuxGetRenderDevices1String), 
-                    conncreate (ConnectorCreate1String);
-
-    conncreate.handle = VFVW_HANDLE;
-
-    mesg << format_response (getcap);
-    mesg << endmesg;
-    mesg << format_response (getrend);
-    mesg << endmesg;
-    mesg << format_response (conncreate);
-    mesg << endmesg;
-
-    glb_server-> Send (mesg.str());
+    try
+    {
+        glb_server-> InitConf();
+    }
+    catch (runtime_error& e)
+    {
+        cerr << e.what() << endl;
+        post_event (StopEvent ());
+    }
 }
 
 ConnectionState::~ConnectionState () 
@@ -60,7 +59,11 @@ result ConnectionState::react (const AccountEvent& ev)
 {
 	VFVW_LOG("connector state react (AccountEvent)");
 
-	ev.messages.back()-> SetState (machine.account);
+	ev.message-> SetState (machine.account);
+
+	if (ev.message->Type == AccountLogin1) {
+		((AccountLoginResponse *)ev.result)->AccountHandle = VFVW_HANDLE;
+	}
 
     return transit <AccountState> ();
 }
@@ -78,21 +81,12 @@ AccountState::AccountState (my_context ctx) :
 { 
 	VFVW_LOG("account entered");
 
-	ostringstream mesg;
+	LoginStateChangeEvent loginStateEvent;
+	loginStateEvent.AccountHandle = VFVW_HANDLE;
+	loginStateEvent.StatusCode = "200";
+	loginStateEvent.State = "1";
 
-    ResponseMessage login (AccountLogin1String);
-    EventMessage loginstate (LoginStateChangeEventString);
-
-    login.handle = VFVW_HANDLE;
-    loginstate.state = 1;
-    loginstate.status_code = 200;
-
-    mesg << format_response (login);
-    mesg << endmesg;
-    mesg << format_response (loginstate);
-    mesg << endmesg;
-
-    glb_server-> Send (mesg.str());
+    glb_server-> Send (loginStateEvent.ToString());
 }
 
 AccountState::~AccountState () 
@@ -104,7 +98,11 @@ result AccountState::react (const SessionEvent& ev)
 { 
 	VFVW_LOG("account state react (SessionEvent)");
 
-    ev.messages.back()-> SetState (machine.session); // this should have done the parsing
+    ev.message-> SetState (machine.session); // this should have done the parsing
+
+	if (ev.message->Type == SessionCreate1) {
+		((SessionCreateResponse *)ev.result)->SessionHandle = VFVW_HANDLE;
+	}
 
 	return transit <DialingState> ();
 }
@@ -124,7 +122,7 @@ DialingState::DialingState (my_context ctx) :
     // connect to conference
     try
     {
-        glb_server-> Conference (machine.account, machine.session);
+        glb_server-> JoinConf(machine.account, machine.session);
     }
     catch (runtime_error& e)
     {
@@ -163,50 +161,52 @@ SessionState::SessionState (my_context ctx) :
 { 
 	VFVW_LOG("session entered");
 
-	ostringstream mesg;
+	SessionStateChangeEvent sessionStateEvent;
+	sessionStateEvent.SessionHandle = VFVW_HANDLE;
+	//sessionStateEvent.StatusCode = "";
+	//sessionStateEvent.StatusString = "";
+	sessionStateEvent.State = "4";
+	//sessionStateEvent.URI = "";
+	//sessionStateEvent.IsChannel = "";
+	//sessionStateEvent.ChannelName = "";
 
-    ResponseMessage sessioncreate (SessionCreate1String);
-    EventMessage sessionstate (SessionStateChangeEventString),
-                 partstate (ParticipantStateChangeEventString),
-                 partprop (ParticipantPropertiesEventString);
+    glb_server-> Send (sessionStateEvent.ToString());
 
-    string handle (VFVW_HANDLE);
-    sessioncreate.handle = handle;
+	ParticipantStateChangeEvent partStateEvent;
+	//sessionStateEvent.StatusCode = "";
+	//sessionStateEvent.StatusString = "";
+	partStateEvent.State = "7";
+	//sessionStateEvent.ParticipantURI = "";
+	//sessionStateEvent.AccountName = "";
+	//sessionStateEvent.DisplayName = "";
+	//sessionStateEvent.ParticipantType = "";
 
-    sessionstate.state = 4;
-    sessionstate.params.push_back (make_pair ("SessionHandle", handle));
+    glb_server-> Send (partStateEvent.ToString());
 
-    partstate.state = 7;
-    partstate.params.push_back (make_pair ("SessionHandle", handle));
+	ParticipantPropertiesEvent partPropEvent;
+	sessionStateEvent.SessionHandle = VFVW_HANDLE;
+	//partPropEvent.ParticipantURI = "";
+	//partPropEvent.IsLocallyMuted = "";
+	//partPropEvent.IsModeratorMuted = "";
+	//partPropEvent.Volume = "";
+	//partPropEvent.Energy = "";
 
-    mesg << format_response (sessioncreate);
-    mesg << endmesg;
-    mesg << format_response (sessionstate);
-    mesg << endmesg;
-    mesg << format_response (partstate);
-    mesg << endmesg;
-    mesg << format_response (partprop);
-    mesg << endmesg;
-
-    glb_server-> Send (mesg.str());
-
+    glb_server-> Send (partPropEvent.ToString());
+	
 }
 
 SessionState::~SessionState () 
 { 
-    ostringstream mesg;
+	SessionStateChangeEvent sessionStateEvent;
+	sessionStateEvent.SessionHandle = VFVW_HANDLE;
+	//sessionStateEvent.StatusCode = "";
+	//sessionStateEvent.StatusString = "";
+	sessionStateEvent.State = "5";
+	//sessionStateEvent.URI = "";
+	//sessionStateEvent.IsChannel = "";
+	//sessionStateEvent.ChannelName = "";
 
-    ResponseMessage sessionterm (SessionTerminate1String);
-    EventMessage sessionstate (SessionStateChangeEventString);
-
-    mesg << format_response (sessionterm);
-    mesg << endmesg;
-    mesg << format_response (sessionstate);
-    mesg << endmesg;
-
-    cout << mesg.str() << endl;
-
-    glb_server-> Send (mesg.str());
+    glb_server-> Send (sessionStateEvent.ToString());
 
 	VFVW_LOG("session exited");
 }
@@ -221,7 +221,7 @@ result SessionState::react (const PositionEvent& ev)
 result SessionState::react (const AudioEvent& ev) 
 { 
 	VFVW_LOG("session state react (AudioEvent)");
-    ev.messages.back()-> SetState (machine.audio);
+    ev.message-> SetState (machine.audio);
 
 	glb_server->AudioControl(machine.session, machine.audio);
 
@@ -231,6 +231,7 @@ result SessionState::react (const AudioEvent& ev)
 result SessionState::react (const StopEvent& ev) 
 { 
 	VFVW_LOG("session state react (StopEvent)");
+
     return transit <StopState> (); 
 }
 
@@ -241,28 +242,38 @@ StopState::StopState (my_context ctx) :
 { 
 	VFVW_LOG("stop entered");
 
-	ostringstream mesg;
-
 	// disconnect
-    glb_server->Disconnect();
+    glb_server->LeaveConf();
 
-    EventMessage loginstate (LoginStateChangeEventString);
-    ResponseMessage accountlogout (AccountLogout1String),
-                    connshutdown (ConnectorInitiateShutdown1String);
+	// Send LoginStateChangeEvent
+	LoginStateChangeEvent loginStateEvent;
+	loginStateEvent.AccountHandle = VFVW_HANDLE;
+	loginStateEvent.StatusCode = "";
+	loginStateEvent.State = "0";
 
-    mesg << format_response (accountlogout);
-    mesg << endmesg;
-    mesg << format_response (loginstate);
-    mesg << endmesg;
-    mesg << format_response (connshutdown);
-    mesg << endmesg;
-
-    cout << mesg.str() << endl;
-
-    glb_server-> Send (mesg.str());
+    glb_server-> Send (loginStateEvent.ToString());
 }
 
 StopState::~StopState () 
 { 
 	VFVW_LOG("stop exited");
+}
+
+result StopState::react (const SessionEvent& ev) 
+{ 
+	VFVW_LOG("stop state react (SessionEvent)");
+
+    ev.message-> SetState (machine.session); // this should have done the parsing
+
+	if (ev.message->Type == SessionCreate1) {
+		((SessionCreateResponse *)ev.result)->SessionHandle = VFVW_HANDLE;
+	}
+
+	return transit <DialingState> ();
+}
+
+result StopState::react (const StopEvent& ev) 
+{ 
+	VFVW_LOG("stop state react (StopEvent)");
+    return discard_event (); 
 }

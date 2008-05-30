@@ -24,9 +24,10 @@ class Server
         
         void Start ();
         void Send (const string&);
-        void Conference (const string&);
-        void Conference (const Account&, const Session&);
-		void Disconnect();
+//        void Conference (const string&);
+        void InitConf();
+        void JoinConf(const Account&, const Session&);
+		void LeaveConf();
 		void AudioControl(const Session&, const Audio&);
 
         StateMachine& GetStateMachine () { return state_; }
@@ -43,10 +44,11 @@ class Server
 
         TCPSocketWrapper server_;
         auto_ptr <TCPSocketWrapper> sock_;
-        
-        RequestQueue queue_;
 
-    private:
+		Request *request;
+		ResponseBase *response;
+
+	private:
         StateMachine state_;
         auto_ptr <SIPConference> activeconference_;
 

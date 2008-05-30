@@ -76,7 +76,7 @@ RequestParser::parse_voice_orientation_ (const TiXmlElement *orient)
 auto_ptr <const Request>
 RequestParser::parse_AccountLogin_ ()
 {
-    AccountLoginRequest *req (new AccountLoginRequest (sequenceid_));
+    AccountLoginRequest *req (new AccountLoginRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> AccountName = get_root_text_ ("AccountName");
@@ -93,7 +93,7 @@ RequestParser::parse_AccountLogin_ ()
 auto_ptr <const Request>
 RequestParser::parse_AccountLogout_ ()
 {
-    AccountLogoutRequest *req (new AccountLogoutRequest (sequenceid_));
+    AccountLogoutRequest *req (new AccountLogoutRequest (requestid_));
 
     req-> AccountHandle = get_root_text_ ("AccountHandle");
 
@@ -105,7 +105,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStart_ ()
 {
     AuxCaptureAudioStartRequest *req 
-        (new AuxCaptureAudioStartRequest (sequenceid_));
+        (new AuxCaptureAudioStartRequest (requestid_));
 
     req-> Duration = get_root_text_ ("Duration");
 
@@ -117,7 +117,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStop_ ()
 {
     AuxCaptureAudioStopRequest *req 
-        (new AuxCaptureAudioStopRequest (sequenceid_));
+        (new AuxCaptureAudioStopRequest (requestid_));
     
     return auto_ptr <const Request> (req);
 }
@@ -127,7 +127,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxGetCaptureDevices_ ()
 {
     AuxGetCaptureDevicesRequest *req 
-        (new AuxGetCaptureDevicesRequest (sequenceid_));
+        (new AuxGetCaptureDevicesRequest (requestid_));
 
     return auto_ptr <const Request> (req);
 }
@@ -137,7 +137,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxGetRenderDevices_ ()
 {
     AuxGetRenderDevicesRequest *req 
-        (new AuxGetRenderDevicesRequest (sequenceid_));
+        (new AuxGetRenderDevicesRequest (requestid_));
 
     return auto_ptr <const Request> (req);
 }
@@ -147,7 +147,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxSetCaptureDevice_ ()
 {
     AuxSetCaptureDeviceRequest *req 
-        (new AuxSetCaptureDeviceRequest (sequenceid_));
+        (new AuxSetCaptureDeviceRequest (requestid_));
 
     return auto_ptr <const Request> (req);
 }
@@ -156,7 +156,7 @@ RequestParser::parse_AuxSetCaptureDevice_ ()
 auto_ptr <const Request>
 RequestParser::parse_AuxSetMicLevel_ ()
 {
-    AuxSetMicLevelRequest *req (new AuxSetMicLevelRequest (sequenceid_));
+    AuxSetMicLevelRequest *req (new AuxSetMicLevelRequest (requestid_));
 
     req-> Level = get_root_text_ ("Level");
 
@@ -168,7 +168,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxSetRenderDevice_ ()
 {
     AuxSetRenderDeviceRequest *req 
-        (new AuxSetRenderDeviceRequest (sequenceid_));
+        (new AuxSetRenderDeviceRequest (requestid_));
 
     return auto_ptr <const Request> (req);
 }
@@ -178,7 +178,7 @@ auto_ptr <const Request>
 RequestParser::parse_AuxSetSpeakerLevel_ ()
 {
     AuxSetSpeakerLevelRequest *req 
-        (new AuxSetSpeakerLevelRequest (sequenceid_));
+        (new AuxSetSpeakerLevelRequest (requestid_));
 
     req-> Level = get_root_text_ ("Level");
 
@@ -189,7 +189,7 @@ RequestParser::parse_AuxSetSpeakerLevel_ ()
 auto_ptr <const Request>
 RequestParser::parse_ConnectorCreate_ ()
 {
-    ConnectorCreateRequest *req (new ConnectorCreateRequest (sequenceid_));
+    ConnectorCreateRequest *req (new ConnectorCreateRequest (requestid_));
 
     //req-> ClientName = get_root_text_ ("ClientName");
     //req-> AttemptStun = get_root_text_ ("AttemptStun");
@@ -205,7 +205,7 @@ auto_ptr <const Request>
 RequestParser::parse_ConnectorInitiateShutdown_ ()
 {
     ConnectorInitiateShutdownRequest *req 
-        (new ConnectorInitiateShutdownRequest (sequenceid_));
+        (new ConnectorInitiateShutdownRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
 
@@ -217,7 +217,7 @@ auto_ptr <const Request>
 RequestParser::parse_ConnectorMuteLocalMic_ ()
 {
     ConnectorMuteLocalMicRequest *req 
-        (new ConnectorMuteLocalMicRequest (sequenceid_));
+        (new ConnectorMuteLocalMicRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
@@ -230,7 +230,7 @@ auto_ptr <const Request>
 RequestParser::parse_ConnectorMuteLocalSpeaker_ ()
 {
     ConnectorMuteLocalSpeakerRequest *req 
-        (new ConnectorMuteLocalSpeakerRequest (sequenceid_));
+        (new ConnectorMuteLocalSpeakerRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
@@ -243,7 +243,7 @@ auto_ptr <const Request>
 RequestParser::parse_ConnectorSetLocalMicVolume_ ()
 {
     ConnectorSetLocalMicVolumeRequest *req 
-        (new ConnectorSetLocalMicVolumeRequest (sequenceid_));
+        (new ConnectorSetLocalMicVolumeRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
@@ -256,7 +256,7 @@ auto_ptr <const Request>
 RequestParser::parse_ConnectorSetLocalSpeakerVolume_ ()
 {
     ConnectorSetLocalSpeakerVolumeRequest *req 
-        (new ConnectorSetLocalSpeakerVolumeRequest (sequenceid_));
+        (new ConnectorSetLocalSpeakerVolumeRequest (requestid_));
 
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> Value = get_root_text_ ("Value");
@@ -268,7 +268,7 @@ RequestParser::parse_ConnectorSetLocalSpeakerVolume_ ()
 auto_ptr <const Request>
 RequestParser::parse_SessionCreate_ ()
 {
-    SessionCreateRequest *req (new SessionCreateRequest (sequenceid_));
+    SessionCreateRequest *req (new SessionCreateRequest (requestid_));
 
     req-> AccountHandle = get_root_text_ ("AccountHandle");
     req-> URI = get_root_text_ ("URI");
@@ -286,7 +286,7 @@ auto_ptr <const Request>
 RequestParser::parse_SessionSet3DPosition_ ()
 {
     SessionSet3DPositionRequest *req 
-        (new SessionSet3DPositionRequest (sequenceid_));
+        (new SessionSet3DPositionRequest (requestid_));
 
     const TiXmlElement *speaker, *listener; 
 
@@ -308,7 +308,7 @@ auto_ptr <const Request>
 RequestParser::parse_SessionSetParticipantMuteForMe_ ()
 {
     SessionSetParticipantMuteForMeRequest *req 
-        (new SessionSetParticipantMuteForMeRequest (sequenceid_));
+        (new SessionSetParticipantMuteForMeRequest (requestid_));
 
     req-> SessionHandle = get_root_text_ ("SessionHandle");
     req-> ParticipantURI = get_root_text_ ("ParticipantURI");
@@ -322,7 +322,7 @@ auto_ptr <const Request>
 RequestParser::parse_SessionSetParticipantVolumeForMe_ ()
 {
     SessionSetParticipantVolumeForMeRequest *req 
-        (new SessionSetParticipantVolumeForMeRequest (sequenceid_));
+        (new SessionSetParticipantVolumeForMeRequest (requestid_));
 
     req-> SessionHandle = get_root_text_ ("SessionHandle");
     req-> ParticipantURI = get_root_text_ ("ParticipantURI");
@@ -335,7 +335,7 @@ RequestParser::parse_SessionSetParticipantVolumeForMe_ ()
 auto_ptr <const Request>
 RequestParser::parse_SessionTerminate_ ()
 {
-    SessionTerminateRequest *req (new SessionTerminateRequest (sequenceid_));
+    SessionTerminateRequest *req (new SessionTerminateRequest (requestid_));
     
     req-> SessionHandle = get_root_text_ ("SessionHandle");
 
@@ -346,7 +346,7 @@ RequestParser::parse_SessionTerminate_ ()
 RequestParser::RequestParser (char *message)
 {
     doc_.Parse (message); // parse the XML into DOM object
-    sequenceid_ = get_sequence_id_();
+    requestid_ = get_request_id_();
     type_ = get_action_type_();
 }
 
@@ -383,14 +383,9 @@ RequestParser::Parse ()
 }
 
 //=============================================================================
-int RequestParser::get_sequence_id_ ()
+string RequestParser::get_request_id_ ()
 {
-    int res, id;
-
-    res = doc_.RootElement()-> QueryIntAttribute ("requestId", &id);
-    if (res == TIXML_SUCCESS) return id;
-    else
-        throw parse_error ("unable to parse sequence id");
+    return doc_.RootElement()-> Attribute ("requestId");
 }
 
 //=============================================================================
@@ -513,7 +508,7 @@ RequestParser::get_text_ (const TiXmlElement *e, const string& name)
         throw parse_error ("failed to get text: " + name);
 }
 
-
+#if 0
 //=============================================================================
 string
 format_response (const EventMessage& ev)
@@ -568,6 +563,7 @@ format_response (const ResponseMessage& resp)
 
     root = doc.RootElement();
     root->SetAttribute ("action", resp.action);
+
     result = root->FirstChildElement ("Results");
     input = root->FirstChildElement ("InputXml");
 
@@ -596,6 +592,307 @@ format_response (const ResponseMessage& resp)
 
     return ss.str();
 }
+#endif
+
+ResponseBase* Request::CreateResponse(const string& return_code)
+{
+	return NULL;
+}
+
+AccountLoginResponse* AccountLoginRequest::CreateResponse(const string& return_code)
+{
+	return new AccountLoginResponse(Action, RequestId, return_code);
+}
+
+AccountLogoutResponse* AccountLogoutRequest::CreateResponse(const string& return_code)
+{
+	return new AccountLogoutResponse(Action, RequestId, return_code);
+}
+
+AuxCaptureAudioStartResponse* AuxCaptureAudioStartRequest::CreateResponse(const string& return_code)
+{
+	return new AuxCaptureAudioStartResponse(Action, RequestId, return_code);
+}
+
+AuxCaptureAudioStopResponse* AuxCaptureAudioStopRequest::CreateResponse(const string& return_code)
+{
+	return new AuxCaptureAudioStopResponse(Action, RequestId, return_code);
+}
+
+AuxGetCaptureDevicesResponse* AuxGetCaptureDevicesRequest::CreateResponse(const string& return_code)
+{
+	return new AuxGetCaptureDevicesResponse(Action, RequestId, return_code);
+}
+
+AuxGetRenderDevicesResponse* AuxGetRenderDevicesRequest::CreateResponse(const string& return_code)
+{
+	return new AuxGetRenderDevicesResponse(Action, RequestId, return_code);
+}
+
+AuxSetCaptureDeviceResponse* AuxSetCaptureDeviceRequest::CreateResponse(const string& return_code)
+{
+	return new AuxSetCaptureDeviceResponse(Action, RequestId, return_code);
+}
+
+AuxSetMicLevelResponse* AuxSetMicLevelRequest::CreateResponse(const string& return_code)
+{
+	return new AuxSetMicLevelResponse(Action, RequestId, return_code);
+}
+
+AuxSetRenderDeviceResponse* AuxSetRenderDeviceRequest::CreateResponse(const string& return_code)
+{
+	return new AuxSetRenderDeviceResponse(Action, RequestId, return_code);
+}
+
+AuxSetSpeakerLevelResponse* AuxSetSpeakerLevelRequest::CreateResponse(const string& return_code)
+{
+	return new AuxSetSpeakerLevelResponse(Action, RequestId, return_code);
+}
+
+ConnectorCreateResponse* ConnectorCreateRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorCreateResponse(Action, RequestId, return_code);
+}
+
+ConnectorInitiateShutdownResponse* ConnectorInitiateShutdownRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorInitiateShutdownResponse(Action, RequestId, return_code);
+}
+
+ConnectorMuteLocalMicResponse* ConnectorMuteLocalMicRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorMuteLocalMicResponse(Action, RequestId, return_code);
+}
+
+ConnectorMuteLocalSpeakerResponse* ConnectorMuteLocalSpeakerRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorMuteLocalSpeakerResponse(Action, RequestId, return_code);
+}
+
+ConnectorSetLocalMicVolumeResponse* ConnectorSetLocalMicVolumeRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorSetLocalMicVolumeResponse(Action, RequestId, return_code);
+}
+
+ConnectorSetLocalSpeakerVolumeResponse* ConnectorSetLocalSpeakerVolumeRequest::CreateResponse(const string& return_code)
+{
+	return new ConnectorSetLocalSpeakerVolumeResponse(Action, RequestId, return_code);
+}
+
+SessionCreateResponse* SessionCreateRequest::CreateResponse(const string& return_code)
+{
+	return new SessionCreateResponse(Action, RequestId, return_code);
+}
+
+SessionSetParticipantVolumeForMeResponse* SessionSetParticipantVolumeForMeRequest::CreateResponse(const string& return_code)
+{
+	return new SessionSetParticipantVolumeForMeResponse(Action, RequestId, return_code);
+}
+
+SessionTerminateResponse* SessionTerminateRequest::CreateResponse(const string& return_code)
+{
+	return new SessionTerminateResponse(Action, RequestId, return_code);
+}
+
+
+string ResponseBase::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string ConnectorCreateResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+
+			+ "<VersionID>" + VersionID + "</VersionID>"
+			+ "<ConnectorHandle>" + ConnectorHandle + "</ConnectorHandle>"
+
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string AuxGetCaptureDevicesResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+
+			+ "<Device>" + Device + "</Device>"
+			+ "<CurrentCaptureDevice>" + CurrentCaptureDevice + "</CurrentCaptureDevice>"
+
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string AccountLoginResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+
+			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
+
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string SessionCreateResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+
+			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
+
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string AuxGetRenderDevicesResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+
+			+ "<Device>" + Device + "</Device>"
+			+ "<CurrentRenderDevice>" + CurrentRenderDevice + "</CurrentRenderDevice>"
+
+			+ "</Results>"
+			+ "<InputXml></InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+// Events
+
+string LoginStateChangeEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
+			+ "<StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<State>" + State + "</State>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
+
+string SessionNewEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
+			+ "<URI>" + URI + "</URI>"
+			+ "<Name>" + Name + "</Name>"
+			+ "<IsChannel>" + IsChannel + "</IsChannel>"
+			+ "<AudioMedia>" + AudioMedia + "</AudioMedia>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
+string SessionStateChangeEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
+			+ "<StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<State>" + State + "</State>"
+			+ "<URI>" + URI + "</URI>"
+			+ "<IsChannel>" + IsChannel + "</IsChannel>"
+			+ "<ChannelName>" + ChannelName + "</ChannelName>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
+string ParticipantStateChangeEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<StatusCode>" + StatusCode + "</StatusCode>"
+			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<State>" + State + "</State>"
+			+ "<ParticipantURI>" + ParticipantURI + "</ParticipantURI>"
+			+ "<AccountName>" + AccountName + "</AccountName>"
+			+ "<DisplayName>" + DisplayName + "</DisplayName>"
+			+ "<ParticipantType>" + ParticipantType + "</ParticipantType>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
+string ParticipantPropertiesEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
+			+ "<ParticipantURI>" + ParticipantURI + "</ParticipantURI>"
+			+ "<IsLocallyMuted>" + IsLocallyMuted + "</IsLocallyMuted>"
+			+ "<IsModeratorMuted>" + IsModeratorMuted + "</IsModeratorMuted>"
+			+ "<Volume>" + Volume + "</Volume>"
+			+ "<Energy>" + Energy + "</Energy>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
+string AuxAudioPropertiesEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<MicIsActive>" + MicIsActive + "</MicIsActive>"
+			+ "<MicEnergy>" + MicEnergy + "</MicEnergy>"
+			+ "<MicVolume>" + MicVolume + "</MicVolume>"
+			+ "<SpeakerVolume>" + SpeakerVolume + "</SpeakerVolume>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
+
 
 //=============================================================================
 void Request::SetState (Account& state) const

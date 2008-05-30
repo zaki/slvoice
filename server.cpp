@@ -34,10 +34,6 @@ Server::Server (int port) :
 //=============================================================================
 Server::~Server () 
 { 
-    RequestQueue::iterator i = queue_.begin();
-    while (i != queue_.end())
-        delete *i++;
-
     try 
     {
         if (sock_.get()) sock_->close();
@@ -80,7 +76,6 @@ void Server::Start ()
 
 		*(buf + nread) = 0x00;
 
-//        cout << "received: " << buf << endl;
 		pos = NULL;
 		cur = buf;
 
@@ -92,7 +87,6 @@ void Server::Start ()
 
 			enqueue_request_ (cur);
 
-			// TODO : multi threads
 			process_request_queue_();
 
 			nread -= strlen(cur);
@@ -113,6 +107,7 @@ void Server::Send (const string& m)
     sock_->write (m.c_str(), m.size()); 
 }
 
+#if 0
 //=============================================================================
 void Server::Conference (const string& filename)
 {
@@ -130,13 +125,22 @@ void Server::Conference (const string& filename)
     activeconference_-> Register (uinfo);
     activeconference_-> Join ();
 }
+#endif
 
 //=============================================================================
-void Server::Conference (const Account& account, const Session& session)
+void Server::InitConf ()
+{
+	activeconference_.reset (new SIPConference ());
+}
+
+
+//=============================================================================
+void Server::JoinConf (const Account& account, const Session& session)
 {
     SIPServerInfo sinfo;
     SIPUserInfo uinfo;
-    stringstream ss;
+
+	stringstream ss;
 
     ss.str (session.uri);
     ss >> sinfo;
@@ -144,14 +148,14 @@ void Server::Conference (const Account& account, const Session& session)
 	uinfo.name = account.name;
 	uinfo.password = account.password;
 	uinfo.domain = sinfo.domain;
-
-	activeconference_.reset (new SIPConference (sinfo));
+	
     activeconference_-> Register (uinfo);
-    activeconference_-> Join ();
+    activeconference_-> Join (sinfo);
 }
 
+
 //=============================================================================
-void Server::Disconnect()
+void Server::LeaveConf()
 {
     activeconference_->Leave();
 }
@@ -188,16 +192,19 @@ void Server::enqueue_request_ (char* mesg)
     RequestParser parser (mesg);
     auto_ptr <const Request> req (parser.Parse());
 
-    queue_.push_back (req.release());
+	request = (Request *)req.release();
 }
 
 //=============================================================================
 void Server::process_request_queue_ ()
 {
-    if (queue_.size() == 0)
+    if (request == NULL)
         return;
 
-    switch (queue_.back()->Type)
+	const string result_code = "1";
+	response = request->CreateResponse(result_code);
+
+    switch (request->Type)
     {
         case AccountLogin1:
             {
@@ -259,13 +266,20 @@ void Server::process_request_queue_ ()
             }
             break;
     }
+
+	if (response != NULL) {
+		response->ReturnCode = "0";
+
+		string respStr = response->ToString();
+		delete response;
+		glb_server->Send(respStr);
+	}
 }
 
 //=============================================================================
 void Server::flush_messages_on_event_ (Event& ev)
 {
-    ev.messages.splice 
-        (ev.messages.end(), 
-         queue_, queue_.begin(), queue_.end());
+	ev.message = request;
+	ev.result = response;
 }
 
