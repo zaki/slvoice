@@ -13,6 +13,8 @@ Server::Server (int port) :
     bufsize_ (4096), 
     buf_ (NULL)
 {
+	VFVW_LOG("entering Server::Server()");
+
     try
     {
         buf_.reset (new char [bufsize_]);
@@ -34,6 +36,8 @@ Server::Server (int port) :
 //=============================================================================
 Server::~Server () 
 { 
+	VFVW_LOG("entering Server::~Server()");
+
     try 
     {
         if (sock_.get()) sock_->close();
@@ -272,7 +276,14 @@ void Server::process_request_queue_ ()
 
 		string respStr = response->ToString();
 		delete response;
-		glb_server->Send(respStr);
+
+		try {
+			glb_server->Send(respStr);
+		}
+        catch (SocketRunTimeException& e) 
+        { 
+            // ignore
+        }
 	}
 }
 
