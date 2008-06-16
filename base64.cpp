@@ -1,3 +1,8 @@
+/* base64.cpp
+ *
+ *			Copyright 2008, 3di.jp Inc
+ */
+
 #include "base64.h"
 #include <iostream>
 

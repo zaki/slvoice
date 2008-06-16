@@ -1,6 +1,6 @@
 /* voice.hpp -- state definition
  *
- *			Ryan McDougall -- 2008
+ *			Copyright 2008, 3di.jp Inc
  */
 
 #ifndef _VOICE_HPP_
