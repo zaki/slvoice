@@ -1,6 +1,6 @@
 /* main.cpp -- main module
  *
- *			Ryan McDougall -- 20070101
+ *			Copyright 2008, 3di.jp Inc
  */
 
 #include <main.h>

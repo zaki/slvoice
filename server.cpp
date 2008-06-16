@@ -1,6 +1,6 @@
 /* server.cpp -- server module
  *
- *			Ryan McDougall -- 2008
+ *			Copyright 2008, 3di.jp Inc
  */
 
 #include <main.h>

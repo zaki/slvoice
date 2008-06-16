@@ -1,7 +1,6 @@
-
 /* sip.hpp -- sip definition
  *
- *			Ryan McDougall -- 2008
+ *			Copyright 2008, 3di.jp Inc
  */
 
 #ifndef _SIP_HPP
