@@ -31,9 +31,9 @@ using namespace std;
 extern Server *glb_server;
 
 // log output macro
-#ifdef __VA_ARGS__
+#ifdef DEBUG
 #define  VFVW_LOG(fmt, ...)  fprintf(stderr, "[VFVW] %s:%d - ", __FILE__, __LINE__);	\
-	fprintf(stderr, fmt, __VA_ARGS__);	\
+	fprintf(stderr, fmt, ## __VA_ARGS__);	\
 	fprintf(stderr, "\r\n")
 #else
 #define VFVW_LOG(fmt, ...)	void()
