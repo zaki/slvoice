@@ -45,6 +45,14 @@ IF (WIN32)
     # necessary system-level libraries
     SET (PJTARGET i386-win32-vc8-release)
     SET (LIBS ${LIBS} wsock32.lib ws2_32.lib)
+
+    SET(CMAKE_CXX_FLAGS "/D WIN32 /nologo /W3 /Gy /EHsc")
+    SET(CMAKE_CXX_FLAGS_DEBUG "/MTd /Z7 /Od")
+
+    # you can use MT, if pjsip is built with MT option.
+#    SET(CMAKE_CXX_FLAGS_RELEASE "/MT /O2")
+    SET(CMAKE_CXX_FLAGS_RELEASE "/MD /O2")
+
 ENDIF (WIN32)
 
 # Unix-likes
@@ -123,5 +131,11 @@ SET (LIBDIR ${PJLIBDIR})
 INCLUDE_DIRECTORIES (${INCLDIR})
 LINK_DIRECTORIES (${LIBDIR})
 
-ADD_EXECUTABLE (SLVoice ${SRC})
+IF (WIN32)
+    ADD_EXECUTABLE (SLVoice WIN32 ${SRC})
+ENDIF (WIN32)
+IF (UNIX)
+    ADD_EXECUTABLE (SLVoice ${SRC})
+ENDIF (UNIX)
+
 TARGET_LINK_LIBRARIES (SLVoice ${LIBS})
