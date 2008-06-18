@@ -10,6 +10,10 @@
 // used to send messages from state machine or SIP stack
 Server *glb_server (NULL);
 
+// log output macro
+#ifdef DEBUG
+FILE *logfp = NULL;
+#endif
 
 //=============================================================================
 // program functions
@@ -21,6 +25,12 @@ char get_short_option (char *arg);
 // Main entry point
 int main (int argc, char **argv)
 {
+	VFVW_LOGINIT();
+
+	VFVW_LOG("entering main()");
+
+	// TODO: It is necessary to match it to the interface specification of Vivox-SLVoice.
+
     if ((argc == 2) && (get_short_option (argv[1]) == 'h'))
         print_usage_and_exit (argv);
 
@@ -45,6 +55,59 @@ int main (int argc, char **argv)
     // Server leaks, but should always have exactly the same lifetime as app
     return EXIT_SUCCESS;
 }
+
+//=============================================================================
+// WinMain
+#ifdef WIN32
+#include <windows.h>
+int APIENTRY WinMain( HINSTANCE hInstance,
+                      HINSTANCE hPrevInstance,
+                      LPSTR lpCmdLine,
+                      int nCmdShow)
+{
+	int port = glb_default_port;
+
+	VFVW_LOGINIT();
+
+	VFVW_LOG("entering WinMain()");
+
+	if (lpCmdLine == NULL || *lpCmdLine == 0x00) {
+		// TODO
+	    exit(0);
+	}
+
+	VFVW_LOG("lpCmdLine : %s", lpCmdLine);
+
+	// TODO: It is necessary to match it to the interface specification of Vivox-SLVoice.
+	// ex) -p tcp -h -c -ll -1
+/*
+	if (strchr(lpCmdLine, ' ') != NULL) {
+		// TODO
+	    exit(0);
+	}
+
+	VFVW_LOG("TRACE 2");
+
+	if (*lpCmdLine != '-') {
+		port = atoi(lpCmdLine);
+	}
+*/
+
+    try
+    {
+        glb_server = new Server(port);
+        glb_server->Start();
+    }
+    catch (exception &e)
+    {
+		// TODO
+    }
+
+    // Server leaks, but should always have exactly the same lifetime as app
+    return EXIT_SUCCESS;
+
+}
+#endif
 
 //=============================================================================
 //
