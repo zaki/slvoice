@@ -6,7 +6,7 @@
 #ifndef _MESSAGING_HPP_
 #define _MESSAGING_HPP_
 
-#include <tinyxml/tinyxml.h>
+#include "tinyxml/tinyxml.h"
 
 //=============================================================================
 // Message Constants
@@ -36,6 +36,7 @@ const string ConnectorMuteLocalSpeaker1String ("Connector.MuteLocalSpeaker.1");
 const string ConnectorSetLocalMicVolume1String ("Connector.SetLocalMicVolume.1");
 const string ConnectorSetLocalSpeakerVolume1String ("Connector.SetLocalSpeakerVolume.1");
 const string SessionCreate1String ("Session.Create.1");
+const string SessionConnect1String ("Session.Connect.1");
 const string SessionSet3DPosition1String ("Session.Set3DPosition.1");
 const string SessionSetParticipantMuteForMe1String ("Session.SetParticipantMuteForMe.1");
 const string SessionSetParticipantVolumeForMe1String ("Session.SetParticipantVolumeForMe.1");
@@ -67,6 +68,7 @@ enum ActionType
     ConnectorSetLocalMicVolume1,
     ConnectorSetLocalSpeakerVolume1,
     SessionCreate1,
+    SessionConnect1,
     SessionSet3DPosition1,
     SessionSetParticipantMuteForMe1,
     SessionSetParticipantVolumeForMe1,
@@ -136,7 +138,6 @@ struct SessionCreateResponse : public ResponseBase
 
 	string ToString();
 };
-
 
 struct AuxGetRenderDevicesResponse : public ResponseBase
 {
@@ -243,6 +244,12 @@ struct SessionTerminateResponse : public ResponseBase
 struct SessionSetParticipantVolumeForMeResponse : public ResponseBase
 {
     SessionSetParticipantVolumeForMeResponse(const string& a, const string& request_id, const string& return_code)
+        : ResponseBase(a, request_id, return_code) {}
+};
+
+struct SessionConnectResponse : public ResponseBase
+{
+    SessionConnectResponse(const string& a, const string& request_id, const string& return_code)
         : ResponseBase(a, request_id, return_code) {}
 };
 
@@ -476,6 +483,7 @@ struct SessionSet3DPositionRequest : public Request
     SessionSet3DPositionRequest(const string& request_id)
        : Request(SessionSet3DPosition1, request_id, SessionSet3DPosition1String) {}
 
+    string SessionHandle;
     Orientation speaker;
     Orientation listener;
         
@@ -520,6 +528,17 @@ struct SessionTerminateRequest : public Request
 	SessionTerminateResponse* CreateResponse(const string& return_code);
 };
 
+struct SessionConnectRequest : public Request
+{
+    SessionConnectRequest(const string& request_id)
+       : Request(SessionConnect1, request_id, SessionConnect1String) {}
+
+    string SessionHandle;
+    string AudioMedia;
+
+	SessionConnectResponse* CreateResponse(const string& return_code);
+};
+
 //typedef list <const Request *> RequestQueue;
 
 //=============================================================================
@@ -554,11 +573,16 @@ struct SessionNewEvent : public EventBase
     SessionNewEvent (const string& t="SessionNewEvent")
         : EventBase (t) {}
 
+    string AccountHandle;
     string SessionHandle;
+	string State;	// is not written the document.
     string URI;
     string Name;
     string IsChannel;
     string AudioMedia;
+	string HasText;		// is not written the document.
+	string HasAudio;	// is not written the document.
+	string HasVideo;	// is not written the document.
 
 	string ToString();
 };
@@ -629,7 +653,7 @@ struct AuxAudioPropertiesEvent : public EventBase
 class RequestParser
 {
     public:
-        RequestParser (char *message);
+        RequestParser (const char *message);
         auto_ptr <const Request> Parse ();
 
     private:
@@ -663,6 +687,7 @@ class RequestParser
         auto_ptr <const Request> parse_ConnectorSetLocalMicVolume_ ();
         auto_ptr <const Request> parse_ConnectorSetLocalSpeakerVolume_ ();
         auto_ptr <const Request> parse_SessionCreate_ ();
+        auto_ptr <const Request> parse_SessionConnect_ ();
         auto_ptr <const Request> parse_SessionSet3DPosition_ ();
         auto_ptr <const Request> parse_SessionSetParticipantMuteForMe_ ();
         auto_ptr <const Request> parse_SessionSetParticipantVolumeForMe_ ();

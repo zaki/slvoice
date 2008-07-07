@@ -6,8 +6,6 @@
 #include <main.h>
 #include <parsing.hpp>
 
-#include "base64.h"
-
 #ifndef WIN32
 // this is for Linux/Unix
 #include <netinet/in.h>
@@ -291,7 +289,9 @@ RequestParser::parse_SessionSet3DPosition_ ()
     const TiXmlElement *speaker, *listener; 
 
     // TODO: doesnt parse the XML yet
-    
+
+	req-> SessionHandle = get_root_text_ ("SessionHandle");
+
     speaker = get_root_element_ ("SpeakerPosition");
     if (!speaker)
         throw parse_error ("cannot parse speaker position");
@@ -343,7 +343,19 @@ RequestParser::parse_SessionTerminate_ ()
 }
 
 //=============================================================================
-RequestParser::RequestParser (char *message)
+auto_ptr <const Request>
+RequestParser::parse_SessionConnect_ ()
+{
+    SessionConnectRequest *req (new SessionConnectRequest (requestid_));
+    
+    req-> SessionHandle = get_root_text_ ("SessionHandle");
+    req-> AudioMedia = get_root_text_ ("AudioMedia");
+
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+RequestParser::RequestParser (const char *message)
 {
     doc_.Parse (message); // parse the XML into DOM object
     requestid_ = get_request_id_();
@@ -377,6 +389,7 @@ RequestParser::Parse ()
         case SessionSetParticipantMuteForMe1: return parse_SessionSetParticipantMuteForMe_ ();
         case SessionSetParticipantVolumeForMe1: return parse_SessionSetParticipantVolumeForMe_ ();
         case SessionTerminate1: return parse_SessionTerminate_ ();
+        case SessionConnect1: return parse_SessionConnect_ ();
 
         default: throw parse_error ("unable to parse type: " + get_action_() ); 
     }
@@ -466,6 +479,9 @@ ActionType RequestParser::get_action_type_ ()
         else if (has_substring (action, "Terminate", n))
             return SessionTerminate1;
 
+        else if (has_substring (action, "Connect", n))
+            return SessionConnect1;
+
         else if (has_substring (action, "Set3DPosition", n))
             return SessionSet3DPosition1;
 
@@ -507,92 +523,6 @@ RequestParser::get_text_ (const TiXmlElement *e, const string& name)
     else
         throw parse_error ("failed to get text: " + name);
 }
-
-#if 0
-//=============================================================================
-string
-format_response (const EventMessage& ev)
-{
-    ostringstream ss;
-    TiXmlDocument doc;
-    TiXmlElement *root;
-
-    doc.Parse (glb_event_xml.c_str());
-
-    root = doc.RootElement();
-    root->SetAttribute ("type", ev.type);
-
-    ss << ev.status_code;
-    root->FirstChildElement ("StatusCode")->
-        InsertEndChild (TiXmlText (ss.str()));
-    ss.str ("");
-
-    ss << ev.state;
-    root->FirstChildElement ("State")->
-        InsertEndChild (TiXmlText (ss.str()));
-    ss.str ("");
-
-    if (ev.params.size())
-    {
-        EventMessage::ParameterList::const_iterator 
-            i (ev.params.begin()),
-              end (ev.params.end());
-
-        for (; i != end; ++i)
-        {
-            TiXmlElement param (i->first);
-            param.InsertEndChild (TiXmlText (i->second));
-            root->InsertEndChild (param);
-        }
-    }
-
-    ss << doc;
-
-    return ss.str();
-}
-
-//=============================================================================
-string
-format_response (const ResponseMessage& resp)
-{
-    ostringstream ss;
-    TiXmlDocument doc;
-    TiXmlElement *root, *result, *input; 
-
-    doc.Parse (glb_response_xml.c_str());
-
-    root = doc.RootElement();
-    root->SetAttribute ("action", resp.action);
-
-    result = root->FirstChildElement ("Results");
-    input = root->FirstChildElement ("InputXml");
-
-    ss << resp.return_code;
-    root->FirstChildElement ("ReturnCode")->
-        InsertEndChild (TiXmlText (ss.str()));
-    ss.str ("");
-
-    ss << resp.status_code;
-    result->FirstChildElement ("StatusCode")->
-        InsertEndChild (TiXmlText (ss.str()));
-    ss.str ("");
-
-    if (resp.handle.size())
-    {
-        string type;
-        type.assign (resp.action, 0, resp.action.find ('.'));
-        type += "Handle";
-
-        result->InsertEndChild (TiXmlElement (type));
-        result->FirstChildElement (type)->
-            InsertEndChild (TiXmlText (resp.handle));
-    }
-
-    ss << doc;
-
-    return ss.str();
-}
-#endif
 
 ResponseBase* Request::CreateResponse(const string& return_code)
 {
@@ -692,6 +622,11 @@ SessionSetParticipantVolumeForMeResponse* SessionSetParticipantVolumeForMeReques
 SessionTerminateResponse* SessionTerminateRequest::CreateResponse(const string& return_code)
 {
 	return new SessionTerminateResponse(Action, RequestId, return_code);
+}
+
+SessionConnectResponse* SessionConnectRequest::CreateResponse(const string& return_code)
+{
+	return new SessionConnectResponse(Action, RequestId, return_code);
 }
 
 
@@ -819,11 +754,16 @@ string SessionNewEvent::ToString()
 	string retval;
 
 	retval  = "<Event type=\"" + type + "\">"
+			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
 			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
+			+ "<State>" + State + "</State>"
 			+ "<URI>" + URI + "</URI>"
 			+ "<Name>" + Name + "</Name>"
 			+ "<IsChannel>" + IsChannel + "</IsChannel>"
 			+ "<AudioMedia>" + AudioMedia + "</AudioMedia>"
+			+ "<HasText>" + HasText + "</HasText>"
+			+ "<HasAudio>" + HasAudio + "</HasAudio>"
+			+ "<HasVideo>" + HasVideo + "</HasVideo>"
 			+ "</Event>\n\n\n";
 
 	return retval;
@@ -920,59 +860,7 @@ void Request::SetState (Orientation& state) const
 void 
 AccountLoginRequest::SetState (Account& state) const
 {
-    stringstream ss;
-
-	int nPos;
-
 	state.name = AccountName;
-
-	if ('x' == state.name.at(0)) {
-
-		state.name = state.name.substr(1);
-
-		nPos = 0;
-		
-		while ((nPos = state.name.find('-', nPos)) != std::string::npos) {
-			state.name.replace(nPos, 1, "+");
-		}
-
-		nPos = 0;
-
-		while ((nPos = state.name.find('_', nPos)) != std::string::npos) {
-			state.name.replace(nPos, 1, "/");
-		}
-
-		// base64 decoding
-		state.name = base64_decode(state.name);
-
-		/*
-		typedef struct _GUID {
-			unsigned long Data1;
-			unsigned short Data2;
-			unsigned short Data3;
-			unsigned char Data4[8];
-		} GUID, UUID;
-		*/
-
-		// TODO : this code is tentative
-
-		char buf[37];
-		memset(buf, 0x00, sizeof(buf));
-
-		const char *in = state.name.c_str();
-
-		snprintf(buf, sizeof(buf)-1, "%08x-%04x-%04x-%04x-%08x%04x", 
-			ntohl(*(unsigned long *)(in)), 
-			ntohs(*(unsigned short*)(in+4)), 
-			ntohs(*(unsigned short*)(in+6)), 
-			ntohs(*(unsigned short*)(in+8)), 
-			ntohl(*(unsigned long *)(in+10)), 
-			ntohs(*(unsigned short*)(in+14))
-		);
-
-		state.name = buf;
-	}
-
 	state.password = AccountPassword;
 	state.uri = AccountURI;
 }

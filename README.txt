@@ -2,7 +2,9 @@
 
 Requirements
 - CMake
-- Boost (Statechart -- header-based library)
+- PJSIP (SIP stack / media stack)
+- Boost (Statechart / Thread)
+- Curl
  
 Win32
     Requirements
@@ -13,9 +15,18 @@ Win32
         b. open the solution file and set to Release
         c. build
         d. note the "PJTARGET" which is a string that describes the platform PJSIP is built for (for example "i386-win32-vc8-release")
-        
-    2. Build the application
+
+    2. Build the Boost 
+        a. build it by using bjam
+           bjam --toolset=msvc link=static runtime-link=static threading=multi --with-thread stage
+
+    3. Build the Curl 
+        a. build
+           (set the Runtime Library option to Multi-Threaded[/MT])
+
+    4. Build the application
         a. open CMakeLists.txt and ensure that the variable for PJTARGET is correct for your system (for example "i386-win32-vc8-release")
+           Moreover, set the path and filename about the boost and curl
         b. open the cmake GUI and configure the project
         c. open the solution file and build
 
@@ -40,9 +51,9 @@ Linux
     - copy SLVoice(.exe) to the SecondLife directory, replacing the existing binary file
 
 3. Connecting to a SIP conference
-    - in the same directory as the executable file, create a file called "sip.conf" that has a conference SIP URI on the first line, and a registered user SIP URI on the second line.
+    - in the same directory as the executable file, create a file called "slvoice.ini" that has a HTTP server URI which return SIP-domain on the first line.
 
-    For example: echo -e "sip:conference@example.com\nsip:user@example.com" | cat > sip.conf
+    For example: http://userserver:8002/?method=voip
 
 4. Setting up to work with OpenSim
     - ensure that your OpenSim.ini contains the following section:
