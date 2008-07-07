@@ -5,20 +5,32 @@ PROJECT (voiceforvw)
 
 SET (CMAKE_BUILD_TYPE Debug)
 
+SET (PJDIR "C:/path/to/pjproject")
+
 # included source variables
-SET (VOICEDIR ${CMAKE_SOURCE_DIR}/.)
-SET (PJDIR ${CMAKE_SOURCE_DIR}/pjproject)
+SET (VOICEDIR ${CMAKE_SOURCE_DIR}/voiceforvw)
 SET (SOCKETDIR ${CMAKE_SOURCE_DIR}/sockets)
 SET (TINYXMLDIR ${CMAKE_SOURCE_DIR}/tinyxml)
 
 SET (VOICESRC 
-    ${VOICEDIR}/main.cpp
-    ${VOICEDIR}/sip.cpp
-    ${VOICEDIR}/server.cpp
-    ${VOICEDIR}/state.cpp
-    ${VOICEDIR}/parsing.cpp
-    ${VOICEDIR}/parameters.cpp
-    ${VOICEDIR}/base64.cpp)
+    ${VOICEDIR}/src/main/main.cpp
+    ${VOICEDIR}/src/sip/sip.cpp
+    ${VOICEDIR}/src/server/server.cpp
+    ${VOICEDIR}/src/state/state.cpp
+    ${VOICEDIR}/src/parsing/parsing.cpp
+    ${VOICEDIR}/src/parsing/parameters.cpp
+    ${VOICEDIR}/src/parsing/base64.cpp)
+
+SET (VOICEINCDIR ${VOICEDIR}/include)
+
+SET (VOICEINC 
+	${VOICEINCDIR}/main.h 
+	${VOICEINCDIR}/parameters.hpp 
+	${VOICEINCDIR}/parsing.hpp 
+	${VOICEINCDIR}/server.hpp 
+	${VOICEINCDIR}/sip.hpp 
+	${VOICEINCDIR}/state.hpp 
+	${VOICEINCDIR}/base64.h)
 
 SET (SOCKETSRC 
     ${SOCKETDIR}/Sockets.cpp)
@@ -122,9 +134,10 @@ FIND_FILE (PJINCL
 
 # aggregate the variables
 SET (SRC ${VOICESRC} ${SOCKETSRC} ${TINYXMLSRC})
+SET (INC ${VOICEINC})
 SET (LIBS ${LIBS} ${PJLIBS})
 
-SET (INCLDIR ${VOICEDIR} ${PJINCLDIR})
+SET (INCLDIR ${VOICEINCDIR} ${PJINCLDIR} ${CMAKE_SOURCE_DIR})
 SET (LIBDIR ${PJLIBDIR})
 
 # set the build
@@ -132,10 +145,10 @@ INCLUDE_DIRECTORIES (${INCLDIR})
 LINK_DIRECTORIES (${LIBDIR})
 
 IF (WIN32)
-    ADD_EXECUTABLE (SLVoice WIN32 ${SRC})
+    ADD_EXECUTABLE (SLVoice WIN32 ${SRC} ${INC})
 ENDIF (WIN32)
 IF (UNIX)
-    ADD_EXECUTABLE (SLVoice ${SRC})
+    ADD_EXECUTABLE (SLVoice ${SRC} ${INC})
 ENDIF (UNIX)
 
 TARGET_LINK_LIBRARIES (SLVoice ${LIBS})
