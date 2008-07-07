@@ -6,7 +6,8 @@
 #ifndef _VOICE_HPP_
 #define _VOICE_HPP_
 
-#include <pjsua-lib/pjsua.h>
+//#include <pjsua-lib/pjsua.h>
+#include "sip.hpp"
 
 struct Account;
 struct Connection;
@@ -22,12 +23,7 @@ struct Account
     string password;
     string uri;
 
-    string handle;
-};
-
-struct Connection
-{
-    string handle;
+//    string handle;
 };
 
 struct Session
@@ -35,10 +31,6 @@ struct Session
     string name;
     string password;
     string uri;
-
-    string handle;
-
-	pjsua_call_id call_id;
 };
 
 struct Audio

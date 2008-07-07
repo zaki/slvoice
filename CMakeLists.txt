@@ -5,21 +5,48 @@ PROJECT (voiceforvw)
 
 SET (CMAKE_BUILD_TYPE Debug)
 
-SET (PJDIR "C:/path/to/pjproject")
+# settings of third-party libs
+
+# pjsip
+SET (PJDIR C:/path/to/pjproject)
+
+# curl
+SET (CURLDIR "C:/path/to/curl-7.18.2")
+SET (CURLINCDIR ${CURLDIR}/include)
+SET (CURLLIBDIR ${CURLDIR}/lib/Release)
+SET (CURLLIBS ${CURLLIBDIR}/curllib.lib)
+
+# boost
+SET (BOOSTDIR "C:/path/to/boost_1_35_0")
+SET (BOOSTINCDIR ${BOOSTDIR})
+SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
+SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
+
+SET (EXTLIBDIR ${CURLLIBDIR} ${BOOSTLIBDIR})
+SET (EXTINCDIR ${CURLINCDIR} ${BOOSTINCDIR})
+SET (EXTLIBS ${CURLLIBS} ${BOOSTLIBS})
 
 # included source variables
 SET (VOICEDIR ${CMAKE_SOURCE_DIR}/voiceforvw)
 SET (SOCKETDIR ${CMAKE_SOURCE_DIR}/sockets)
 SET (TINYXMLDIR ${CMAKE_SOURCE_DIR}/tinyxml)
 
+SET (VOICESRCDIR ${VOICEDIR}/src)
+
 SET (VOICESRC 
-    ${VOICEDIR}/src/main/main.cpp
-    ${VOICEDIR}/src/sip/sip.cpp
-    ${VOICEDIR}/src/server/server.cpp
-    ${VOICEDIR}/src/state/state.cpp
-    ${VOICEDIR}/src/parsing/parsing.cpp
-    ${VOICEDIR}/src/parsing/parameters.cpp
-    ${VOICEDIR}/src/parsing/base64.cpp)
+    ${VOICESRCDIR}/main/main.cpp
+    ${VOICESRCDIR}/sip/sip.cpp
+    ${VOICESRCDIR}/server/server.cpp
+    ${VOICESRCDIR}/server/server_util.cpp
+    ${VOICESRCDIR}/state/connect_state.cpp
+    ${VOICESRCDIR}/state/account_state.cpp
+    ${VOICESRCDIR}/state/session_state.cpp
+    ${VOICESRCDIR}/manage/base_manager.cpp
+    ${VOICESRCDIR}/manage/account_manager.cpp
+    ${VOICESRCDIR}/manage/session_manager.cpp
+    ${VOICESRCDIR}/manage/event_manager.cpp
+    ${VOICESRCDIR}/parsing/parsing.cpp
+    ${VOICESRCDIR}/parsing/parameters.cpp)
 
 SET (VOICEINCDIR ${VOICEDIR}/include)
 
@@ -28,9 +55,10 @@ SET (VOICEINC
 	${VOICEINCDIR}/parameters.hpp 
 	${VOICEINCDIR}/parsing.hpp 
 	${VOICEINCDIR}/server.hpp 
+	${VOICEINCDIR}/server_util.hpp 
 	${VOICEINCDIR}/sip.hpp 
-	${VOICEINCDIR}/state.hpp 
-	${VOICEINCDIR}/base64.h)
+	${VOICEINCDIR}/event.hpp 
+	${VOICEINCDIR}/state.hpp)
 
 SET (SOCKETSRC 
     ${SOCKETDIR}/Sockets.cpp)
@@ -40,7 +68,7 @@ SET (TINYXMLSRC
     ${TINYXMLDIR}/tinyxmlerror.cpp
     ${TINYXMLDIR}/tinyxmlparser.cpp 
     ${TINYXMLDIR}/tinystr.cpp )
-    
+
 # where to find PJSIP files locally
 FILE (GLOB PJINCLDIR ${PJDIR}/*/include)
 FILE (GLOB PJLIBDIR ${PJDIR}/*/lib)
@@ -56,14 +84,14 @@ IF (WIN32)
     
     # necessary system-level libraries
     SET (PJTARGET i386-win32-vc8-release)
-    SET (LIBS ${LIBS} wsock32.lib ws2_32.lib)
+    SET (LIBS ${LIBS} wsock32.lib ws2_32.lib winmm.lib wldap32.lib)
 
-    SET(CMAKE_CXX_FLAGS "/D WIN32 /nologo /W3 /Gy /EHsc")
+    SET(CMAKE_CXX_FLAGS "/D WIN32 /D CURL_STATICLIB /D BOOST_ALL_NO_LIB /nologo /W3 /Gy /EHsc")
     SET(CMAKE_CXX_FLAGS_DEBUG "/MTd /Z7 /Od")
 
     # you can use MT, if pjsip is built with MT option.
-#    SET(CMAKE_CXX_FLAGS_RELEASE "/MT /O2")
-    SET(CMAKE_CXX_FLAGS_RELEASE "/MD /O2")
+    SET(CMAKE_CXX_FLAGS_RELEASE "/MT /O2")
+#    SET(CMAKE_CXX_FLAGS_RELEASE "/MD /O2")
 
 ENDIF (WIN32)
 
@@ -135,10 +163,11 @@ FIND_FILE (PJINCL
 # aggregate the variables
 SET (SRC ${VOICESRC} ${SOCKETSRC} ${TINYXMLSRC})
 SET (INC ${VOICEINC})
-SET (LIBS ${LIBS} ${PJLIBS})
 
-SET (INCLDIR ${VOICEINCDIR} ${PJINCLDIR} ${CMAKE_SOURCE_DIR})
-SET (LIBDIR ${PJLIBDIR})
+SET (LIBS ${LIBS} ${PJLIBS} ${EXTLIBS})
+
+SET (INCLDIR ${VOICEINCDIR} ${PJINCLDIR} ${CMAKE_SOURCE_DIR} ${EXTINCDIR})
+SET (LIBDIR ${PJLIBDIR} ${EXTLIBDIR})
 
 # set the build
 INCLUDE_DIRECTORIES (${INCLDIR})

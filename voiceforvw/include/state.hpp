@@ -6,6 +6,8 @@
 #ifndef _STATE_HPP_
 #define _STATE_HPP_
 
+#include <main.h>
+
 #include <boost/mpl/list.hpp>
 #include <boost/statechart/event.hpp>
 #include <boost/statechart/custom_reaction.hpp>
@@ -14,136 +16,340 @@
 
 using namespace boost::statechart;
 
-//=============================================================================
-// State machine
+// ------------------------------ Session ------------------------------
+struct SessionIdleState;
+class SessionInfo;
 
-class Server;
-struct StateMachine;
-struct StartState;
-struct ConnectionState;
-struct AccountState;
-struct SessionState;
-struct DialingState;
-struct StopState;
-
-//struct Event { RequestQueue messages; };
-struct Event 
+struct SessionMachine : state_machine <SessionMachine, SessionIdleState> 
 {
-	Request *message;
-	ResponseBase *result;
+	SessionInfo* info;
 };
 
-struct StartEvent : public Event, event <StartEvent> {};
-struct AccountEvent : public Event, event <AccountEvent> {};
-struct ConnectionEvent : public Event, event <ConnectionEvent> {};
-struct SessionEvent : public Event, event <SessionEvent> {};
-struct PositionEvent : public Event, event <PositionEvent> {};
-struct AudioEvent : public Event, event <AudioEvent> {};
-struct DialFailedEvent : public Event, event <DialFailedEvent> {};
-struct DialSucceedEvent : public Event, event <DialSucceedEvent> {};
-struct StopEvent : public Event, event <StopEvent> {};
-
-struct StateMachine : state_machine <StateMachine, StartState> 
+struct SessionIdleState : state <SessionIdleState, SessionMachine> 
 {
-    Audio audio; // the current audio state
-    Account account; // the current account state
-    Connection connection; // the current connector state
-    Session session; // the current session state
-    Orientation speaker; // the position of the speaking voice
-    Orientation listener; // the position of the listener to the speaker
+    typedef boost::mpl::list<
+		custom_reaction<SessionCreateEvent>, 
+		custom_reaction<DialIncomingEvent>> reactions;
+
+    SessionIdleState(my_context ctx);
+    ~SessionIdleState();
+
+    result react(const SessionCreateEvent& ev);
+    result react(const DialIncomingEvent& ev);
+
+    SessionMachine& machine;
 };
 
-struct StartState : state <StartState, StateMachine> 
+struct SessionTerminatedState : state <SessionTerminatedState, SessionMachine> 
 {
-    typedef custom_reaction <ConnectionEvent> reactions;
+    SessionTerminatedState(my_context ctx);
+    ~SessionTerminatedState();
 
-    StartState (my_context ctx);
-    ~StartState ();
-
-    result react (const ConnectionEvent& ev);
-
-    StateMachine& machine;
+    SessionMachine& machine;
 };
 
-struct ConnectionState : state <ConnectionState, StateMachine> 
+struct SessionCallingState : state <SessionCallingState, SessionMachine> 
 {
-    typedef boost::mpl::list 
-        <custom_reaction <StopEvent>, 
-        custom_reaction <AccountEvent> > reactions;
+    typedef boost::mpl::list<
+		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<DialEarlyEvent>, 
+		custom_reaction<DialConnectingEvent>, 
+		custom_reaction<DialSucceedEvent>, 
+		custom_reaction<DialDisconnectedEvent>> reactions;
 
-    ConnectionState (my_context ctx);
-    ~ConnectionState ();
+    SessionCallingState(my_context ctx);
+    ~SessionCallingState();
 
-    result react (const StopEvent& ev);
-    result react (const AccountEvent& ev);
+    result react(const SessionTerminateEvent& ev);
+    result react(const DialEarlyEvent& ev);
+    result react(const DialConnectingEvent& ev);
+    result react(const DialSucceedEvent& ev);
+    result react(const DialDisconnectedEvent& ev);
 
-    StateMachine& machine;
+    SessionMachine& machine;
 };
 
-struct AccountState : state <AccountState, StateMachine> 
+struct SessionIncomingState : state <SessionIncomingState, SessionMachine> 
 {
-    typedef boost::mpl::list 
-        <custom_reaction <StopEvent>, 
-        custom_reaction <SessionEvent> > reactions;
+    typedef boost::mpl::list<
+		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<SessionConnectEvent>, 
+		custom_reaction<DialEarlyEvent>, 
+		custom_reaction<DialConnectingEvent>, 
+		custom_reaction<DialSucceedEvent>, 
+		custom_reaction<DialDisconnectedEvent>> reactions;
 
-    AccountState (my_context ctx);
-    ~AccountState ();
+    SessionIncomingState(my_context ctx);
+    ~SessionIncomingState();
 
-    result react (const StopEvent& ev);
-    result react (const SessionEvent& ev);
+    result react(const SessionTerminateEvent& ev);
+    result react(const SessionConnectEvent& ev);
+    result react(const DialEarlyEvent& ev);
+    result react(const DialConnectingEvent& ev);
+    result react(const DialSucceedEvent& ev);
+    result react(const DialDisconnectedEvent& ev);
 
-    StateMachine& machine;
+    SessionMachine& machine;
 };
 
-struct SessionState : state <SessionState, StateMachine> 
+struct SessionEarlyState : state <SessionEarlyState, SessionMachine> 
 {
-    typedef boost::mpl::list 
-        <custom_reaction <StopEvent>, 
-        custom_reaction <AudioEvent>, 
-        custom_reaction <PositionEvent> > reactions;
+    typedef boost::mpl::list<
+		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<SessionConnectEvent>, 
+		custom_reaction<DialConnectingEvent>, 
+		custom_reaction<DialSucceedEvent>, 
+		custom_reaction<DialDisconnectedEvent>> reactions;
 
-    SessionState (my_context ctx);
-    ~SessionState (); 
+    SessionEarlyState(my_context ctx);
+    ~SessionEarlyState();
 
-    result react (const StopEvent& ev);
-    result react (const AudioEvent& ev);
-    result react (const PositionEvent& ev);
+    result react(const SessionTerminateEvent& ev);
+    result react(const SessionConnectEvent& ev);
+    result react(const DialConnectingEvent& ev);
+    result react(const DialSucceedEvent& ev);
+    result react(const DialDisconnectedEvent& ev);
 
-    StateMachine& machine;
+    SessionMachine& machine;
 };
 
-struct DialingState : state <DialingState, StateMachine> 
+struct SessionConnectingState : state <SessionConnectingState, SessionMachine> 
 {
-    typedef boost::mpl::list 
-        <custom_reaction <StopEvent>, 
-        custom_reaction <DialSucceedEvent>, 
-        custom_reaction <DialFailedEvent> > reactions;
+    typedef boost::mpl::list<
+		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<DialSucceedEvent>, 
+		custom_reaction<DialDisconnectedEvent>> reactions;
 
-    DialingState (my_context ctx);
-    ~DialingState (); 
+    SessionConnectingState(my_context ctx);
+    ~SessionConnectingState();
 
-    result react (const StopEvent& ev);
-    result react (const DialSucceedEvent& ev);
-    result react (const DialFailedEvent& ev);
+    result react(const SessionTerminateEvent& ev);
+    result react(const DialSucceedEvent& ev);
+    result react(const DialDisconnectedEvent& ev);
 
-    StateMachine& machine;
+    SessionMachine& machine;
 };
 
-
-struct StopState : state <StopState, StateMachine> 
+struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine> 
 {
-    typedef boost::mpl::list 
-        <custom_reaction <SessionEvent>, 
-        custom_reaction <StopEvent> > reactions;
+    typedef boost::mpl::list<
+		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<AudioEvent>, 
+		custom_reaction<PositionEvent>, 
+		custom_reaction<DialDisconnectedEvent>> reactions;
 
-	StopState (my_context ctx);
-    ~StopState ();
+    SessionConfirmedState(my_context ctx);
+    ~SessionConfirmedState();
 
-//	result react (const ConnectionEvent& ev);
-	result react (const SessionEvent& ev);
-	result react (const StopEvent& ev);
+    result react(const SessionTerminateEvent& ev);
+    result react(const AudioEvent& ev);
+    result react(const PositionEvent& ev);
+    result react(const DialDisconnectedEvent& ev);
 
-    StateMachine& machine;
+    SessionMachine& machine;
+};
+
+// ------------------------------ Account ------------------------------
+struct AccountLogoutState;
+class AccountInfo;
+
+struct AccountMachine : state_machine<AccountMachine, AccountLogoutState> 
+{
+	AccountInfo* info;
+};
+
+struct AccountLogoutState : state <AccountLogoutState, AccountMachine> 
+{
+	typedef boost::mpl::list<
+		custom_reaction<AccountLoginEvent>> reactions;
+
+    AccountLogoutState(my_context ctx);
+    ~AccountLogoutState();
+
+    result react(const AccountLoginEvent& ev);
+
+    AccountMachine& machine;
+};
+
+struct AccountRegisteringState : state <AccountRegisteringState, AccountMachine> 
+{
+	typedef boost::mpl::list<
+		custom_reaction<RegSucceedEvent>, 
+		custom_reaction<RegFailedEvent>> reactions;
+
+    AccountRegisteringState(my_context ctx);
+    ~AccountRegisteringState();
+
+    result react(const RegSucceedEvent& ev);
+    result react(const RegFailedEvent& ev);
+
+    AccountMachine& machine;
+};
+
+struct AccountLoginState : state <AccountLoginState, AccountMachine> 
+{
+    typedef boost::mpl::list<
+		custom_reaction<AccountLogoutEvent>, 
+		custom_reaction<RegFailedEvent>> reactions;
+
+    AccountLoginState(my_context ctx);
+    ~AccountLoginState();
+
+    result react(const AccountLogoutEvent& ev);
+    result react(const RegFailedEvent& ev);
+
+    AccountMachine& machine;
+};
+
+struct AccountUnregisteringState : state <AccountUnregisteringState, AccountMachine> 
+{
+	typedef boost::mpl::list<
+		custom_reaction<RegSucceedEvent>, 
+		custom_reaction<RegFailedEvent>> reactions;
+
+    AccountUnregisteringState(my_context ctx);
+    ~AccountUnregisteringState();
+
+    result react(const RegSucceedEvent& ev);
+    result react(const RegFailedEvent& ev);
+
+    AccountMachine& machine;
+};
+
+// ------------------------------ Connector ------------------------------
+struct ConnectorIdleState;
+class ConnectorInfo;
+
+struct ConnectorMachine : state_machine <ConnectorMachine, ConnectorIdleState> 
+{
+	ConnectorInfo* info;
+};
+
+struct ConnectorIdleState : state <ConnectorIdleState, ConnectorMachine> 
+{
+    typedef custom_reaction<InitializeEvent> reactions;
+
+    ConnectorIdleState(my_context ctx);
+    ~ConnectorIdleState();
+
+    result react(const InitializeEvent& ev);
+
+    ConnectorMachine& machine;
+};
+
+struct ConnectorActiveState : state <ConnectorActiveState, ConnectorMachine> 
+{
+    typedef boost::mpl::list<
+		custom_reaction<ShutdownEvent>, 
+		custom_reaction<AudioEvent>> reactions;
+
+    ConnectorActiveState(my_context ctx);
+    ~ConnectorActiveState();
+
+    result react(const ShutdownEvent& ev);
+    result react(const AudioEvent& ev);
+
+    ConnectorMachine& machine;
+};
+
+class BaseInfo {
+	public:
+		string handle;
+		int id;
+};
+
+class AccountInfo : public BaseInfo {
+	
+	public:
+		AccountInfo() {
+			machine.initiate();
+			machine.info = this;
+		};
+		~AccountInfo() {
+			machine.terminate();
+		};
+
+		AccountMachine machine;
+	    Account account;
+};
+
+class SessionInfo : public BaseInfo {
+	
+	public:
+		SessionInfo(const AccountInfo* acc) {
+			machine.initiate();
+			machine.info = this;
+			account = acc;
+		};
+		~SessionInfo() {
+			machine.terminate();
+		};
+
+		SessionMachine machine;
+
+		Session session; // the current session state
+	    Orientation speaker; // the position of the speaking voice
+	    Orientation listener; // the position of the listener to the speaker
+
+		string incoming_uri;
+
+		const AccountInfo* account;
+};
+
+class BaseManager {
+	
+	public:
+		string registHandle(BaseInfo*);
+		BaseInfo* findBase(const string&);
+		void registId(const int, const string&);
+		string convertId(const int);
+		void remove(const string&);
+	protected:
+		map<string, BaseInfo*> infos;
+		map<int, string> handles;
+};
+
+class SessionManager : public BaseManager {
+	
+	public:
+		SessionManager() { };
+		~SessionManager() { };
+		
+		string create(const AccountInfo*);
+		SessionInfo* find(const string&);
+		void controlAudioLevel();
+};
+
+class AccountManager : public BaseManager {
+	
+	public:
+		AccountManager() { };
+		~AccountManager() { };
+		
+		string create();
+		AccountInfo* find(const string&);
+};
+
+class ConnectorInfo : public BaseInfo {
+	
+	public:
+		ConnectorInfo() {
+			machine.initiate();
+			machine.info = this;
+		};
+		~ConnectorInfo() {
+			machine.terminate();
+		};
+
+	    Audio audio; // the current audio state
+
+		AccountManager account;
+		SessionManager session;
+
+		ConnectorMachine machine;
+
+		string sipserver;
+		SIPConference *sipconf;
 };
 
 #endif //_STATE_HPP_

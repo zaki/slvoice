@@ -1,4 +1,4 @@
-/* voice.cpp -- voice module
+/* parameters.cpp -- parameters module
  *
  *			Copyright 2008, 3di.jp Inc
  */

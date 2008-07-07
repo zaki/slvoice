@@ -26,16 +26,17 @@ struct SIPUserInfo
     string get_uri () const { return "sip:" + name + "@" + domain; }
 };
 
+
 struct SIPServerInfo
 {
     SIPServerInfo () {}
-	SIPServerInfo (const string& c, const string& d) 
-        : conference (c), domain (d) {}
+//	SIPServerInfo (const string& c, const string& d) 
+//        : conference (c), domain (d) {}
 
-    string conference;
+//    string conference;
     string domain;
     
-    string get_conf_uri () const { return "sip:" + conference + "@" + domain; }
+//    string get_conf_uri () const { return "sip:" + conference + "@" + domain; }
     string get_reg_uri () const { return "sip:" + domain; }
 };
 
@@ -44,16 +45,20 @@ class SIPConference
     public:
         typedef list <SIPUserInfo> SIPUserList;
 
-        SIPConference (); 
-//        SIPConference (const SIPServerInfo&);
-        ~SIPConference (); 
+        SIPConference (const SIPServerInfo&);
+        ~SIPConference(); 
 
-        void Register (const SIPUserInfo&); 
-        void Join (const SIPServerInfo&); 
-        void Leave (); 
+        void Register(const SIPUserInfo&, int*); 
+        void UnRegister(const int); 
+
+		void Join(const SIPUserInfo&, int, int*);
+		void Answer(const int, const unsigned int);
+        void Leave(const int);
 
 		void AdjustTranVolume(pjsua_call_id, float);
 		void AdjustRecvVolume(pjsua_call_id, float);
+
+		string resolveDomain(const string&);
 
     private:
         void start_sip_stack_(); 
@@ -61,12 +66,7 @@ class SIPConference
 
     private:
         SIPServerInfo server_;
-        SIPUserInfo user_;
     
-    private:
-        pjsua_acc_id acc_id;
-        pj_status_t status;
-
     private:
         SIPConference (const SIPConference&);
         void operator= (const SIPConference&);

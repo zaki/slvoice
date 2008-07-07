@@ -3,8 +3,10 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
-#include <main.h>
-#include <server.hpp>
+#include <curl/curl.h>
+
+#include "main.h"
+#include "server.hpp"
 
 //=============================================================================
 Server::Server (int port) : 
@@ -22,8 +24,6 @@ Server::Server (int port) :
         socketsInit (); // for winsock compat
         server_.listen (port_);
         sock_.reset (new TCPSocketWrapper (server_.accept ()));
-
-        state_.initiate ();
     }
     catch (exception &e)
     {
@@ -59,8 +59,6 @@ void Server::Start ()
 
     char *buf (buf_.get());
 
-    state_.process_event (StartEvent());
-
     size_t nread (0);
 
     memset (buf, 0, bufsize_);
@@ -89,9 +87,9 @@ void Server::Start ()
 
 			VFVW_LOG("received: %s", cur);
 
-			enqueue_request_ (cur);
+//			enqueue_request_ (cur);
 
-			process_request_queue_();
+			process_request_queue_(cur);
 
 			nread -= strlen(cur);
 
@@ -111,186 +109,85 @@ void Server::Send (const string& m)
     sock_->write (m.c_str(), m.size()); 
 }
 
-#if 0
 //=============================================================================
-void Server::Conference (const string& filename)
+void Server::process_request_queue_(const char* mesg)
 {
-    SIPServerInfo sinfo;
-    SIPUserInfo uinfo;
+	Event *ev = NULL;
 
-    ifstream file (filename.c_str());
-    if (!file) throw runtime_error ("unable to open sip.conf file");
+	Request *request = NULL;
+	ResponseBase *response = NULL;
 
-    file >> sinfo;
-    file >> uinfo;
-    file.close();
-
-    activeconference_.reset (new SIPConference (sinfo));
-    activeconference_-> Register (uinfo);
-    activeconference_-> Join ();
-}
-#endif
-
-//=============================================================================
-void Server::InitConf ()
-{
-	activeconference_.reset (new SIPConference ());
-}
-
-
-//=============================================================================
-void Server::JoinConf (const Account& account, const Session& session)
-{
-    SIPServerInfo sinfo;
-    SIPUserInfo uinfo;
-
-	stringstream ss;
-
-    ss.str (session.uri);
-    ss >> sinfo;
-
-	uinfo.name = account.name;
-	uinfo.password = account.password;
-	uinfo.domain = sinfo.domain;
-	
-    activeconference_-> Register (uinfo);
-    activeconference_-> Join (sinfo);
-}
-
-
-//=============================================================================
-void Server::LeaveConf()
-{
-    activeconference_->Leave();
-}
-
-//=============================================================================
-void Server::AudioControl(const Session& session, const Audio& audio)
-{
-	float mic_volume = 0.0f;
-	float spk_volume = 0.0f;
-
-	// adjust mic volume
-	if (!audio.mic_mute) {
-		mic_volume = audio.mic_volume;
-		// adjust between SL and PJSIP
-		mic_volume = (mic_volume - VFVW_SL_VOLUME_MIN) 
-						* VFVW_PJ_VOLUME_RANGE / VFVW_SL_VOLUME_RANGE;
-	}
-	activeconference_->AdjustTranVolume(session.call_id, mic_volume);
-
-	// adjust speaker volume
-	if (!audio.speaker_mute) {
-		spk_volume = audio.speaker_volume;
-		// adjust between SL and PJSIP
-		spk_volume = (spk_volume - VFVW_SL_VOLUME_MIN) 
-						* VFVW_PJ_VOLUME_RANGE / VFVW_SL_VOLUME_RANGE;
-	}
-	activeconference_->AdjustRecvVolume(session.call_id, spk_volume);
-}
-
-
-//=============================================================================
-void Server::enqueue_request_ (char* mesg)
-{
-    RequestParser parser (mesg);
-    auto_ptr <const Request> req (parser.Parse());
-
+	// parsing a request message
+    RequestParser parser(mesg);
+    auto_ptr<const Request> req(parser.Parse());
 	request = (Request *)req.release();
-}
-
-//=============================================================================
-void Server::process_request_queue_ ()
-{
-    if (request == NULL)
-        return;
 
 	const string result_code = "1";
 	response = request->CreateResponse(result_code);
 
     switch (request->Type)
     {
-        case AccountLogin1:
-            {
-                AccountEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
-            break;
-
+		// Connector Events
         case ConnectorCreate1:
-            {
-                ConnectionEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
-            break;
+			ev = new InitializeEvent();
+			break;
 
-        case SessionCreate1:
-            {
-                SessionEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
-            break;
-
-        case SessionSet3DPosition1:
-            {
-                PositionEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
-            break;
-
-        case AccountLogout1:
         case ConnectorInitiateShutdown1:
-        case SessionTerminate1:
-            {
-                StopEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
+			ev = new ShutdownEvent();
             break;
 
-        case ConnectorMuteLocalMic1:
+		case ConnectorMuteLocalMic1:
         case ConnectorMuteLocalSpeaker1:
         case ConnectorSetLocalMicVolume1:
         case ConnectorSetLocalSpeakerVolume1:
-            {
-                AudioEvent ev;
-                flush_messages_on_event_ (ev);
-                state_.process_event (ev);
-            }
+			ev = new AudioEvent();
+            break;
+
+		// Account Events
+        case AccountLogin1:
+			ev = new AccountLoginEvent();
+            break;
+
+		case AccountLogout1:
+			ev = new AccountLogoutEvent();
+			((AccountEvent*)ev)->account_handle 
+				= ((AccountLogoutRequest *)request)->AccountHandle;
+            break;
+
+		// Session Events
+        case SessionCreate1:
+			ev = new SessionCreateEvent();
+			((SessionEvent*)ev)->account_handle 
+				= ((SessionCreateRequest *)request)->AccountHandle;
+            break;
+
+        case SessionSet3DPosition1:
+			ev = new PositionEvent();
+			((SessionEvent*)ev)->session_handle 
+				= ((SessionSet3DPositionRequest *)request)->SessionHandle;
+            break;
+
+        case SessionTerminate1:
+			ev = new SessionTerminateEvent();
+			((SessionEvent*)ev)->session_handle 
+				= ((SessionTerminateRequest *)request)->SessionHandle;
+            break;
+
+        case SessionConnect1:
+			ev = new SessionConnectEvent();
+			((SessionEvent*)ev)->session_handle 
+				= ((SessionConnectRequest *)request)->SessionHandle;
             break;
 
         default:
-            {
-                //MessageReceivedEvent ev;
-                //state_.process_event (ev);
-            }
+			VFVW_LOG("unknown request");
             break;
     }
 
-	if (response != NULL) {
-		response->ReturnCode = "0";
-
-		string respStr = response->ToString();
-		delete response;
-
-		try {
-			glb_server->Send(respStr);
-		}
-        catch (SocketRunTimeException& e) 
-        { 
-            // ignore
-        }
+	if (ev != NULL) {
+		ev->message = request;
+		ev->result = response;
+		g_eventManager.blockQueue.enqueue(ev);
 	}
-}
-
-//=============================================================================
-void Server::flush_messages_on_event_ (Event& ev)
-{
-	ev.message = request;
-	ev.result = response;
 }
 

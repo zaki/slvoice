@@ -8,10 +8,17 @@
 
 #include <sockets/Sockets.h>
 
+#include "state.hpp"
+
 const int glb_default_port (44124);
 
 #define	VFVW_XMLMSG_DELIM		"\n\n\n"
 #define	VFVW_XMLMSG_DELIM_LEN	strlen("\n\n\n")
+
+class ServerInfo {
+	public:
+		string sipsrvip;
+};
 
 //=============================================================================
 // Server class
@@ -24,18 +31,13 @@ class Server
         
         void Start ();
         void Send (const string&);
-//        void Conference (const string&);
-        void InitConf();
-        void JoinConf(const Account&, const Session&);
-		void LeaveConf();
-		void AudioControl(const Session&, const Audio&);
 
-        StateMachine& GetStateMachine () { return state_; }
+		ConnectorInfo* getConnector() { return &connector; }
 
     private:
-        void enqueue_request_ (char* mesg);
-        void process_request_queue_ ();
-        void flush_messages_on_event_ (Event& ev);
+        //void enqueue_request_ (char* mesg);
+        void process_request_queue_(const char* mesg);
+        //void flush_messages_on_event_ (Event& ev);
 
     private:
         const int port_;
@@ -45,14 +47,13 @@ class Server
         TCPSocketWrapper server_;
         auto_ptr <TCPSocketWrapper> sock_;
 
-		Request *request;
-		ResponseBase *response;
+		//Request *request;
+		//ResponseBase *response;
 
 	private:
-        StateMachine state_;
-        auto_ptr <SIPConference> activeconference_;
+        ConnectorInfo connector;
 
-    private:
+	private:
         Server (const Server&);
         void operator= (const Server&);
 };
