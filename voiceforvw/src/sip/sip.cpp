@@ -245,11 +245,66 @@ void SIPConference::Join(const SIPUserInfo& joinuri, int acc_id, int* callid) {
 
 	pj_str_t uri = pj_str(const_cast <char*> (temp.c_str()));
 
-    status = pjsua_call_make_call(
+	// Set prefered codec - Zaki [2008-07-16]
+    	string codec;
+	string disable_codecs;
+	ifstream file("slvoice.ini");
+	if (!file) throw runtime_error ("unable to open slvoice.ini file");
+	file >> codec;
+	if (file.eof())
+	{
+		VFVW_LOG("Codec was not set via the ini file");
+		file.close();
+	}
+	else
+	{
+		file >> codec;
+
+		bool disable = false;
+		if (!file.eof())
+		{
+			file >> disable_codecs;
+			disable = (disable_codecs == "disable");
+		}
+		file.close();
+
+		if (disable && codec != "")
+		{
+			unsigned int count;
+			pjsua_codec_info id[256];
+
+			status = pjsua_enum_codecs(id, &count);
+			if (status != PJ_SUCCESS)
+				error_exit("Error enumerating codecs", status);
+
+			VFVW_LOG("Disabling %d unselected codecs", count - 1);
+
+			for (unsigned int i = 0; i < count; i++)
+			{
+				pjsua_codec_set_priority(&(id[i].codec_id), 0);
+			}
+		}
+
+		VFVW_LOG("codec selected = %s", codec.c_str());
+
+		// Set the priority of the selected codec to be highest (255)
+		const pj_str_t codec_name = pj_str(const_cast <char*>(codec.c_str()));
+		status = pjsua_codec_set_priority(&codec_name, 255);
+		if (status != PJ_SUCCESS)
+		{
+			VFVW_LOG("Selected codec could not be set as default");
+		}
+		else
+		{
+			VFVW_LOG("Codec %s was set as default", codec.c_str());
+		}
+	}
+
+	status = pjsua_call_make_call(
 		acc_id, &uri, 0, NULL, NULL, (pjsua_call_id*)callid);
 
 	if (status != PJ_SUCCESS)
-        error_exit ("Error making call", status);
+		error_exit ("Error making call", status);
 }
 
 //=============================================================================
