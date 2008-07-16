@@ -55,6 +55,21 @@ Linux
 
     For example: http://userserver:8002/?method=voip
     
+    - you can also set the preferred codec name in slvoice.ini by adding a second line with the codec's name on it such as speex or speex/8000. On the next line, optionally you can specify whether this codec should be the only one enabled by writing "disable" without the quotes. This is useful for testing with an Asterisk server that allows multiple codecs, however also sets a preference on these codecs. 
+In many cases, the server settings might override the codec priority settings on the client.
+Please note that these advanced settings will probably CHANGE in a later release.
+    
+A simple slvoice.ini would look like:
+    
+http://userserver:8002/?method=voip
+    
+whereas an slvoice.ini that sets a single preferred codec "speex/8000" would look like the following:
+    
+http://userserver:8002/?method=voip
+speex/8000
+disable
+    
+    
 4. Setting up to work with OpenSim
     - ensure that your OpenSim.ini contains the following sections:
         [Voice]
