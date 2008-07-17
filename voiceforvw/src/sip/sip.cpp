@@ -396,6 +396,10 @@ void SIPConference::start_sip_stack_ () {
 
     pj_log_set_log_func (my_pj_log_);
 
+    pjsua_media_config mcfg;
+    pjsua_media_config_default(&mcfg);
+    mcfg.ilbc_mode = 30;
+
     pjsua_config cfg;
     pjsua_config_default (&cfg);
 
@@ -405,7 +409,7 @@ void SIPConference::start_sip_stack_ () {
     //cfg.cb.on_call_transfer_request =	// for REFER
     cfg.cb.on_reg_state = &on_reg_state;
 
-    status = pjsua_init (&cfg, NULL, NULL);
+    status = pjsua_init (&cfg, NULL, &mcfg);
     if (status != PJ_SUCCESS)
         error_exit ("Error in pjsua_init()", status);
 
