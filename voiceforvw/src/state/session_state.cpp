@@ -3,9 +3,11 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
-#include <main.h>
-#include <state.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include "main.h"
+#include "state.hpp"
+#include "server_util.hpp"
 
 //=============================================================================
 // Session Idle
@@ -34,15 +36,21 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 		VFVW_LOG("account id = %d", machine.info->account->id);
 		
 		ConnectorInfo *con = glb_server->getConnector();
+		SIPConference *psc = machine.info->account->sipconf;
 
-        if (con->sipconf != NULL) {
+        if (psc != NULL) {
 
 			ss.str(machine.info->session.uri);
 			ss >> sinfo;
 
+			SIPServerInfo sipinfo;
+
+			// access to the voip frontend
+			ServerUtil::getServerInfo(con->voiceserver_url + sinfo.name, sipinfo);
+
 			// connect to conference
-            con->sipconf->Join(
-				sinfo, machine.info->account->id, 
+            psc->Join(
+				sipinfo.sipuri, machine.info->account->id, 
 				&machine.info->id);
 
 			con->session.registId(machine.info->id, machine.info->handle);
@@ -159,9 +167,9 @@ SessionIncomingState::SessionIncomingState(my_context ctx) :
 
 	ConnectorInfo *con = glb_server->getConnector();
 
-    if (con->sipconf != NULL) {
+    if (machine.info->account->sipconf != NULL) {
 		// answer to incoming request
-        con->sipconf->Answer(machine.info->id, 180);
+        machine.info->account->sipconf->Answer(machine.info->id, 180);
 	}
 }
 
@@ -177,11 +185,11 @@ result SessionIncomingState::react(const SessionTerminateEvent& ev) {
 result SessionIncomingState::react(const SessionConnectEvent& ev) {
     VFVW_LOG("SessionIncoming react (SessionConnectEvent)");
 
-	ConnectorInfo *con = glb_server->getConnector();
+	SIPConference *psc = machine.info->account->sipconf;
 
-    if (con->sipconf != NULL) {
+    if (psc != NULL) {
 		// answer to incoming request
-        con->sipconf->Answer(machine.info->id, 200);
+        psc->Answer(machine.info->id, 200);
 	}
 
     return transit<SessionConnectingState>();
@@ -228,11 +236,11 @@ result SessionEarlyState::react(const SessionTerminateEvent& ev) {
 result SessionEarlyState::react(const SessionConnectEvent& ev) {
     VFVW_LOG("SessionEarly react (SessionConnectEvent)");
 
-	ConnectorInfo *con = glb_server->getConnector();
+	SIPConference *psc = machine.info->account->sipconf;
 
-    if (con->sipconf != NULL) {
+    if (psc != NULL) {
 		// answer to incoming request
-        con->sipconf->Answer(machine.info->id, 200);
+        psc->Answer(machine.info->id, 200);
 	}
 
     return transit<SessionConnectingState>();
@@ -327,11 +335,11 @@ SessionConfirmedState::~SessionConfirmedState() {
 result SessionConfirmedState::react(const SessionTerminateEvent& ev) {
     VFVW_LOG("SessionConfirmed react (SessionTerminateEvent)");
 
-	ConnectorInfo *con = glb_server->getConnector();
+	SIPConference *psc = machine.info->account->sipconf;
 
-    if (con->sipconf != NULL) {
+    if (psc != NULL) {
         // disconnect
-        con->sipconf->Leave(machine.info->id);
+        psc->Leave(machine.info->id);
     }
 
     return transit<SessionTerminatedState>();
@@ -350,6 +358,7 @@ result SessionConfirmedState::react(const AudioEvent& ev) {
     float spk_volume = 0.0f;
 
 	ConnectorInfo *con = glb_server->getConnector();
+	SIPConference *psc = machine.info->account->sipconf;
 
     // adjust mic volume
     if (!con->audio.mic_mute) {
@@ -367,9 +376,9 @@ result SessionConfirmedState::react(const AudioEvent& ev) {
                      * VFVW_PJ_VOLUME_RANGE / VFVW_SL_VOLUME_RANGE;
     }
 
-    if (con->sipconf != NULL) {
-        con->sipconf->AdjustTranVolume(machine.info->id, mic_volume);
-		con->sipconf->AdjustRecvVolume(machine.info->id, spk_volume);
+    if (psc != NULL) {
+        psc->AdjustTranVolume(machine.info->id, mic_volume);
+		psc->AdjustRecvVolume(machine.info->id, spk_volume);
     }
 
     return discard_event();

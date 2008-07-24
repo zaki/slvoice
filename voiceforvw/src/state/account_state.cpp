@@ -3,9 +3,11 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
-#include <main.h>
-#include <state.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include "main.h"
+#include "state.hpp"
+#include "server_util.hpp"
 
 //=============================================================================
 // Account Logout
@@ -28,17 +30,30 @@ result AccountLogoutState::react(const AccountLoginEvent& ev) {
 	ConnectorInfo *con = glb_server->getConnector();
 
     SIPUserInfo uinfo;
+	SIPServerInfo sipinfo;
+	string url;
+
+	// access to the voip frontend
+	ServerUtil::getServerInfo(con->voiceserver_url + machine.info->account.name, sipinfo);
+
+	VFVW_LOG("sipuri   : %s", sipinfo.sipuri.c_str());
+	VFVW_LOG("proxyuri : %s", sipinfo.proxyuri.c_str());
+	VFVW_LOG("reguri   : %s", sipinfo.reguri.c_str());
+
+    machine.info->sipconf = new SIPConference(sipinfo);
 
     uinfo.name = machine.info->account.name;
     uinfo.password = machine.info->account.password;
-	uinfo.domain = con->sipserver;
+	uinfo.sipuri = sipinfo.sipuri;
 
-    if (con->sipconf != NULL) {
-        con->sipconf->Register(uinfo, &machine.info->id);
-		VFVW_LOG("account id = %d, handle = %s", machine.info->id, machine.info->handle.c_str());
-		con->account.registId(machine.info->id, machine.info->handle);
-	    ((AccountLoginResponse *)ev.result)->AccountHandle = machine.info->handle;
-    }
+	VFVW_LOG("domain : %s", uinfo.domain.c_str());
+
+	// sending REGISTER
+    machine.info->sipconf->Register(uinfo, &machine.info->id);
+
+	VFVW_LOG("account id = %d, handle = %s", machine.info->id, machine.info->handle.c_str());
+	con->account.registId(machine.info->id, machine.info->handle);
+    ((AccountLoginResponse *)ev.result)->AccountHandle = machine.info->handle;
 
     return transit<AccountRegisteringState>();
 }
@@ -92,11 +107,9 @@ AccountLoginState::~AccountLoginState() {
 result AccountLoginState::react(const AccountLogoutEvent& ev) {
     VFVW_LOG("AccountLogin react (AccountLogoutEvent)");
 
-	ConnectorInfo *con = glb_server->getConnector();
-
-    if (con->sipconf != NULL) {
+    if (machine.info->sipconf != NULL) {
 		// sending unREG (Expires=0)
-        con->sipconf->UnRegister(machine.info->id);
+        machine.info->sipconf->UnRegister(machine.info->id);
     }
 
     return transit<AccountUnregisteringState>();
@@ -136,6 +149,9 @@ result AccountUnregisteringState::react(const RegSucceedEvent& ev) {
 	removeEvent->acc_id = machine.info->id;
 	removeEvent->account_handle = machine.info->handle;
 
+    delete machine.info->sipconf;
+    machine.info->sipconf = NULL;
+
 	g_eventManager.blockQueue.enqueue(removeEvent);
 
     return transit<AccountLogoutState>();
@@ -148,6 +164,9 @@ result AccountUnregisteringState::react(const RegFailedEvent& ev) {
 	AccountRemoveEvent *removeEvent = new AccountRemoveEvent();
 	removeEvent->acc_id = machine.info->id;
 	removeEvent->account_handle = machine.info->handle;
+
+    delete machine.info->sipconf;
+    machine.info->sipconf = NULL;
 
 	g_eventManager.blockQueue.enqueue(removeEvent);
 	

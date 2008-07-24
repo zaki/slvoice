@@ -13,6 +13,7 @@ class ServerUtil
 {
     public:
 		static void getServerInfo(string&, SIPServerInfo&);
+		static void getContent(string&, string&);
 };
 
 #endif //_SERVER_UTIL_HPP_

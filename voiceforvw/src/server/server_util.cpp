@@ -24,8 +24,7 @@ static int handle_returned_data(
     return size*nmemb;
 }
 
-
-void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
+void ServerUtil::getContent(string& url, string& content)
 {
 	CURL *curl = NULL;
 	CURLcode res;
@@ -77,7 +76,7 @@ void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
 
 		VFVW_LOG("response body : %s", ret.c_str());
 
-		sipinfo.domain = responseBuf;
+		content = responseBuf;
 
 		curl_easy_cleanup(curl);
 	}
@@ -93,3 +92,22 @@ void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
 		throw e;
 	}
 }
+
+void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
+{
+	string ret = "";
+
+	try {
+		getContent(url, ret);
+
+		stringstream ss(ret);
+
+		ss >> sipinfo.sipuri >> sipinfo.reguri >> sipinfo.proxyuri;
+	}
+	catch (...) {
+		VFVW_LOG("Error");
+		exception e;
+		throw e;
+	}
+}
+

@@ -25,24 +25,15 @@ ConnectorIdleState::~ConnectorIdleState() {
 result ConnectorIdleState::react(const InitializeEvent& ev) {
     VFVW_LOG("ConnectorIdle react (InitializeEvent)");
 
-	SIPServerInfo sipinfo;
-	string url;
-
-	// getting server info
-
+	// getting config
 	ifstream file("slvoice.ini");
     if (!file) throw runtime_error ("unable to open slvoice.ini file");
-    file >> url;
+    file >> machine.info->voiceserver_url;
     file.close();
 
-	VFVW_LOG("voip frontend url = %s", url.c_str());	
-
-	// access to the voip frontend
-	ServerUtil::getServerInfo(url, sipinfo);
+	VFVW_LOG("voip frontend url = %s", machine.info->voiceserver_url.c_str());	
 
     machine.info->handle = VFVW_CONNECTOR_HANDLE;
-    machine.info->sipconf = new SIPConference(sipinfo);
-	machine.info->sipserver = sipinfo.domain;
 
     ((ConnectorCreateResponse *)ev.result)->ConnectorHandle = machine.info->handle;
     //((ConnectorCreateResponse *)ev.result)->VersionID = "";	// TODO
@@ -66,8 +57,6 @@ ConnectorActiveState::~ConnectorActiveState() {
 result ConnectorActiveState::react(const ShutdownEvent& ev) {
     VFVW_LOG("ConnectorActive react (ShutdownEvent)");
 
-    delete machine.info->sipconf;
-    machine.info->sipconf = NULL;
     machine.info->handle = "";
 
     return transit<ConnectorIdleState>();

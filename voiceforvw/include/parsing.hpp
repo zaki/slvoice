@@ -656,6 +656,8 @@ class RequestParser
         RequestParser (const char *message);
         auto_ptr <const Request> Parse ();
 
+//		static void parse_VoiceInfoResponse(SIPServerInfo& sinfo);
+
     private:
         string get_request_id_ ();
         string get_action_ ();
