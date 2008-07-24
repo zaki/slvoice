@@ -8,16 +8,16 @@ SET (CMAKE_BUILD_TYPE Debug)
 # settings of third-party libs
 
 # pjsip
-SET (PJDIR C:/project/voip/trunk/pjproject)
+SET (PJDIR C:/path/to/pjproject)
 
 # curl
-SET (CURLDIR "C:/project/curl-7.18.2/curl-7.18.2")
+SET (CURLDIR "C:/path/to/curl-7.18.2")
 SET (CURLINCDIR ${CURLDIR}/include)
 SET (CURLLIBDIR ${CURLDIR}/lib/Release)
 SET (CURLLIBS ${CURLLIBDIR}/curllib.lib)
 
 # boost
-SET (BOOSTDIR "C:/project/boost_1_35_0/boost_1_35_0")
+SET (BOOSTDIR "C:/path/to/boost_1_35_0")
 SET (BOOSTINCDIR ${BOOSTDIR})
 SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
 SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
