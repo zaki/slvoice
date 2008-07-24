@@ -271,6 +271,8 @@ class AccountInfo : public BaseInfo {
 
 		AccountMachine machine;
 	    Account account;
+
+		SIPConference *sipconf;
 };
 
 class SessionInfo : public BaseInfo {
@@ -348,8 +350,7 @@ class ConnectorInfo : public BaseInfo {
 
 		ConnectorMachine machine;
 
-		string sipserver;
-		SIPConference *sipconf;
+		string voiceserver_url;
 };
 
 #endif //_STATE_HPP_

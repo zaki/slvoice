@@ -180,30 +180,25 @@ void SIPConference::Register(const SIPUserInfo& user, int* accid) {
 
 	VFVW_LOG("entering Register(const SIPUserInfo&)");
 
-    string temp_useruri(user.get_uri());
+    string temp_useruri(user.sipuri);
     string temp_username(user.name);
     string temp_userpasswd(user.password);
-    string temp_serverreguri(server_.get_reg_uri());
-    string temp_serverdomain(server_.domain);
+    string temp_serverreguri(server_.reguri);
 
 	VFVW_LOG("temp_useruri = %s", temp_useruri.c_str());
 	VFVW_LOG("temp_username = %s", temp_username.c_str());
 	VFVW_LOG("temp_userpasswd = %s", temp_userpasswd.c_str());
 	VFVW_LOG("temp_serverreguri = %s", temp_serverreguri.c_str());
-	VFVW_LOG("temp_serverdomain = %s", temp_serverdomain.c_str());
 
-    pjsua_acc_config_default (&cfg);
+	pjsua_acc_config_default (&cfg);
 
     cfg.id = pj_str (const_cast <char*> (temp_useruri.c_str()));
-
-    // don't send REGISTER
-    cfg.reg_uri = pj_str (const_cast <char*> (temp_serverreguri.c_str()));
+	cfg.reg_uri = pj_str (const_cast <char*> (temp_serverreguri.c_str()));
 //    cfg.reg_uri = pj_str("");
 
     cfg.cred_count = 1;
     cfg.cred_info[0].scheme = pj_str ("digest");
     cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-//    cfg.cred_info[0].realm = pj_str (const_cast <char*> (temp_serverdomain.c_str()));
     cfg.cred_info[0].realm = pj_str (VFVW_REALM);
     cfg.cred_info[0].username = pj_str (const_cast <char*> (temp_username.c_str()));
     cfg.cred_info[0].data = pj_str (const_cast <char*> (temp_userpasswd.c_str()));
@@ -228,22 +223,13 @@ void SIPConference::UnRegister(const int accid) {
 }
 
 //=============================================================================
-void SIPConference::Join(const SIPUserInfo& joinuri, int acc_id, int* callid) {
+void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
 
 	pj_status_t status;
-	SIPUserInfo uriinfo = joinuri;
 
-	string temp;
+	VFVW_LOG("entering Join() uri=%s", joinuri.c_str());
 
-	VFVW_LOG("entering Join() uri=%s", uriinfo.get_uri().c_str());
-
-	uriinfo.domain = resolveDomain(uriinfo.domain);
-
-	temp = uriinfo.get_uri();
-
-	VFVW_LOG("uri=%s", temp.c_str());
-
-	pj_str_t uri = pj_str(const_cast <char*> (temp.c_str()));
+	pj_str_t uri = pj_str(const_cast <char*> (joinuri.c_str()));
 
 	// Set prefered codec - Zaki [2008-07-16]
     	string codec;
@@ -385,7 +371,7 @@ void SIPConference::AdjustRecvVolume(int call_id, float level) {
 }
 
 //=============================================================================
-void SIPConference::start_sip_stack_ () {
+void SIPConference::start_sip_stack_() {
     VFVW_LOG("entering start_sip_stack_()");
 
 	pj_status_t status;
@@ -409,6 +395,11 @@ void SIPConference::start_sip_stack_ () {
     //cfg.cb.on_call_transfer_request =	// for REFER
     cfg.cb.on_reg_state = &on_reg_state;
 
+	if (server_.proxyuri != "") {
+		cfg.outbound_proxy_cnt = 1;
+		cfg.outbound_proxy[0] = pj_str(const_cast<char*>(server_.proxyuri.c_str()));
+	}
+
     status = pjsua_init (&cfg, NULL, &mcfg);
     if (status != PJ_SUCCESS)
         error_exit ("Error in pjsua_init()", status);
@@ -430,16 +421,6 @@ void SIPConference::start_sip_stack_ () {
 void SIPConference::stop_sip_stack_ () {
     VFVW_LOG("entering stop_sip_stack_()");
     pjsua_destroy ();
-}
-
-string SIPConference::resolveDomain(const string& domain) {
-
-	if (domain == "bhr.vivox.com") {
-		return server_.domain;
-	}
-	else {
-		return domain;
-	}
 }
 
 //=============================================================================
@@ -487,34 +468,12 @@ istream& operator>> (istream& in, SIPUserInfo& usr) {
 }
 
 //=============================================================================
-istream& operator>> (istream& in, SIPServerInfo& srv) {
-    string line (get_line_ (in));
-    pair <string,string> result (parse_sip_uri_ (line));
-
-//    srv.conference = result.first;
-    srv.domain = result.second;
-
-    return in;
-}
-
-//=============================================================================
 stringstream& operator>> (stringstream& in, SIPUserInfo& usr) {
     string line = in.str();
     pair <string,string> result (parse_sip_uri_ (line));
 
     usr.name = result.first;
     usr.domain = result.second;
-
-    return in;
-}
-
-//=============================================================================
-stringstream& operator>> (stringstream& in, SIPServerInfo& srv) {
-    string line = in.str();
-    pair <string,string> result (parse_sip_uri_ (line));
-
-//    srv.conference = result.first;
-    srv.domain = result.second;
 
     return in;
 }
