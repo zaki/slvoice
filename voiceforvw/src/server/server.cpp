@@ -106,7 +106,14 @@ void Server::Send (const string& m)
 
 //    cout << m << endl;
 	VFVW_LOG(m.c_str());
-    sock_->write (m.c_str(), m.size()); 
+	try
+	{
+		sock_->write (m.c_str(), m.size()); 
+	}
+	catch(...)
+	{
+		VFVW_LOG("Error in Server::Send - Is the application closing?");
+	}
 }
 
 //=============================================================================
