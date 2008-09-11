@@ -8,16 +8,16 @@ SET (CMAKE_BUILD_TYPE Debug)
 # settings of third-party libs
 
 # pjsip
-SET (PJDIR C:/path/to/pjproject)
+SET (PJDIR "C:/path/to/pjproject-1.0-rc2")
 
 # curl
-SET (CURLDIR "C:/path/to/curl-7.18.2")
+SET (CURLDIR "C:/path/to/curl-7.19.0")
 SET (CURLINCDIR ${CURLDIR}/include)
 SET (CURLLIBDIR ${CURLDIR}/lib/Release)
 SET (CURLLIBS ${CURLLIBDIR}/curllib.lib)
 
 # boost
-SET (BOOSTDIR "C:/path/to/boost_1_35_0")
+SET (BOOSTDIR "C:/path/to/boost_1_36_0")
 SET (BOOSTINCDIR ${BOOSTDIR})
 SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
 SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
@@ -154,6 +154,7 @@ FIND_PJSIP_LIBRARY (gsmcodec third_party)
 FIND_PJSIP_LIBRARY (ilbccodec third_party)
 FIND_PJSIP_LIBRARY (portaudio third_party)
 FIND_PJSIP_LIBRARY (speex third_party)
+FIND_PJSIP_LIBRARY (srtp third_party)
 
 # find headers
 FIND_FILE (PJINCL 
