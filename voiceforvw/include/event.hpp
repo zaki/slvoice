@@ -17,6 +17,7 @@
 #include <queue>
 #include <boost/ref.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/condition.hpp>
 
 using namespace boost::statechart;
 
