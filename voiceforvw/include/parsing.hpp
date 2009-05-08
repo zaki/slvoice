@@ -82,13 +82,14 @@ enum ActionType
 struct ResponseBase
 {
     ResponseBase(const string& a, const string& request_id, const string& return_code) 
-        : action(a), requestId(request_id), ReturnCode(return_code) {}
+        : action(a), requestId(request_id), ReturnCode(return_code), InputXml("") {}
 
 	string requestId;
     string action;
     string ReturnCode;
     string StatusCode;
     string StatusString;
+    string InputXml;
 
 	virtual string ToString();
 };

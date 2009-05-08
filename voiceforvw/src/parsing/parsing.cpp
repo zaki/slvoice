@@ -639,7 +639,7 @@ string ResponseBase::ToString()
 			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
 			+ "<StatusString>" + StatusString + "</StatusString>"
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }
@@ -657,7 +657,7 @@ string ConnectorCreateResponse::ToString()
 			+ "<ConnectorHandle>" + ConnectorHandle + "</ConnectorHandle>"
 
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }
@@ -675,7 +675,7 @@ string AuxGetCaptureDevicesResponse::ToString()
 			+ "<CurrentCaptureDevice>" + CurrentCaptureDevice + "</CurrentCaptureDevice>"
 
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }
@@ -692,7 +692,7 @@ string AccountLoginResponse::ToString()
 			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
 
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }
@@ -709,7 +709,7 @@ string SessionCreateResponse::ToString()
 			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
 
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }
@@ -727,7 +727,7 @@ string AuxGetRenderDevicesResponse::ToString()
 			+ "<CurrentRenderDevice>" + CurrentRenderDevice + "</CurrentRenderDevice>"
 
 			+ "</Results>"
-			+ "<InputXml></InputXml></Response>\n\n\n";
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;
 }

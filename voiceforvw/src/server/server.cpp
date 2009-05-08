@@ -131,6 +131,7 @@ void Server::process_request_queue_(const char* mesg)
 
 	const string result_code = "1";
 	response = request->CreateResponse(result_code);
+    response->InputXml = string(mesg);
 
     switch (request->Type)
     {
