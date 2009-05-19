@@ -25,11 +25,7 @@ ConnectorIdleState::~ConnectorIdleState() {
 result ConnectorIdleState::react(const InitializeEvent& ev) {
     VFVW_LOG("ConnectorIdle react (InitializeEvent)");
 
-	// getting config
-	ifstream file("slvoice.ini");
-    if (!file) throw runtime_error ("unable to open slvoice.ini file");
-    file >> machine.info->voiceserver_url;
-    file.close();
+	machine.info->voiceserver_url = g_config->VoiceServerURI;
 
 	VFVW_LOG("voip frontend url = %s", machine.info->voiceserver_url.c_str());	
 

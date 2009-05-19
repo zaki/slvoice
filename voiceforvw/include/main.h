@@ -20,12 +20,15 @@
 
 using namespace std;
 
+#include <config.hpp>
 #include <parameters.hpp>
 #include <parsing.hpp>
 #include <sip.hpp>
 #include <event.hpp>
 #include <state.hpp>
 #include <server.hpp>
+
+extern Config *g_config;
 
 // global reference to server instance 
 // created in main.cpp

@@ -5,6 +5,8 @@
 
 #include <main.h>
 
+Config *g_config;
+
 // global reference to server instance
 // used to send messages from state machine or SIP stack
 Server *glb_server (NULL);
@@ -35,16 +37,18 @@ int main (int argc, char **argv) {
     if ((argc == 2) && (get_short_option (argv[1]) == 'h'))
         print_usage_and_exit (argv);
 
-    int port (glb_default_port);
+    g_config = new Config();
+	g_config->LoadConfig("./SLVoice.xml");
+
     if (argc > 1) {
         if (argv [1][0] != '-')
-            port = atoi (argv [1]);
+			g_config->Port = atoi (argv [1]);
     }
 
     try {
 		boost::thread thr(boost::ref(g_eventManager));
 
-		glb_server = new Server(port);
+		glb_server = new Server(g_config->Port);
         glb_server-> Start();
 
 		g_eventManager.blockQueue.enqueue(NULL);
@@ -68,8 +72,6 @@ int APIENTRY WinMain( HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine,
                       int nCmdShow) {
-    int port = glb_default_port;
-
     VFVW_LOGINIT();
 
     VFVW_LOG("entering WinMain()");
@@ -81,26 +83,14 @@ int APIENTRY WinMain( HINSTANCE hInstance,
 
     VFVW_LOG("lpCmdLine : %s", lpCmdLine);
 
-    // TODO: It is necessary to match it to the interface specification of Vivox-SLVoice.
-    // ex) -p tcp -h -c -ll -1
-    /*
-    	if (strchr(lpCmdLine, ' ') != NULL) {
-    		// TODO
-    	    exit(0);
-    	}
-
-    	VFVW_LOG("TRACE 2");
-
-    	if (*lpCmdLine != '-') {
-    		port = atoi(lpCmdLine);
-    	}
-    */
+    g_config = new Config();
+	g_config->LoadConfig("./SLVoice.xml");
 
     try {
 		EventManager evm;
 		boost::thread thr(boost::ref(g_eventManager));
 
-		glb_server = new Server(port);
+		glb_server = new Server(g_config->Port);
         glb_server->Start();
 
 		g_eventManager.blockQueue.enqueue(NULL);

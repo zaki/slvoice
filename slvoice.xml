@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+	<!-- 
+		Version represents the SecondLife version specify as 122 for 1.22 and 121 for 1.21 etc.
+		Messages have changed between 1.21 and 1.22, please make sure to set the version correctly
+		for your SecondLife client.
+	-->
+	<Version>122</Version>
+	<!-- 	VoiceServerURI will return the SIP URI of your user, the SIP registrar and an
+		optional SIP proxy on separate lines.
+	-->
+	<VoiceServerURI>http://ip.of.your.voice-frontend</VoiceServerURI>
+	<!--
+		SecondLife 1.22 changed the default port to 44125, while earlier versions used 44124
+	-->
+	<Port>44125</Port>
+	<!--
+		An optional preferred codec can be selected here.
+	-->
+	<Codec>PCMU</Codec>
+	<!--
+		If Disabled is true, all codecs other than the preferred one set by Codec will be disabled
+	-->
+	<Disable>false</Disable>
+	<!--
+		Sets the authentication realm for SIP. This needs to be set to connect to FreeSWITCH.
+		This is manually set on the client, however connecting to FreeSWITCH with viewers
+		below 1.22 is possible thanks to this setting.
+	-->
+	<Realm>asterisk</Realm>
+</Config>

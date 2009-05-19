@@ -10,7 +10,7 @@
 
 #include "state.hpp"
 
-const int glb_default_port (44124);
+const int glb_default_port (44125);
 
 #define	VFVW_XMLMSG_DELIM		"\n\n\n"
 #define	VFVW_XMLMSG_DELIM_LEN	strlen("\n\n\n")

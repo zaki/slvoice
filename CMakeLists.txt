@@ -8,16 +8,16 @@ SET (CMAKE_BUILD_TYPE Debug)
 # settings of third-party libs
 
 # pjsip
-SET (PJDIR "C:/path/to/pjproject-1.0-rc2")
+SET (PJDIR "C:/path/to/pjproject-1.2")
 
 # curl
-SET (CURLDIR "C:/path/to/curl-7.19.0")
+SET (CURLDIR "C:/path/to/curl-7.19.5")
 SET (CURLINCDIR ${CURLDIR}/include)
-SET (CURLLIBDIR ${CURLDIR}/lib/Release)
-SET (CURLLIBS ${CURLLIBDIR}/curllib.lib)
+SET (CURLLIBDIR ${CURLDIR}/lib/LIB-Release)
+SET (CURLLIBS ${CURLLIBDIR}/libcurl.lib)
 
 # boost
-SET (BOOSTDIR "C:/path/to/boost_1_36_0")
+SET (BOOSTDIR "C:/path/to/boost_1_39_0")
 SET (BOOSTINCDIR ${BOOSTDIR})
 SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
 SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
@@ -35,6 +35,7 @@ SET (VOICESRCDIR ${VOICEDIR}/src)
 
 SET (VOICESRC 
     ${VOICESRCDIR}/main/main.cpp
+    ${VOICESRCDIR}/config/config.cpp
     ${VOICESRCDIR}/sip/sip.cpp
     ${VOICESRCDIR}/server/server.cpp
     ${VOICESRCDIR}/server/server_util.cpp
@@ -51,7 +52,8 @@ SET (VOICESRC
 SET (VOICEINCDIR ${VOICEDIR}/include)
 
 SET (VOICEINC 
-	${VOICEINCDIR}/main.h 
+	${VOICEINCDIR}/main.h
+	${VOICEINCDIR}/config.hpp
 	${VOICEINCDIR}/parameters.hpp 
 	${VOICEINCDIR}/parsing.hpp 
 	${VOICEINCDIR}/server.hpp 
@@ -145,6 +147,7 @@ FIND_PJSIP_LIBRARY (pjsip-simple pjsip)
 FIND_PJSIP_LIBRARY (pjsip pjsip)
 FIND_PJSIP_LIBRARY (pjmedia-codec pjmedia)
 FIND_PJSIP_LIBRARY (pjmedia pjmedia)
+FIND_PJSIP_LIBRARY (pjmedia-audiodev pjmedia)
 FIND_PJSIP_LIBRARY (pjnath pjnath)
 FIND_PJSIP_LIBRARY (pjlib-util pjlib-util)
 FIND_PJSIP_LIBRARY (pj pjlib)
@@ -155,6 +158,7 @@ FIND_PJSIP_LIBRARY (ilbccodec third_party)
 FIND_PJSIP_LIBRARY (portaudio third_party)
 FIND_PJSIP_LIBRARY (speex third_party)
 FIND_PJSIP_LIBRARY (srtp third_party)
+FIND_PJSIP_LIBRARY (g7221codec third_party)
 
 # find headers
 FIND_FILE (PJINCL 

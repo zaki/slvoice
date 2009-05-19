@@ -8,7 +8,7 @@
 
 #include <pjsua-lib/pjsua.h>
 
-#define VFVW_REALM	"asterisk"
+//#define VFVW_REALM	"asterisk"
 
 //=============================================================================
 // Voice classes

@@ -28,6 +28,19 @@ has_substring (const string& str, const char* sub, string::size_type pos = 0)
     return (str.find (sub, pos) != string::npos);
 }
 
+EventBase::EventBase (const string& t) 
+	: type (t), OKString("OK")
+{
+	if (g_config->Version < 122)
+	{
+		OKCode = "200";
+	}
+	else
+	{
+		OKCode = "0";
+	}
+}
+
 //=============================================================================
 void
 RequestParser::parse_vector_ (const TiXmlElement *vector, float buf [3])
@@ -114,6 +127,7 @@ RequestParser::parse_AuxCaptureAudioStart_ ()
 auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStop_ ()
 {
+	VFVW_LOG("Version %d", g_config->Version);
     AuxCaptureAudioStopRequest *req 
         (new AuxCaptureAudioStopRequest (requestid_));
     
@@ -354,6 +368,26 @@ RequestParser::parse_SessionConnect_ ()
     return auto_ptr <const Request> (req);
 }
 
+// v1.22
+//=============================================================================
+auto_ptr <const Request>
+RequestParser::parse_AccountBlockListRules_ ()
+{
+    AccountBlockListRulesRequest *req 
+        (new AccountBlockListRulesRequest (requestid_));
+
+    return auto_ptr <const Request> (req);
+}
+
+auto_ptr <const Request>
+RequestParser::parse_AccountListAutoAcceptRules_ ()
+{
+    AccountListAutoAcceptRulesRequest *req 
+        (new AccountListAutoAcceptRulesRequest (requestid_));
+
+    return auto_ptr <const Request> (req);
+}
+
 //=============================================================================
 RequestParser::RequestParser (const char *message)
 {
@@ -390,6 +424,8 @@ RequestParser::Parse ()
         case SessionSetParticipantVolumeForMe1: return parse_SessionSetParticipantVolumeForMe_ ();
         case SessionTerminate1: return parse_SessionTerminate_ ();
         case SessionConnect1: return parse_SessionConnect_ ();
+		case AccountBlockListRules1: return parse_AccountBlockListRules_ ();			//v1.22
+		case AccountListAutoAcceptRules1: return parse_AccountListAutoAcceptRules_ ();	//v1.22
 
         default: throw parse_error ("unable to parse type: " + get_action_() ); 
     }
@@ -448,6 +484,12 @@ ActionType RequestParser::get_action_type_ ()
 
         else if (has_substring (action, "Logout", n))
             return AccountLogout1;
+
+		else if (has_substring (action, "Block", n))
+            return AccountBlockListRules1;
+
+		else if (has_substring (action, "AutoAccept", n))
+            return AccountListAutoAcceptRules1;
     }
     else if (has_substring (action, "Connector"))
     {
@@ -629,6 +671,16 @@ SessionConnectResponse* SessionConnectRequest::CreateResponse(const string& retu
 	return new SessionConnectResponse(Action, RequestId, return_code);
 }
 
+// v1.22
+AccountBlockListRulesResponse* AccountBlockListRulesRequest::CreateResponse(const string& return_code)
+{
+	return new AccountBlockListRulesResponse(Action, RequestId, return_code);
+}
+
+AccountListAutoAcceptRulesResponse* AccountListAutoAcceptRulesRequest::CreateResponse(const string& return_code)
+{
+	return new AccountListAutoAcceptRulesResponse(Action, RequestId, return_code);
+}
 
 string ResponseBase::ToString()
 {
@@ -636,8 +688,8 @@ string ResponseBase::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 			+ "</Results>"
 			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
@@ -650,8 +702,8 @@ string ConnectorCreateResponse::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
 			+ "<VersionID>" + VersionID + "</VersionID>"
 			+ "<ConnectorHandle>" + ConnectorHandle + "</ConnectorHandle>"
@@ -668,8 +720,8 @@ string AuxGetCaptureDevicesResponse::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
 			+ "<Device>" + Device + "</Device>"
 			+ "<CurrentCaptureDevice>" + CurrentCaptureDevice + "</CurrentCaptureDevice>"
@@ -686,8 +738,8 @@ string AccountLoginResponse::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
 			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
 
@@ -703,11 +755,40 @@ string SessionCreateResponse::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
 			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
 
+			+ "</Results>"
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+// v1.22
+string AccountBlockListRulesResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>0</StatusCode>"
+			+ "<StatusString>OK</StatusString>"
+			+ "</Results>"
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string AccountListAutoAcceptRulesResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>0</StatusCode>"
+			+ "<StatusString>OK</StatusString>"
 			+ "</Results>"
 			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
@@ -720,8 +801,8 @@ string AuxGetRenderDevicesResponse::ToString()
 
 	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
-			+ "<Results><StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
 			+ "<Device>" + Device + "</Device>"
 			+ "<CurrentRenderDevice>" + CurrentRenderDevice + "</CurrentRenderDevice>"
@@ -738,10 +819,20 @@ string LoginStateChangeEvent::ToString()
 {
 	string retval;
 
+	string type;
+	if (g_config->Version < 122)
+	{
+		type = string(LoginStateChangeEventString);
+	}
+	else
+	{
+		type = string(AccountLoginStateChangeEventString);
+	}
+
 	retval  = "<Event type=\"" + type + "\">"
 			+ "<AccountHandle>" + AccountHandle + "</AccountHandle>"
-			+ "<StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 			+ "<State>" + State + "</State>"
 			+ "</Event>\n\n\n";
 
@@ -775,8 +866,8 @@ string SessionStateChangeEvent::ToString()
 
 	retval  = "<Event type=\"" + type + "\">"
 			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
-			+ "<StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 			+ "<State>" + State + "</State>"
 			+ "<URI>" + URI + "</URI>"
 			+ "<IsChannel>" + IsChannel + "</IsChannel>"
@@ -791,8 +882,8 @@ string ParticipantStateChangeEvent::ToString()
 	string retval;
 
 	retval  = "<Event type=\"" + type + "\">"
-			+ "<StatusCode>" + StatusCode + "</StatusCode>"
-			+ "<StatusString>" + StatusString + "</StatusString>"
+			+ "<StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
+			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 			+ "<State>" + State + "</State>"
 			+ "<ParticipantURI>" + ParticipantURI + "</ParticipantURI>"
 			+ "<AccountName>" + AccountName + "</AccountName>"
@@ -833,6 +924,22 @@ string AuxAudioPropertiesEvent::ToString()
 	return retval;
 }
 
+// v1.22
+string MediaStreamUpdatedEvent::ToString()
+{
+	string retval;
+
+	retval  = "<Event type=\"" + type + "\">"
+			+ "<SessionHandle>" + SessionHandle+ "</SessionHandle>"
+			+ "<SessionGroupHandle>" + SessionGroupHandle+ "</SessionGroupHandle>"
+			+ "<State>" + State + "</State>"
+			+ "<StatusCode>" + StatusCode+ "</StatusCode>"
+			+ "<StatusString>" + StatusString+ "</StatusString>"
+			+ "<Incoming></Incoming>"
+			+ "</Event>\n\n\n";
+
+	return retval;
+}
 
 //=============================================================================
 void Request::SetState (Account& state) const
