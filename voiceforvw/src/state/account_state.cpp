@@ -94,7 +94,8 @@ AccountLoginState::AccountLoginState(my_context ctx) :
 	// Send LoginStateChangeEvent
     LoginStateChangeEvent loginStateEvent;
     loginStateEvent.AccountHandle = machine.info->handle;
-    loginStateEvent.StatusCode = "200";
+	loginStateEvent.StatusCode = loginStateEvent.OKCode; // "200";	// v1.22
+	loginStateEvent.StatusString = loginStateEvent.OKString; // "OK";
     loginStateEvent.State = "1";
 
     glb_server->Send(loginStateEvent.ToString());
@@ -131,7 +132,8 @@ AccountUnregisteringState::AccountUnregisteringState(my_context ctx) :
     // Send LoginStateChangeEvent
     LoginStateChangeEvent loginStateEvent;
     loginStateEvent.AccountHandle = machine.info->handle;
-    loginStateEvent.StatusCode = "200";
+	loginStateEvent.StatusCode = loginStateEvent.OKCode; //"200"; // v1.22
+	loginStateEvent.StatusString = loginStateEvent.OKString; //"OK";
     loginStateEvent.State = "0";
 
     glb_server->Send(loginStateEvent.ToString());

@@ -79,8 +79,8 @@ SessionTerminatedState::SessionTerminatedState(my_context ctx) :
 
 	SessionStateChangeEvent sessionStateEvent;
     sessionStateEvent.SessionHandle = machine.info->handle;
-    //sessionStateEvent.StatusCode = "";
-    //sessionStateEvent.StatusString = "";
+	sessionStateEvent.StatusCode = sessionStateEvent.OKCode;
+	sessionStateEvent.StatusString = sessionStateEvent.OKString;
     sessionStateEvent.State = "5";
     //sessionStateEvent.URI = "";
     //sessionStateEvent.IsChannel = "";
@@ -299,8 +299,8 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
 
 	SessionStateChangeEvent sessionStateEvent;
     sessionStateEvent.SessionHandle = machine.info->handle;
-    //sessionStateEvent.StatusCode = "";
-    //sessionStateEvent.StatusString = "";
+	sessionStateEvent.StatusCode = sessionStateEvent.OKCode;
+	sessionStateEvent.StatusString = sessionStateEvent.OKString;
     sessionStateEvent.State = "4";
     //sessionStateEvent.URI = "";
     //sessionStateEvent.IsChannel = "";
@@ -308,8 +308,8 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
     glb_server-> Send (sessionStateEvent.ToString());
 
     ParticipantStateChangeEvent partStateEvent;
-    //sessionStateEvent.StatusCode = "";
-    //sessionStateEvent.StatusString = "";
+	sessionStateEvent.StatusCode = sessionStateEvent.OKCode;
+	sessionStateEvent.StatusString = sessionStateEvent.OKString;
     partStateEvent.State = "7";
     //sessionStateEvent.ParticipantURI = "";
     //sessionStateEvent.AccountName = "";
@@ -326,6 +326,20 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
     //partPropEvent.Energy = "";
     glb_server-> Send (partPropEvent.ToString());
 
+	if (g_config->Version < 122)
+	{
+	}
+	else
+	{
+		MediaStreamUpdatedEvent mediaStreamUpdatedEvent;
+		mediaStreamUpdatedEvent.StatusCode = "0";
+		mediaStreamUpdatedEvent.StatusString = "OK";
+		mediaStreamUpdatedEvent.SessionHandle = machine.info->handle;
+		mediaStreamUpdatedEvent.SessionGroupHandle = "";
+		mediaStreamUpdatedEvent.State = "2";
+
+		glb_server->Send(mediaStreamUpdatedEvent.ToString());
+	}
 }
 
 SessionConfirmedState::~SessionConfirmedState() {

@@ -15,9 +15,11 @@ const string endmesg ("\n\n\n");
 
 const string AuxAudioPropertiesEventString ("AuxAudioPropertiesEvent");
 const string LoginStateChangeEventString ("LoginStateChangeEvent");
+const string AccountLoginStateChangeEventString ("AccountLoginStateChangeEvent");	// v1.22
 const string ParticipantPropertiesEventString ("ParticipantPropertiesEvent");
 const string ParticipantStateChangeEventString ("ParticipantStateChangeEvent");
 const string SessionStateChangeEventString ("SessionStateChangeEvent");
+const string MediaStreamUpdatedEventString ("MediaStreamUpdatedEvent");				// v1.22
 
 const string AccountLogin1String ("Account.Login.1");
 const string AccountLogout1String ("Account.Logout.1");
@@ -41,6 +43,8 @@ const string SessionSet3DPosition1String ("Session.Set3DPosition.1");
 const string SessionSetParticipantMuteForMe1String ("Session.SetParticipantMuteForMe.1");
 const string SessionSetParticipantVolumeForMe1String ("Session.SetParticipantVolumeForMe.1");
 const string SessionTerminate1String ("Session.Terminate.1");
+const string AccountBlockListRules1String ("Account.BlockListRules.1");				// v1.22
+const string AccountListAutoAcceptRules1String ("Account.ListAutoAcceptRules.1");	// v1.22
 
 const string glb_event_xml ("<Event type=\"\" ><StatusCode /><StatusString /><State /></Event>");
 const string glb_response_xml ("<Response requestId=\"\" action=\"\" ><ReturnCode /><Results><StatusCode /><StatusString /></Results><InputXml /></Response>");
@@ -72,7 +76,9 @@ enum ActionType
     SessionSet3DPosition1,
     SessionSetParticipantMuteForMe1,
     SessionSetParticipantVolumeForMe1,
-    SessionTerminate1
+    SessionTerminate1,
+	AccountBlockListRules1,				// v1.22
+    AccountListAutoAcceptRules1			// v1.22
 };
 
 
@@ -82,7 +88,7 @@ enum ActionType
 struct ResponseBase
 {
     ResponseBase(const string& a, const string& request_id, const string& return_code) 
-        : action(a), requestId(request_id), ReturnCode(return_code), InputXml("") {}
+        : action(a), requestId(request_id), ReturnCode(return_code), StatusCode(""), StatusString(""), InputXml("") {}
 
 	string requestId;
     string action;
@@ -254,7 +260,22 @@ struct SessionConnectResponse : public ResponseBase
         : ResponseBase(a, request_id, return_code) {}
 };
 
+// v1.22
+struct AccountBlockListRulesResponse : public ResponseBase
+{
+    AccountBlockListRulesResponse(const string& a, const string& request_id, const string& return_code)
+        : ResponseBase(a, request_id, return_code) {}
 
+	string ToString();
+};
+
+struct AccountListAutoAcceptRulesResponse : public ResponseBase
+{
+    AccountListAutoAcceptRulesResponse(const string& a, const string& request_id, const string& return_code)
+        : ResponseBase(a, request_id, return_code) {}
+
+	string ToString();
+};
 //=============================================================================
 // Request Objects
 
@@ -540,6 +561,31 @@ struct SessionConnectRequest : public Request
 	SessionConnectResponse* CreateResponse(const string& return_code);
 };
 
+// v1.22
+struct AccountBlockListRulesRequest : public Request
+{
+    AccountBlockListRulesRequest(const string& request_id)
+       : Request(AccountBlockListRules1, request_id, AccountBlockListRules1String) 
+	{
+	}
+
+	string SessionHandle;
+
+	AccountBlockListRulesResponse* CreateResponse(const string& return_code);
+};
+
+struct AccountListAutoAcceptRulesRequest : public Request
+{
+    AccountListAutoAcceptRulesRequest(const string& request_id)
+       : Request(AccountListAutoAcceptRules1, request_id, AccountListAutoAcceptRules1String) 
+	{
+	}
+
+	string SessionHandle;
+
+	AccountListAutoAcceptRulesResponse* CreateResponse(const string& return_code);
+};
+
 //typedef list <const Request *> RequestQueue;
 
 //=============================================================================
@@ -547,10 +593,11 @@ struct SessionConnectRequest : public Request
 
 struct EventBase
 {
-    EventBase (const string& t) 
-        : type (t) {}
+    EventBase (const string& t);
 
     string type;
+	string OKCode;
+	string OKString;
 
 	//virtual string ToString() const;
 };
@@ -562,6 +609,22 @@ struct LoginStateChangeEvent : public EventBase
         : EventBase (t) {}
 
     string AccountHandle;
+    string StatusCode;
+    string StatusString;
+    string State;
+
+	string ToString();
+};
+
+// v1.22
+struct MediaStreamUpdatedEvent : public EventBase
+{
+    MediaStreamUpdatedEvent (const string& t="MediaStreamUpdatedEvent")
+        : EventBase (t) {}
+
+	string SessionGroupHandle;	// ""
+	string SessionHandle;
+	string Incoming;
     string StatusCode;
     string StatusString;
     string State;
@@ -695,6 +758,8 @@ class RequestParser
         auto_ptr <const Request> parse_SessionSetParticipantMuteForMe_ ();
         auto_ptr <const Request> parse_SessionSetParticipantVolumeForMe_ ();
         auto_ptr <const Request> parse_SessionTerminate_ ();
+		auto_ptr <const Request> parse_AccountBlockListRules_ ();				// v1.22
+		auto_ptr <const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
 
     private:
 		string requestid_;
