@@ -98,7 +98,7 @@ int APIENTRY WinMain( HINSTANCE hInstance,
 		thr.join();
 
     } catch (exception &e) {
-		VFVW_LOG("error");
+		VFVW_LOG("error %s", e.what());
         exit(0);
     }
 

@@ -163,6 +163,7 @@ SessionIncomingState::SessionIncomingState(my_context ctx) :
     sessionNewEvent.HasAudio = "true";
     sessionNewEvent.HasVideo = "false";
 
+	glb_server->userURI = "sip:" + uinfo.name + "@" + uinfo.domain;
     glb_server->Send(sessionNewEvent.ToString());
 
 	ConnectorInfo *con = glb_server->getConnector();
@@ -290,6 +291,70 @@ result SessionConnectingState::react(const DialDisconnectedEvent& ev) {
 }
 
 //=============================================================================
+// VolumeCheckingThread
+//=============================================================================
+void VolumeCheckingThread::operator()()
+{
+	unsigned int tx_level;
+	unsigned int rx_level;
+
+	float mic_volume = 0.0f;
+
+	pj_thread_desc desc;
+	pj_thread_t *thread;
+	pj_thread_register("volume_polling", desc, &thread);
+
+	while (!stopped)
+	{
+		VFVW_LOG("VolumeCheckThread woke up");
+		pj_status_t status;
+		pjsua_call_info ci;
+
+		call_id = 0;
+
+		if (call_id >= 0)
+		{
+			status = pjsua_call_get_info((pjsua_call_id)call_id, &ci);
+
+			status = pjsua_conf_get_signal_level(ci.conf_slot, &tx_level, &rx_level);
+			if (status == PJ_SUCCESS)
+			{
+				VFVW_LOG("VolumeCheckThread Volume level retreived: %d", tx_level);
+
+				ParticipantPropertiesEvent partPropEvent;
+				partPropEvent.SessionHandle = handle;
+				partPropEvent.ParticipantURI = glb_server->userURI;
+				partPropEvent.IsLocallyMuted = "false";
+				partPropEvent.IsModeratorMuted = "false";
+				char buf[255];
+				sprintf(buf, "%d", 75);
+				partPropEvent.Volume = buf;
+				
+				// tx_level is a value between 0 and 255
+				// energy is between 0 and 1.0
+
+				sprintf(buf, "%2.2f", (((float)tx_level) / 255.0));
+				partPropEvent.Energy = buf;
+
+				VFVW_LOG("VolumeCheckThread Volume=%s Energy=%s", partPropEvent.Volume.c_str(), partPropEvent.Energy.c_str());
+
+				if (tx_level > 20)
+				{
+					partPropEvent.IsSpeaking = "true";
+				}
+
+				VFVW_LOG("VolumeCheckThread Sending event");
+				glb_server->Send (partPropEvent.ToString());
+			}
+		}
+		    
+		VFVW_LOG("VolumeCheckThread Sleep");
+		pj_thread_sleep(200);
+		//::Sleep(1000);
+	}
+}
+
+//=============================================================================
 // Session Confirmed
 //=============================================================================
 SessionConfirmedState::SessionConfirmedState(my_context ctx) :
@@ -340,6 +405,13 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
 
 		glb_server->Send(mediaStreamUpdatedEvent.ToString());
 	}
+
+	// TODO: New thread for volume checking
+	volumeCheckingThread.call_id = machine.info->id;
+	volumeCheckingThread.handle = machine.info->handle;
+	volumeCheckingThread.stopped = false;
+
+	thr = boost::thread(boost::ref(volumeCheckingThread));
 }
 
 SessionConfirmedState::~SessionConfirmedState() {
@@ -350,6 +422,9 @@ result SessionConfirmedState::react(const SessionTerminateEvent& ev) {
     VFVW_LOG("SessionConfirmed react (SessionTerminateEvent)");
 
 	SIPConference *psc = machine.info->account->sipconf;
+
+	volumeCheckingThread.stopped = true;
+	thr.join();
 
     if (psc != NULL) {
         // disconnect

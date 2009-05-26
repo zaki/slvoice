@@ -388,6 +388,14 @@ RequestParser::parse_AccountListAutoAcceptRules_ ()
     return auto_ptr <const Request> (req);
 }
 
+auto_ptr <const Request>
+RequestParser::parse_SessionMediaDisconnect_ ()
+{
+    SessionMediaDisconnectRequest *req 
+        (new SessionMediaDisconnectRequest (requestid_));
+
+    return auto_ptr <const Request> (req);
+}
 //=============================================================================
 RequestParser::RequestParser (const char *message)
 {
@@ -426,6 +434,7 @@ RequestParser::Parse ()
         case SessionConnect1: return parse_SessionConnect_ ();
 		case AccountBlockListRules1: return parse_AccountBlockListRules_ ();			//v1.22
 		case AccountListAutoAcceptRules1: return parse_AccountListAutoAcceptRules_ ();	//v1.22
+		case SessionMediaDisconnect1: return parse_SessionMediaDisconnect_ ();			//v1.22
 
         default: throw parse_error ("unable to parse type: " + get_action_() ); 
     }
@@ -532,7 +541,11 @@ ActionType RequestParser::get_action_type_ ()
 
         else if (has_substring (action, "SetParticipantVolumeForMe", n))
             return SessionSetParticipantVolumeForMe1;
-    }
+
+		else if (has_substring (action, "MediaDisconnect", n))
+            return SessionMediaDisconnect1;
+
+	}
 
     cerr << "unable to find type " << action << endl;    
     return None;
@@ -682,6 +695,11 @@ AccountListAutoAcceptRulesResponse* AccountListAutoAcceptRulesRequest::CreateRes
 	return new AccountListAutoAcceptRulesResponse(Action, RequestId, return_code);
 }
 
+SessionMediaDisconnectResponse* SessionMediaDisconnectRequest::CreateResponse(const string& return_code)
+{
+	return new SessionMediaDisconnectResponse(Action, RequestId, return_code);
+}
+
 string ResponseBase::ToString()
 {
 	string retval;
@@ -782,6 +800,20 @@ string AccountBlockListRulesResponse::ToString()
 }
 
 string AccountListAutoAcceptRulesResponse::ToString()
+{
+	string retval;
+
+	retval	= "<Response requestId=\"" + requestId + "\" action=\"" + action + "\">"
+			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
+			+ "<Results><StatusCode>0</StatusCode>"
+			+ "<StatusString>OK</StatusString>"
+			+ "</Results>"
+			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
+	
+	return retval;
+}
+
+string SessionMediaDisconnectResponse::ToString()
 {
 	string retval;
 
@@ -898,13 +930,14 @@ string ParticipantPropertiesEvent::ToString()
 {
 	string retval;
 
-	retval  = "<Event type=\"" + type + "\">"
+	retval  = "<Event type=\"" + (g_config->Version < 122 ? type : "ParticipantUpdatedEvent") + "\">"
 			+ "<SessionHandle>" + SessionHandle + "</SessionHandle>"
 			+ "<ParticipantURI>" + ParticipantURI + "</ParticipantURI>"
 			+ "<IsLocallyMuted>" + IsLocallyMuted + "</IsLocallyMuted>"
 			+ "<IsModeratorMuted>" + IsModeratorMuted + "</IsModeratorMuted>"
 			+ "<Volume>" + Volume + "</Volume>"
 			+ "<Energy>" + Energy + "</Energy>"
+			+ "<IsSpeaking>" + IsSpeaking + "</IsSpeaking>"
 			+ "</Event>\n\n\n";
 
 	return retval;

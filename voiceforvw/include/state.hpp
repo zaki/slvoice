@@ -13,6 +13,9 @@
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/state.hpp>
+#include <boost/ref.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/condition.hpp>
 
 using namespace boost::statechart;
 
@@ -130,6 +133,16 @@ struct SessionConnectingState : state <SessionConnectingState, SessionMachine>
     SessionMachine& machine;
 };
 
+struct VolumeCheckingThread
+{
+	VolumeCheckingThread() :call_id(-1), handle(""), stopped(true) {};
+	VolumeCheckingThread(int cid, string hdl) : call_id(cid), handle(hdl), stopped(false) {};
+	void operator()();
+	int call_id;
+	string handle;
+	bool stopped;
+};
+
 struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine> 
 {
     typedef boost::mpl::list<
@@ -147,6 +160,8 @@ struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine>
     result react(const DialDisconnectedEvent& ev);
 
     SessionMachine& machine;
+	boost::thread thr;
+	VolumeCheckingThread volumeCheckingThread;
 };
 
 // ------------------------------ Account ------------------------------

@@ -45,6 +45,7 @@ const string SessionSetParticipantVolumeForMe1String ("Session.SetParticipantVol
 const string SessionTerminate1String ("Session.Terminate.1");
 const string AccountBlockListRules1String ("Account.BlockListRules.1");				// v1.22
 const string AccountListAutoAcceptRules1String ("Account.ListAutoAcceptRules.1");	// v1.22
+const string SessionMediaDisconnect1String ("Session.MediaDisconnect.1");			// v1.22
 
 const string glb_event_xml ("<Event type=\"\" ><StatusCode /><StatusString /><State /></Event>");
 const string glb_response_xml ("<Response requestId=\"\" action=\"\" ><ReturnCode /><Results><StatusCode /><StatusString /></Results><InputXml /></Response>");
@@ -78,7 +79,8 @@ enum ActionType
     SessionSetParticipantVolumeForMe1,
     SessionTerminate1,
 	AccountBlockListRules1,				// v1.22
-    AccountListAutoAcceptRules1			// v1.22
+    AccountListAutoAcceptRules1,		// v1.22
+	SessionMediaDisconnect1				// v1.22
 };
 
 
@@ -272,6 +274,14 @@ struct AccountBlockListRulesResponse : public ResponseBase
 struct AccountListAutoAcceptRulesResponse : public ResponseBase
 {
     AccountListAutoAcceptRulesResponse(const string& a, const string& request_id, const string& return_code)
+        : ResponseBase(a, request_id, return_code) {}
+
+	string ToString();
+};
+
+struct SessionMediaDisconnectResponse : public ResponseBase
+{
+    SessionMediaDisconnectResponse(const string& a, const string& request_id, const string& return_code)
         : ResponseBase(a, request_id, return_code) {}
 
 	string ToString();
@@ -586,6 +596,16 @@ struct AccountListAutoAcceptRulesRequest : public Request
 	AccountListAutoAcceptRulesResponse* CreateResponse(const string& return_code);
 };
 
+struct SessionMediaDisconnectRequest : public Request
+{
+    SessionMediaDisconnectRequest(const string& request_id)
+       : Request(SessionMediaDisconnect1, request_id, SessionMediaDisconnect1String) 
+	{
+	}
+
+	SessionMediaDisconnectResponse* CreateResponse(const string& return_code);
+};
+
 //typedef list <const Request *> RequestQueue;
 
 //=============================================================================
@@ -694,6 +714,7 @@ struct ParticipantPropertiesEvent : public EventBase
     string IsModeratorMuted;
     string Volume;
     string Energy;
+	string IsSpeaking;
 
 	string ToString();
 };
@@ -760,6 +781,7 @@ class RequestParser
         auto_ptr <const Request> parse_SessionTerminate_ ();
 		auto_ptr <const Request> parse_AccountBlockListRules_ ();				// v1.22
 		auto_ptr <const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
+		auto_ptr <const Request> parse_SessionMediaDisconnect_ ();				// v1.22
 
     private:
 		string requestid_;

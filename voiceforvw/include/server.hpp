@@ -34,6 +34,8 @@ class Server
 
 		ConnectorInfo* getConnector() { return &connector; }
 
+		string userURI;
+
     private:
         //void enqueue_request_ (char* mesg);
         void process_request_queue_(const char* mesg);

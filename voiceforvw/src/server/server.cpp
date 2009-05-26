@@ -13,7 +13,8 @@ Server::Server (int port) :
     sock_ (NULL),
     port_ (port), 
     bufsize_ (4096), 
-    buf_ (NULL)
+    buf_ (NULL),
+	userURI("")
 {
 	VFVW_LOG("entering Server::Server()");
 
@@ -176,7 +177,7 @@ void Server::process_request_queue_(const char* mesg)
 				= ((SessionSet3DPositionRequest *)request)->SessionHandle;
             break;
 
-        case SessionTerminate1:
+		case SessionTerminate1:
 			ev = new SessionTerminateEvent();
 			((SessionEvent*)ev)->session_handle 
 				= ((SessionTerminateRequest *)request)->SessionHandle;
@@ -189,7 +190,7 @@ void Server::process_request_queue_(const char* mesg)
             break;
 
         default:
-			VFVW_LOG("unknown request");
+			VFVW_LOG("unknown request %s", request->Action.c_str());
             break;
     }
 
