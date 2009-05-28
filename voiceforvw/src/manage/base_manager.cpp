@@ -18,11 +18,11 @@ string BaseManager::registHandle(BaseInfo* baseInfo) {
 		infos.insert(pair<string, BaseInfo*>(baseInfo->handle, baseInfo));
 		ret = baseInfo->handle;
 
-		VFVW_LOG("created Info handle=%s", baseInfo->handle.c_str());
+		g_logger->Info("BaseManager") << "Created Info handle=" << baseInfo->handle << endl;
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) 
+	{
+		g_logger->Fatal("BaseManager") << "Error in registHandle " << e.what() << endl;
 		throw e;
 	}
 
@@ -42,9 +42,8 @@ BaseInfo* BaseManager::findBase(const string& handle) {
 			result = ite->second;
 		}
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) {
+		g_logger->Fatal("BaseManager") << "Error in findBase " << e.what() << endl;
 		throw e;
 	}
 	
@@ -56,9 +55,8 @@ void BaseManager::registId(const int id, const string& handle) {
 	try {
 		handles.insert(pair<int, string>(id, handle));
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) {
+		g_logger->Fatal("BaseManager") << "Error in registId " << e.what() << endl;
 		throw e;
 	}
 }
@@ -75,9 +73,8 @@ string BaseManager::convertId(const int id) {
 			handle = ite->second;
 		}
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) {
+		g_logger->Fatal("BaseManager") << "Error in convertId " << e.what() << endl;
 		throw e;
 	}
 	
@@ -93,13 +90,11 @@ void BaseManager::remove(const string& handle) {
 			handles.erase(info->id);
 			infos.erase(handle);
 			delete info;
-			VFVW_LOG("removed Info handle=%s", handle.c_str());
+			g_logger->Info("BaseManager") << "Removed Info handle=" << handle << endl;
 		}
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) {
+		g_logger->Fatal("BaseManager") << "Error in convertId " << e.what() << endl;
 		throw e;
 	}
 }
-

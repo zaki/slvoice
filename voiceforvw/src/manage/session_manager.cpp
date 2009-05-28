@@ -16,16 +16,15 @@ string SessionManager::create(const AccountInfo *account) {
 
 		ret = registHandle(info);
 
-		VFVW_LOG("created SessionInfo handle=%s", info->handle.c_str());
+		g_logger->Info() << "Created SessionInfo handle=" << info->handle << endl;
 	}
-	catch (...) {
-
-		VFVW_LOG("Error");
+	catch (exception e) 
+	{
+		g_logger->Fatal() << "SessionManager::create Error " << e.what() << endl;
 
 		if (info != NULL) {
 			delete info;
 		}
-		exception e;
 		throw e;
 	}
 
@@ -48,9 +47,9 @@ void SessionManager::controlAudioLevel() {
 			info->machine.process_event(ev);
 		}
 	}
-	catch (...) {
-		VFVW_LOG("Error");
-		exception e;
+	catch (exception e) 
+	{
+		g_logger->Fatal() << "SessionManager::controlAudioLevel Error " << e.what() << endl;
 		throw e;
 	}
 }

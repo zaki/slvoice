@@ -6,36 +6,29 @@
 #include <main.h>
 
 void BlockingQueue::enqueue(void *data) {
-//	VFVW_LOG("entering enqueue() [%x]", data);
 	_lock lk(_mutex);
 	_queue.push(data);
 	_cond.notify_all();
-//	VFVW_LOG("exiting enqueue()");
 }
 
 void* BlockingQueue::dequeue() {
-
 	void *ret = NULL;
-//	VFVW_LOG("entering dequeue()");
 
 	_lock lk(_mutex);
 
 	while (_queue.size() == 0) {
-//		VFVW_LOG("waiting for enqueued");
 		_cond.wait(lk);
 	}
 
 	ret = _queue.front();
 	_queue.pop();
 
-//	VFVW_LOG("exiting dequeue() [%x]", ret);
-
 	return ret;
 }
 
-void EventManager::operator()() {
-
-	VFVW_LOG("entering EventManager::operator()()");
+void EventManager::operator()() 
+{
+	g_logger->Debug() << "entering EventManager::operator()()" << endl;
 
 	Event *item = NULL;
 
@@ -44,12 +37,12 @@ void EventManager::operator()() {
 		eventProc(item);
 	}
 
-	VFVW_LOG("exiting EventManager::operator()()");
+	g_logger->Debug() << "exiting EventManager::operator()()" << endl;
 }
 
-void EventManager::processConnector(ConnectorEvent *ev) {
-
-	VFVW_LOG("entering processConnector()");
+void EventManager::processConnector(ConnectorEvent *ev) 
+{
+	g_logger->Debug() << "entering processConnector()" << endl;
 
 	ConnectorInfo* con = glb_server->getConnector();
 
@@ -57,31 +50,31 @@ void EventManager::processConnector(ConnectorEvent *ev) {
     switch (ev->type)
     {
         case EventType_Initialize:
-			VFVW_LOG("EventType_Initialize");
+			g_logger->Debug() << "EventType_Initialize" << endl;
 			con->machine.process_event(*(InitializeEvent*)ev);
             break;
 
         case EventType_Shutdown:
-			VFVW_LOG("EventType_Shutdown");
+			g_logger->Debug() << "EventType_ShutdownEvent" << endl;
             con->machine.process_event(*(ShutdownEvent*)ev);
             break;
 
 		case EventType_Audio:
-			VFVW_LOG("EventType_Audio");
+			g_logger->Debug() << "EventType_AudioEvent" << endl;
             con->machine.process_event(*(AudioEvent*)ev);
             break;
 		default:
 			// logic error route
-			VFVW_LOG("unknown event (logic error)");
+			g_logger->Warn() << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	VFVW_LOG("exiting processConnector()");
+	g_logger->Debug() << "exiting processConnector()" << endl;
 }
 
-void EventManager::processAccount(AccountEvent *ev) {
-
-	VFVW_LOG("entering processAccount()");
+void EventManager::processAccount(AccountEvent *ev) 
+{
+	g_logger->Debug() << "entering processAccount()" << endl;
 
 	ConnectorInfo* con = glb_server->getConnector();
 
@@ -94,12 +87,13 @@ void EventManager::processAccount(AccountEvent *ev) {
 	if (ev->account_handle == "") {
 		ev->account_handle = con->account.convertId(ev->acc_id);
 	}
-	VFVW_LOG("account handle = %s", ev->account_handle.c_str());
+	
+	g_logger->Info() << " Account handle = " << ev->account_handle << endl;
 
 	AccountInfo *info = con->account.find(ev->account_handle);
 
 	if (info == NULL) {
-        VFVW_LOG("Account info is not found.");
+		g_logger->Warn() << "Account info is not found" << endl;
 		return;
 	}
 
@@ -107,42 +101,42 @@ void EventManager::processAccount(AccountEvent *ev) {
     switch (ev->type)
     {
         case EventType_AccountLogin:
-			VFVW_LOG("EventType_AccountLogin");
+			g_logger->Debug() << "EventType_AccountLogin" << endl;
 			info->machine.process_event(*(AccountLoginEvent*)ev);
             break;
 
 		case EventType_AccountLogout:
-			VFVW_LOG("EventType_AccountLogout");
+			g_logger->Debug() << "EventType_AccountLogout" << endl;
 			info->machine.process_event(*(AccountLogoutEvent*)ev);
             break;
 
         case EventType_RegSucceed:
-			VFVW_LOG("EventType_RegSucceed");
+			g_logger->Debug() << "EventType_RegSucceed" << endl;
 			info->machine.process_event(*(RegSucceedEvent*)ev);
             break;
 
 		case EventType_RegFailed:
-			VFVW_LOG("EventType_RegFailed");
+			g_logger->Debug() << "EventType_RegFailed" << endl;
 			info->machine.process_event(*(RegFailedEvent*)ev);
             break;
 
 		case EventType_AccountRemove:
-			VFVW_LOG("EventType_AccountRemove");
+			g_logger->Debug() << "EventType_AccountRemove" << endl;
 			con->account.remove(ev->account_handle);
             break;
 
 		default:
 			// logic error route
-			VFVW_LOG("unknown event (logic error)");
+			g_logger->Warn() << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	VFVW_LOG("exiting processAccount()");
+	g_logger->Debug() << "exiting processAccount()" << endl;
 }
 
-void EventManager::processSession(SessionEvent *ev) {
-
-	VFVW_LOG("entering processSession()");
+void EventManager::processSession(SessionEvent *ev) 
+{
+	g_logger->Debug() << "entering processSession()" << endl;
 
     ConnectorInfo* con = glb_server->getConnector();
 
@@ -152,7 +146,8 @@ void EventManager::processSession(SessionEvent *ev) {
 		if (ev->account_handle == "") {
 			ev->account_handle = con->account.convertId(ev->acc_id);
 		}
-		VFVW_LOG("AccountHandle = %s", ev->account_handle.c_str());
+
+		g_logger->Info() << "AccountHandle = " << ev->account_handle << endl;
 
 		AccountInfo *accinfo = con->account.find(ev->account_handle);
 
@@ -160,7 +155,7 @@ void EventManager::processSession(SessionEvent *ev) {
 
 			// create new session
 			ev->session_handle = con->session.create(accinfo);
-			VFVW_LOG("SessionHandle = %s", ev->session_handle.c_str());
+			g_logger->Info() << "AccountHandle = " << ev->session_handle << endl;
 
 			SessionInfo *sinfo = con->session.find(ev->session_handle);
 
@@ -171,8 +166,9 @@ void EventManager::processSession(SessionEvent *ev) {
 			// set incoming user's uri
 			sinfo->incoming_uri = ev->uri;
 		}
-		else {
-			VFVW_LOG("this handle is not registered");
+		else 
+		{
+			g_logger->Warn() << "This handle is not registered" << endl;
 		}
 
 		// create new session
@@ -186,8 +182,9 @@ void EventManager::processSession(SessionEvent *ev) {
 	// finding the session info
 	SessionInfo *info = con->session.find(ev->session_handle);
 
-	if (info == NULL) {
-        VFVW_LOG("Session info is not found.");
+	if (info == NULL) 
+	{
+		g_logger->Warn() << "Session info is not found" << endl;
 		return;
 	}
 
@@ -195,67 +192,73 @@ void EventManager::processSession(SessionEvent *ev) {
     {
 		// Session Events
 		case EventType_SessionCreate:
-			VFVW_LOG("EventType_SessionCreate");
+			g_logger->Debug() << "EventType_SessionCreate" << endl;
 			info->machine.process_event(*(SessionCreateEvent*)ev);
             break;
 
         case EventType_Position:
-			VFVW_LOG("EventType_Position");
+			g_logger->Debug() << "EventType_Position" << endl;
 			info->machine.process_event(*(PositionEvent*)ev);
             break;
 
         case EventType_SessionTerminate:
-			VFVW_LOG("EventType_SessionTerminate");
+			g_logger->Debug() << "EventType_SessionTerminate" << endl;
 			info->machine.process_event(*(SessionTerminateEvent*)ev);
             break;
 
+		// v1.22
+        case EventType_SessionMediaDisconnect:
+			g_logger->Debug() << "EventType_SessionMediaDisconnect" << endl;
+			info->machine.process_event(*(SessionMediaDisconnectEvent*)ev);
+            break;
+
         case EventType_SessionConnect:
-			VFVW_LOG("EventType_SessionConnect");
+			g_logger->Debug() << "EventType_SessionConnect" << endl;
 			info->machine.process_event(*(SessionConnectEvent*)ev);
             break;
 
         case EventType_DialIncoming:
-			VFVW_LOG("EventType_DialIncoming");
+			g_logger->Debug() << "EventType_DialIncoming" << endl;
 			info->machine.process_event(*(DialIncomingEvent*)ev);
             break;
 
         case EventType_DialEarly:
-			VFVW_LOG("EventType_DialEarly");
+			g_logger->Debug() << "EventType_DialEarly" << endl;
 			info->machine.process_event(*(DialEarlyEvent*)ev);
             break;
 
         case EventType_DialConnecting:
-			VFVW_LOG("EventType_DialConnecting");
+			g_logger->Debug() << "EventType_DialConnecting" << endl;
 			info->machine.process_event(*(DialConnectingEvent*)ev);
             break;
 
         case EventType_DialSucceed:
-			VFVW_LOG("EventType_DialSucceed");
+			g_logger->Debug() << "EventType_DialSucceed" << endl;
 			info->machine.process_event(*(DialSucceedEvent*)ev);
             break;
 
         case EventType_DialDisconnected:
-			VFVW_LOG("EventType_DialDisconnected");
+			g_logger->Debug() << "EventType_DialDisconnected" << endl;
 			info->machine.process_event(*(DialDisconnectedEvent*)ev);
             break;
 
         case EventType_SessionRemove:
-			VFVW_LOG("EventType_SessionRemove");
+			g_logger->Debug() << "EventType_SessionRemove" << endl;
 			con->session.remove(ev->session_handle);
             break;
 
 		default:
 			// logic error route
-			VFVW_LOG("unknown event (logic error)");
+			g_logger->Warn() << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	VFVW_LOG("exiting processSession()");
+	g_logger->Debug() << "exiting processSession()" << endl;
 }
 
-void EventManager::eventProc(Event *ev) {
-
-	VFVW_LOG("entering eventProc()");
+void EventManager::eventProc(Event *ev) 
+{
+	g_logger->Debug() << "entering eventProc()" << endl;
 
     switch (ev->type)
     {
@@ -286,11 +289,12 @@ void EventManager::eventProc(Event *ev) {
         case EventType_DialSucceed:
         case EventType_DialDisconnected:
 		case EventType_SessionRemove:
+		case EventType_SessionMediaDisconnect:		// v1.22
             processSession((SessionEvent*)ev);
 			break;
 
         default:
-			VFVW_LOG("unknown event");
+			g_logger->Warn() << "unknown event " << ev->type << endl;
             break;
     }
 
@@ -300,13 +304,13 @@ void EventManager::eventProc(Event *ev) {
 
 		string respStr = ev->result->ToString();
 
-		VFVW_LOG("deleting response message [%x]", ev->result);
+		g_logger->Debug() << "Deleting response message [" << ev->result << "]" << endl;
 		delete ev->result;
 		ev->result = NULL;
 
 		try {
 			glb_server->Send(respStr);
-			VFVW_LOG("sent a response message");
+			g_logger->Debug() << "Sent a response message" << endl;
 		}
         catch (SocketRunTimeException& e) 
         { 
@@ -314,16 +318,18 @@ void EventManager::eventProc(Event *ev) {
         }
 	}
 
-	if (ev->message != NULL) {
-		VFVW_LOG("deleting request message [%x]", ev->message);
+	if (ev->message != NULL) 
+	{
+		g_logger->Debug() << "Deleting request message [" << ev->message << "]" << endl;
 		delete ev->message;
 		ev->message = NULL;
 	}
 
-	if (ev != NULL) {
-		VFVW_LOG("deleting event [%x]", ev);
+	if (ev != NULL) 
+	{
+		g_logger->Debug() << "Deleting event [" << ev << "]" << endl;
 		delete ev;
 	}
 
-	VFVW_LOG("exiting eventProc()");
+	g_logger->Debug() << "exiting eventProc()" << endl;
 }

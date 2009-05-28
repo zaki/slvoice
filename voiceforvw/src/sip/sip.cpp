@@ -8,11 +8,16 @@
 
 //=============================================================================
 /* Custom log function */
-static void my_pj_log_ (int level, const char *data, int len) {
+static void my_pj_log_ (int level, const char *data, int len) 
+{
+	if (level < pj_log_get_level())
+		g_logger->Debug("PjSIP") << data << endl;
+	/*
     static ofstream log_ ("my_pj_log.txt");
 
     if (!log_) throw runtime_error ("unable to write to log file");
     if (level < pj_log_get_level()) log_ << data << endl;
+	*/
 }
 
 //=============================================================================
@@ -25,7 +30,7 @@ static void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
 
     status = pjsua_call_get_info(call_id, &ci);
 
-	VFVW_LOG("Incoming call from %s", ci.remote_info.ptr);
+	g_logger->Info() << "Incoming call from " << ci.remote_info.ptr << endl;
 
 	SessionEvent *ev = new DialIncomingEvent();
 
@@ -48,7 +53,7 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e) {
 
     status = pjsua_call_get_info(call_id, &ci);
 
-    VFVW_LOG("Call %d state=%s", call_id, ci.state_text.ptr);
+	g_logger->Info() << "Call " << call_id << " state=" << ci.state_text.ptr << endl;
 
     /*PJSIP_INV_STATE_NULL 	Before INVITE is sent or received
       PJSIP_INV_STATE_CALLING 	After INVITE is sent
@@ -102,7 +107,7 @@ static void on_call_media_state(pjsua_call_id call_id) {
     pjsua_call_info ci;
     pjsua_call_get_info (call_id, &ci);
 
-    VFVW_LOG("Media state=%d (callid=%d)", ci.media_status, call_id);
+	g_logger->Info() << "Media state= " << ci.media_status << " Callid = " << call_id << endl;
 
     if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
         status = pjsua_conf_connect(ci.conf_slot, 0);
@@ -121,9 +126,9 @@ static void on_reg_state(pjsua_acc_id acc_id) {
 
     status = pjsua_acc_get_info(acc_id, &ai);
 
-    VFVW_LOG("Account %d state=%s", acc_id, ai.status_text.ptr);
+	g_logger->Info() << "Account " << acc_id << " state=" << ai.status_text.ptr << endl;
 
-    switch (ai.status / 100) {
+	switch (ai.status / 100) {
     case 1:
         break;
     case 2: {
@@ -151,8 +156,9 @@ static void on_reg_state(pjsua_acc_id acc_id) {
 
 //=============================================================================
 /* Display error and exit application */
-static void error_exit (const char *title, pj_status_t status) {
-    VFVW_LOG("pjsip error [%s, %d]", title, status);
+static void error_exit (const char *title, pj_status_t status) 
+{
+	g_logger->Fatal() << "PjSIP Error " << title << "," << status << endl;
 
     pjsua_perror ("voice app", title, status);
     pjsua_destroy ();
@@ -161,14 +167,16 @@ static void error_exit (const char *title, pj_status_t status) {
 
 //=============================================================================
 SIPConference::SIPConference(const SIPServerInfo& s) :
-        server_ (s) {
-    VFVW_LOG("entering SIPConference(const SIPServerInfo&)");
+        server_ (s) 
+{
+	g_logger->Debug() << "Entering SIPConference(const SIPServerInfo&)" << endl;
     start_sip_stack_();
 }
 
 //=============================================================================
-SIPConference::~SIPConference() {
-    VFVW_LOG("entering ~SIPConference()");
+SIPConference::~SIPConference() 
+{
+    g_logger->Debug() << "Entering SIPConference()" << endl;
     stop_sip_stack_();
 }
 
@@ -178,17 +186,17 @@ void SIPConference::Register(const SIPUserInfo& user, int* accid) {
 	pj_status_t status;
     pjsua_acc_config cfg;
 
-	VFVW_LOG("entering Register(const SIPUserInfo&)");
+	g_logger->Debug() << "Entering Register(const SIPUserInfo&)" << endl;
 
     string temp_useruri(user.sipuri);
     string temp_username(user.name);
     string temp_userpasswd(user.password);
     string temp_serverreguri(server_.reguri);
 
-	VFVW_LOG("temp_useruri = %s", temp_useruri.c_str());
-	VFVW_LOG("temp_username = %s", temp_username.c_str());
-	VFVW_LOG("temp_userpasswd = %s", temp_userpasswd.c_str());
-	VFVW_LOG("temp_serverreguri = %s", temp_serverreguri.c_str());
+	g_logger->Info() << "temp_useruri      = " << temp_useruri << endl;
+	g_logger->Info() << "temp_username     = " << temp_username << endl;
+	g_logger->Info() << "temp_userpasswd   = " << temp_userpasswd << endl;
+	g_logger->Info() << "temp_serverreguri = " << temp_serverreguri << endl;
 
 	pjsua_acc_config_default (&cfg);
 
@@ -214,7 +222,7 @@ void SIPConference::UnRegister(const int accid) {
 
 	pj_status_t status;
 
-	VFVW_LOG("entering UnRegister(const int)");
+	g_logger->Debug() << "Entering UnRegister(const int)" << endl;
 
     status = pjsua_acc_del((pjsua_acc_id)accid);
 
@@ -227,7 +235,7 @@ void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
 
 	pj_status_t status;
 
-	VFVW_LOG("entering Join() uri=%s", joinuri.c_str());
+	g_logger->Debug() << "Entering Join() URI=" << joinuri << endl;
 
 	pj_str_t uri = pj_str(const_cast <char*> (joinuri.c_str()));
 
@@ -242,7 +250,7 @@ void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
 		if (status != PJ_SUCCESS)
 			error_exit("Error enumerating codecs", status);
 
-		VFVW_LOG("Disabling %d unselected codecs", count - 1);
+		g_logger->Info() << "Disabling " << count-1 << " unselected codecs" << endl;
 
 		for (unsigned int i = 0; i < count; i++)
 		{
@@ -250,18 +258,18 @@ void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
 		}
 	}
 
-	VFVW_LOG("codec selected = %s", g_config->Codec.c_str());
+	g_logger->Info() << "Codec selected " << g_config->Codec << endl;
 
 	// Set the priority of the selected codec to be highest (255)
 	const pj_str_t codec_name = pj_str(const_cast <char*>(g_config->Codec.c_str()));
 	status = pjsua_codec_set_priority(&codec_name, 255);
 	if (status != PJ_SUCCESS)
 	{
-		VFVW_LOG("Selected codec %s could not be set as default", g_config->Codec.c_str());
+		g_logger->Warn() << "Selected codec " << g_config->Codec << " could not be set as default" << endl;
 	}
 	else
 	{
-		VFVW_LOG("Codec %s was set as default", g_config->Codec.c_str());
+		g_logger->Info() << "Codec " << g_config->Codec << " was set as default" << endl;
 	}
 
 	status = pjsua_call_make_call(
@@ -276,7 +284,7 @@ void SIPConference::Answer(const int call_id, const unsigned int status_code) {
 
 	pj_status_t status;
 
-	VFVW_LOG("entering Answer call_id=%d", call_id);
+	g_logger->Info() << "Entering Answer call_id=" << call_id << endl;
 
     status = pjsua_call_answer((pjsua_call_id)call_id, status_code, NULL, NULL);
 
@@ -289,7 +297,7 @@ void SIPConference::Leave(const int call_id) {
 
 	pj_status_t status;
 	
-	VFVW_LOG("entering Leave call_id=%d", call_id);
+	g_logger->Info() << "Entering Leave call_id=" << call_id << endl;
 
 //    pjsua_call_hangup_all();
 	status = pjsua_call_hangup((pjsua_call_id)call_id, 0, NULL, NULL);
@@ -299,14 +307,15 @@ void SIPConference::Leave(const int call_id) {
 }
 
 //=============================================================================
-void SIPConference::AdjustTranVolume(int call_id, float level) {
-    VFVW_LOG("entering AdjustTranVolume()");
+void SIPConference::AdjustTranVolume(int call_id, float level) 
+{
+	g_logger->Debug() << "Entering AdjustTranVolume()" << endl;
 
 	pj_status_t status;
     pjsua_call_info ci;
     pjsua_call_get_info((pjsua_call_id)call_id, &ci);
 
-    VFVW_LOG("AdjustTranVolume call_id=%d,level=%f", call_id, level);
+	g_logger->Info() << "AdjustTranVolume call_id" << call_id << ",Level=" << level << endl;
 
 #ifdef DEBUG
     unsigned tx_level = 0;
@@ -315,7 +324,7 @@ void SIPConference::AdjustTranVolume(int call_id, float level) {
     if (status != PJ_SUCCESS)
         error_exit ("Error get signal level", status);
 
-    VFVW_LOG("current tx_level=%d,rx_level=%d", tx_level, rx_level);
+    g_logger->Info() << "Current tx_level" << tx_level << ", rx_level=" << rx_level << endl;
 #endif
 
     status = pjsua_conf_adjust_tx_level(ci.conf_slot, level);
@@ -324,14 +333,15 @@ void SIPConference::AdjustTranVolume(int call_id, float level) {
 }
 
 //=============================================================================
-void SIPConference::AdjustRecvVolume(int call_id, float level) {
-    VFVW_LOG("entering AdjustRecvVolume()");
+void SIPConference::AdjustRecvVolume(int call_id, float level) 
+{
+	g_logger->Debug() << "Entering AdjustRecvVolume()" << endl;
 
 	pj_status_t status;
     pjsua_call_info ci;
     pjsua_call_get_info((pjsua_call_id)call_id, &ci);
 
-    VFVW_LOG("AdjustRecvVolume call_id=%d,level=%f", call_id, level);
+	g_logger->Info() << "AdjustRecvVolume call_id=" << call_id << ", level=" << level << endl;
 
 #ifdef DEBUG
     unsigned tx_level = 0;
@@ -340,7 +350,7 @@ void SIPConference::AdjustRecvVolume(int call_id, float level) {
     if (status != PJ_SUCCESS)
         error_exit ("Error get signal level", status);
 
-    VFVW_LOG("current tx_level=%d,rx_level=%d", tx_level, rx_level);
+	g_logger->Info() << "Current tx_level" << tx_level << ", rx_level=" << rx_level << endl;
 #endif
 
     status = pjsua_conf_adjust_rx_level(ci.conf_slot, level);
@@ -349,8 +359,9 @@ void SIPConference::AdjustRecvVolume(int call_id, float level) {
 }
 
 //=============================================================================
-void SIPConference::start_sip_stack_() {
-    VFVW_LOG("entering start_sip_stack_()");
+void SIPConference::start_sip_stack_() 
+{
+	g_logger->Debug() << "Entering start_sip_stack_()" << endl;
 
 	pj_status_t status;
 
@@ -396,8 +407,9 @@ void SIPConference::start_sip_stack_() {
 }
 
 //=============================================================================
-void SIPConference::stop_sip_stack_ () {
-    VFVW_LOG("entering stop_sip_stack_()");
+void SIPConference::stop_sip_stack_ () 
+{
+	g_logger->Debug() << "Entering stop_sip_stack_()" << endl;
     pjsua_destroy ();
 }
 

@@ -36,6 +36,7 @@ SET (VOICESRCDIR ${VOICEDIR}/src)
 SET (VOICESRC 
     ${VOICESRCDIR}/main/main.cpp
     ${VOICESRCDIR}/config/config.cpp
+    ${VOICESRCDIR}/logger/logger.cpp
     ${VOICESRCDIR}/sip/sip.cpp
     ${VOICESRCDIR}/server/server.cpp
     ${VOICESRCDIR}/server/server_util.cpp
@@ -54,6 +55,7 @@ SET (VOICEINCDIR ${VOICEDIR}/include)
 SET (VOICEINC 
 	${VOICEINCDIR}/main.h
 	${VOICEINCDIR}/config.hpp
+	${VOICEINCDIR}/logger.hpp
 	${VOICEINCDIR}/parameters.hpp 
 	${VOICEINCDIR}/parsing.hpp 
 	${VOICEINCDIR}/server.hpp 

@@ -127,7 +127,7 @@ RequestParser::parse_AuxCaptureAudioStart_ ()
 auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStop_ ()
 {
-	VFVW_LOG("Version %d", g_config->Version);
+	g_logger->Info() << "Version " << g_config->Version << endl;
     AuxCaptureAudioStopRequest *req 
         (new AuxCaptureAudioStopRequest (requestid_));
     
@@ -1013,7 +1013,7 @@ ConnectorMuteLocalMicRequest::SetState (Audio& state) const
     ss.str (Value);
     ss >> boolalpha >> state.mic_mute;
 
-	VFVW_LOG("state.mic_mute=%s", (state.mic_mute)?"true":"false");
+	g_logger->Debug() << "state.mic_mute = " << state.mic_mute << endl;
 }
 
 void 
@@ -1024,21 +1024,21 @@ ConnectorMuteLocalSpeakerRequest::SetState (Audio& state) const
     ss.str (Value);
     ss >> boolalpha >> state.speaker_mute;
 
-	VFVW_LOG("state.speaker_mute=%s", (state.speaker_mute)?"true":"false");
+	g_logger->Debug() << "state.speaker_mute = " << state.speaker_mute << endl;
 }
 
 void 
 ConnectorSetLocalMicVolumeRequest::SetState (Audio& state) const
 {
 	state.mic_volume = (float)atof(Value.c_str());
-	VFVW_LOG("state.mic_volume=%f", state.mic_volume);
+	g_logger->Debug() << "state.mic_volume = " << state.mic_volume << endl;
 }
 
 void 
 ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state) const
 {
 	state.speaker_volume = (float)atof(Value.c_str());
-	VFVW_LOG("state.speaker_volume=%f", state.speaker_volume);
+	g_logger->Debug() << "state.speaker_volume = " << state.speaker_volume << endl;
 }
 
 void 

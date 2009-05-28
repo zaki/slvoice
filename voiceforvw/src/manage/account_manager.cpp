@@ -16,16 +16,15 @@ string AccountManager::create() {
 		
 		ret = registHandle(info);
 
-		VFVW_LOG("created AccountInfo handle=%s", info->handle.c_str());
+		g_logger->Info("ACCOUNTMANAGER::Create") << "Created AccountInfo handle=" << info->handle << endl;
 	}
-	catch (...) {
+	catch (exception e) {
 
-		VFVW_LOG("Error");
+		g_logger->Fatal("ACCOUNTMANAGER::Create") << e.what() << endl;
 
 		if (info != NULL) {
 			delete info;
 		}
-		exception e;
 		throw e;
 	}
 

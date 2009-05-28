@@ -14,20 +14,23 @@
 //=============================================================================
 ConnectorIdleState::ConnectorIdleState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<ConnectorMachine>()) {
-    VFVW_LOG("ConnectorIdle entered");
+        machine(context<ConnectorMachine>()) 
+{
+	g_logger->Debug() << "ConnectorIdle entered" << endl;
 }
 
-ConnectorIdleState::~ConnectorIdleState() {
-    VFVW_LOG("ConnectorIdle exited");
+ConnectorIdleState::~ConnectorIdleState() 
+{
+	g_logger->Debug() << "ConnectorIdle exited" << endl;
 }
 
-result ConnectorIdleState::react(const InitializeEvent& ev) {
-    VFVW_LOG("ConnectorIdle react (InitializeEvent)");
+result ConnectorIdleState::react(const InitializeEvent& ev) 
+{
+	g_logger->Debug() << "ConnectorIdle react (InitializeEvent)" << endl;
 
 	machine.info->voiceserver_url = g_config->VoiceServerURI;
 
-	VFVW_LOG("voip frontend url = %s", machine.info->voiceserver_url.c_str());	
+	g_logger->Info() << "VoIP frontend URL = " << machine.info->voiceserver_url << endl;
 
     machine.info->handle = VFVW_CONNECTOR_HANDLE;
 
@@ -42,24 +45,28 @@ result ConnectorIdleState::react(const InitializeEvent& ev) {
 //=============================================================================
 ConnectorActiveState::ConnectorActiveState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<ConnectorMachine>()) {
-    VFVW_LOG("ConnectorActive entered");
+        machine(context<ConnectorMachine>()) 
+{
+	g_logger->Debug() << "ConnectorActive entered" << endl;
 }
 
-ConnectorActiveState::~ConnectorActiveState() {
-    VFVW_LOG("ConnectorActive exited");
+ConnectorActiveState::~ConnectorActiveState() 
+{
+	g_logger->Debug() << "ConnectorActive exited" << endl;
 }
 
-result ConnectorActiveState::react(const ShutdownEvent& ev) {
-    VFVW_LOG("ConnectorActive react (ShutdownEvent)");
+result ConnectorActiveState::react(const ShutdownEvent& ev) 
+{
+	g_logger->Debug() << "ConnectorActive react (ShutdownEvent)" << endl;
 
     machine.info->handle = "";
 
     return transit<ConnectorIdleState>();
 }
 
-result ConnectorActiveState::react(const AudioEvent& ev) {
-    VFVW_LOG("ConnectorActive react (AudioEvent)");
+result ConnectorActiveState::react(const AudioEvent& ev) 
+{
+	g_logger->Debug() << "ConnectorActive react (AudioEvent)" << endl;
 
     ev.message->SetState(machine.info->audio);
 

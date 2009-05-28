@@ -12,12 +12,32 @@ void Config::LoadConfig(string configFilePath)
 	doc_.LoadFile(ConfigFilePath);
 
 	string value;
+	// LogFilePath
+	value = get_value("LogFilePath");
+	if (value != "")
+	{
+		LogFilePath = value;
+	}
+
+	// LogFilter
+	value = get_value("LogFilter");
+	if (value != "")
+	{
+		LogFilter = value;
+	}
+
+	// LogLevel
+	value = get_value("LogLevel");
+	if (value != "")
+	{
+		LogLevel = value;
+	}
+
 	// Port
 	value = get_value("Port");
 	if (value != "")
 	{
 		Port = atoi(value.c_str());
-		VFVW_LOG("Port: %d", Port);
 	}
 
 	// Version
@@ -25,7 +45,6 @@ void Config::LoadConfig(string configFilePath)
 	if (value != "")
 	{
 		Version = atoi(value.c_str());
-		VFVW_LOG("Version: %d", Version);
 	}
 
 	// Realm
@@ -33,7 +52,6 @@ void Config::LoadConfig(string configFilePath)
 	if (value != "")
 	{
 		VoiceServerURI = value;
-		VFVW_LOG("VoiceServerURI: %s", VoiceServerURI.c_str());
 	}
 
 	// Realm
@@ -41,7 +59,6 @@ void Config::LoadConfig(string configFilePath)
 	if (value != "")
 	{
 		Realm = value;
-		VFVW_LOG("Realm: %s", Realm.c_str());
 	}
 
 	// Codec
@@ -49,13 +66,11 @@ void Config::LoadConfig(string configFilePath)
 	if (value != "")
 	{
 		Codec = value;
-		VFVW_LOG("Codec: %s", Codec.c_str());
 	}
 
 	// Disable other codecs
 	value = get_value("Disable");
 	DisableOtherCodecs = (value.compare("true") == 0);
-	VFVW_LOG("Disable: %s", value.c_str());
 }
 
 //=============================================================================

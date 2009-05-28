@@ -14,16 +14,19 @@
 //=============================================================================
 AccountLogoutState::AccountLogoutState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<AccountMachine>()) {
-    VFVW_LOG("AccountLogout entered");
+        machine(context<AccountMachine>()) 
+{
+    g_logger->Debug("ACCOUNTLOGOUTSTATE") << "AccountLogout entered" << endl;
 }
 
-AccountLogoutState::~AccountLogoutState() {
-    VFVW_LOG("AccountLogout exited");
+AccountLogoutState::~AccountLogoutState() 
+{
+    g_logger->Debug("ACCOUNTLOGOUTSTATE") << "AccountLogout exited" << endl;
 }
 
-result AccountLogoutState::react(const AccountLoginEvent& ev) {
-    VFVW_LOG("AccountLogout react (AccountLoginEvent)");
+result AccountLogoutState::react(const AccountLoginEvent& ev) 
+{
+    g_logger->Debug("ACCOUNTLOGOUTSTATE") << "AccountLogout react (AccountLoginEvent)" << endl;
 
     ev.message->SetState(machine.info->account);
 
@@ -36,22 +39,22 @@ result AccountLogoutState::react(const AccountLoginEvent& ev) {
 	// access to the voip frontend
 	ServerUtil::getServerInfo(con->voiceserver_url + machine.info->account.name, sipinfo);
 
-	VFVW_LOG("sipuri   : %s", sipinfo.sipuri.c_str());
-	VFVW_LOG("proxyuri : %s", sipinfo.proxyuri.c_str());
-	VFVW_LOG("reguri   : %s", sipinfo.reguri.c_str());
-
     machine.info->sipconf = new SIPConference(sipinfo);
 
     uinfo.name = machine.info->account.name;
     uinfo.password = machine.info->account.password;
 	uinfo.sipuri = sipinfo.sipuri;
 
-	VFVW_LOG("domain : %s", uinfo.domain.c_str());
+	g_logger->Info("ACCOUNTLOGOUTSTATE") << "sipuri   : "  << sipinfo.sipuri << endl;
+	g_logger->Info("ACCOUNTLOGOUTSTATE") << "proxyuri : "  << sipinfo.proxyuri << endl;
+	g_logger->Info("ACCOUNTLOGOUTSTATE") << "reguri   : "  << sipinfo.reguri << endl;
+	g_logger->Info("ACCOUNTLOGOUTSTATE") << "domain   : " << uinfo.domain << endl;
 
 	// sending REGISTER
     machine.info->sipconf->Register(uinfo, &machine.info->id);
 
-	VFVW_LOG("account id = %d, handle = %s", machine.info->id, machine.info->handle.c_str());
+	g_logger->Info("ACCOUNTLOGOUTSTATE") << "Account ID = " << machine.info->id << " Handle = " << machine.info->handle << endl;
+
 	con->account.registId(machine.info->id, machine.info->handle);
     ((AccountLoginResponse *)ev.result)->AccountHandle = machine.info->handle;
 
@@ -65,21 +68,25 @@ result AccountLogoutState::react(const AccountLoginEvent& ev) {
 //=============================================================================
 AccountRegisteringState::AccountRegisteringState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<AccountMachine>()) {
-    VFVW_LOG("AccountRegistering entered");
+        machine(context<AccountMachine>()) 
+{
+	g_logger->Debug("ACCOUNTREGISTERINGSTATE") << "AccountRegistering entered" << endl;
 }
 
-AccountRegisteringState::~AccountRegisteringState() {
-    VFVW_LOG("AccountRegistering exited");
+AccountRegisteringState::~AccountRegisteringState() 
+{
+    g_logger->Debug("ACCOUNTREGISTERINGSTATE") << "AccountRegistering exited" << endl;
 }
 
-result AccountRegisteringState::react(const RegSucceedEvent& ev) {
-    VFVW_LOG("AccountRegistering react (RegSucceedEvent)");
+result AccountRegisteringState::react(const RegSucceedEvent& ev) 
+{
+    g_logger->Debug("ACCOUNTREGISTERINGSTATE") << "AccountRegistering react (RegSucceededEvent)" << endl;
     return transit<AccountLoginState>();
 }
 
-result AccountRegisteringState::react(const RegFailedEvent& ev) {
-    VFVW_LOG("AccountRegistering react (RegFailedEvent)");
+result AccountRegisteringState::react(const RegFailedEvent& ev) 
+{
+	g_logger->Debug("ACCOUNTREGISTERINGSTATE") << "AccountRegistering react (RegFailedEvent)" << endl;
     return transit<AccountLogoutState>();
 }
 
@@ -89,9 +96,9 @@ result AccountRegisteringState::react(const RegFailedEvent& ev) {
 //=============================================================================
 AccountLoginState::AccountLoginState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<AccountMachine>()) {
-
-	VFVW_LOG("AccountLogin entered");
+        machine(context<AccountMachine>()) 
+{
+	g_logger->Debug("ACCOUNTLOGINSTATE") << "AccountLogin entered" << endl;
 
 	// Send LoginStateChangeEvent
     LoginStateChangeEvent loginStateEvent;
@@ -103,12 +110,14 @@ AccountLoginState::AccountLoginState(my_context ctx) :
     glb_server->Send(loginStateEvent.ToString());
 }
 
-AccountLoginState::~AccountLoginState() {
-    VFVW_LOG("AccountLogin exited");
+AccountLoginState::~AccountLoginState() 
+{
+    g_logger->Debug("ACCOUNTLOGINSTATE") << "AccountLogin exited" << endl;
 }
 
-result AccountLoginState::react(const AccountLogoutEvent& ev) {
-    VFVW_LOG("AccountLogin react (AccountLogoutEvent)");
+result AccountLoginState::react(const AccountLogoutEvent& ev) 
+{
+	g_logger->Debug("ACCOUNTLOGINSTATE") << "AccountLogin react (AccountLogoutEvent)" << endl;
 
     if (machine.info->sipconf != NULL) {
 		// sending unREG (Expires=0)
@@ -118,8 +127,9 @@ result AccountLoginState::react(const AccountLogoutEvent& ev) {
     return transit<AccountUnregisteringState>();
 }
 
-result AccountLoginState::react(const RegFailedEvent& ev) {
-    VFVW_LOG("AccountLogin react (RegFailedEvent)");
+result AccountLoginState::react(const RegFailedEvent& ev) 
+{
+	g_logger->Debug("ACCOUNTLOGINSTATE") << "AccountLogin react (RegFailedEvent)" << endl;
     return transit<AccountLogoutState>();
 }
 
@@ -128,8 +138,9 @@ result AccountLoginState::react(const RegFailedEvent& ev) {
 //=============================================================================
 AccountUnregisteringState::AccountUnregisteringState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
-        machine(context<AccountMachine>()) {
-    VFVW_LOG("AccountUnregistering entered");
+        machine(context<AccountMachine>()) 
+{
+	g_logger->Debug("ACCOUNTUNREGISTERSTATE") << "AccountUnregistering entered" << endl;
 
     // Send LoginStateChangeEvent
     LoginStateChangeEvent loginStateEvent;
@@ -141,13 +152,15 @@ AccountUnregisteringState::AccountUnregisteringState(my_context ctx) :
     glb_server->Send(loginStateEvent.ToString());
 }
 
-AccountUnregisteringState::~AccountUnregisteringState() {
-    VFVW_LOG("AccountUnregistering exited");
+AccountUnregisteringState::~AccountUnregisteringState() 
+{
+	g_logger->Debug("ACCOUNTUNREGISTERSTATE") << "AccountUnregistering exited" << endl;
 }
 
-result AccountUnregisteringState::react(const RegSucceedEvent& ev) {
-    VFVW_LOG("AccountUnregistering react (RegSucceedEvent)");
-
+result AccountUnregisteringState::react(const RegSucceedEvent& ev) 
+{
+	g_logger->Debug("ACCOUNTUNREGISTERSTATE") << "AccountUnregistering react (RegSucceedEvent)" << endl;
+	
 	// enqueue the account remove event
 	AccountRemoveEvent *removeEvent = new AccountRemoveEvent();
 	removeEvent->acc_id = machine.info->id;
@@ -161,8 +174,9 @@ result AccountUnregisteringState::react(const RegSucceedEvent& ev) {
     return transit<AccountLogoutState>();
 }
 
-result AccountUnregisteringState::react(const RegFailedEvent& ev) {
-    VFVW_LOG("AccountUnregistering react (RegFailedEvent)");
+result AccountUnregisteringState::react(const RegFailedEvent& ev)
+{
+	g_logger->Debug("ACCOUNTUNREGISTERSTATE") << "AccountUnregistering react (RegFailedEvent)" << endl;
 
 	// enqueue the account remove event
 	AccountRemoveEvent *removeEvent = new AccountRemoveEvent();

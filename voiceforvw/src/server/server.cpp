@@ -16,7 +16,7 @@ Server::Server (int port) :
     buf_ (NULL),
 	userURI("")
 {
-	VFVW_LOG("entering Server::Server()");
+	g_logger->Debug() << "entering Server()" << endl;
 
     try
     {
@@ -37,7 +37,7 @@ Server::Server (int port) :
 //=============================================================================
 Server::~Server () 
 { 
-	VFVW_LOG("entering Server::~Server()");
+	g_logger->Debug() << "entering ~Server()" << endl;
 
     try 
     {
@@ -86,9 +86,7 @@ void Server::Start ()
 
 			*pos = 0x00;
 
-			VFVW_LOG("received: %s", cur);
-
-//			enqueue_request_ (cur);
+			g_logger->Debug() << "received " << cur << endl;
 
 			process_request_queue_(cur);
 
@@ -105,15 +103,15 @@ void Server::Send (const string& m)
     if (!(sock_.get()))
         throw SocketLogicException ("server has no connection");
 
-//    cout << m << endl;
-	VFVW_LOG(m.c_str());
+	g_logger->Debug() << m << endl;
+
 	try
 	{
 		sock_->write (m.c_str(), m.size()); 
 	}
-	catch(...)
+	catch(exception e)
 	{
-		VFVW_LOG("Error in Server::Send - Is the application closing?");
+		g_logger->Error() << "Error in Server::Send " << e.what() << endl;
 	}
 }
 
@@ -189,8 +187,14 @@ void Server::process_request_queue_(const char* mesg)
 				= ((SessionConnectRequest *)request)->SessionHandle;
             break;
 
+		// v1.22
+		case SessionMediaDisconnect1:
+			ev = new SessionMediaDisconnectEvent();
+			((SessionEvent*)ev)->session_handle = ((SessionMediaDisconnectRequest *)request)->SessionHandle;
+			break;
+
         default:
-			VFVW_LOG("unknown request %s", request->Action.c_str());
+			g_logger->Warn() << "Unknown request " << request->Action << endl;
             break;
     }
 

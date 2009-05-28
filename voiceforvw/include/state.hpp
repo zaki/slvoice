@@ -147,6 +147,7 @@ struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine>
 {
     typedef boost::mpl::list<
 		custom_reaction<SessionTerminateEvent>, 
+		custom_reaction<SessionMediaDisconnectEvent>,		// v1.22
 		custom_reaction<AudioEvent>, 
 		custom_reaction<PositionEvent>, 
 		custom_reaction<DialDisconnectedEvent>> reactions;
@@ -155,6 +156,7 @@ struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine>
     ~SessionConfirmedState();
 
     result react(const SessionTerminateEvent& ev);
+	result react(const SessionMediaDisconnectEvent& ev);
     result react(const AudioEvent& ev);
     result react(const PositionEvent& ev);
     result react(const DialDisconnectedEvent& ev);

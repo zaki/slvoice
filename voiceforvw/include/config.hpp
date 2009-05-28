@@ -18,6 +18,8 @@ class Config
 			: Port(44215), 
 			  ConfigFilePath(""),
 			  LogFilePath("SLVoice.log"),
+			  LogLevel("WARN"),
+			  LogFilter(""),
 			  VoiceServerURI(""),
 			  Realm("asterisk"),
 			  Codec("PCMU"),
@@ -32,6 +34,8 @@ class Config
     public:
 		string ConfigFilePath;
 		string LogFilePath;
+		string LogLevel;
+		string LogFilter;
 		int Port;					// Port to receive communication through
 		string VoiceServerURI;		// Voice server URI to get user's SIP URI from
 		string Realm;				// Authentication realm

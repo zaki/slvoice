@@ -39,6 +39,7 @@ enum EventType
     EventType_SessionCreate,
     EventType_SessionTerminate,
     EventType_SessionConnect,
+	EventType_SessionMediaDisconnect,		// v1.22
     EventType_DialIncoming,
     EventType_DialEarly,
     EventType_DialConnecting,
@@ -134,6 +135,12 @@ struct SessionCreateEvent : public SessionEvent, event<SessionCreateEvent> {
 struct SessionTerminateEvent : public SessionEvent, event<SessionTerminateEvent> {
 	SessionTerminateEvent() {
 		type = EventType_SessionTerminate;
+	};
+};
+
+struct SessionMediaDisconnectEvent : public SessionEvent, event<SessionMediaDisconnectEvent> {
+	SessionMediaDisconnectEvent() {
+		type = EventType_SessionMediaDisconnect;
 	};
 };
 

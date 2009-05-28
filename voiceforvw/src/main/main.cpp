@@ -6,17 +6,13 @@
 #include <main.h>
 
 Config *g_config;
+Logger *g_logger;
 
 // global reference to server instance
 // used to send messages from state machine or SIP stack
 Server *glb_server (NULL);
 
 EventManager g_eventManager;
-
-// log output macro
-#ifdef DEBUG
-FILE *logfp = NULL;
-#endif
 
 
 //=============================================================================
@@ -28,9 +24,9 @@ char get_short_option (char *arg);
 //=============================================================================
 // Main entry point
 int main (int argc, char **argv) {
-    VFVW_LOGINIT();
+    //VFVW_LOGINIT();
 
-    VFVW_LOG("entering main()");
+    //VFVW_LOG("entering main()");
 
     // TODO: It is necessary to match it to the interface specification of Vivox-SLVoice.
 
@@ -71,20 +67,21 @@ int main (int argc, char **argv) {
 int APIENTRY WinMain( HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine,
-                      int nCmdShow) {
-    VFVW_LOGINIT();
+                      int nCmdShow) 
+{
+    g_config = new Config();
+	g_config->LoadConfig("./SLVoice.xml");
 
-    VFVW_LOG("entering WinMain()");
+	g_logger = new Logger();
+	g_logger->Init();
 
-    if (lpCmdLine == NULL || *lpCmdLine == 0x00) {
-		VFVW_LOG("parameter error");
+    if (lpCmdLine == NULL || *lpCmdLine == 0x00) 
+	{
+		g_logger->Fatal() << "Parameter error" << endl;
         exit(0);
     }
 
-    VFVW_LOG("lpCmdLine : %s", lpCmdLine);
-
-    g_config = new Config();
-	g_config->LoadConfig("./SLVoice.xml");
+	g_logger->Log(LL_DEBUG, "MAIN") << "Logger is online" << endl;
 
     try {
 		EventManager evm;
@@ -97,12 +94,14 @@ int APIENTRY WinMain( HINSTANCE hInstance,
 
 		thr.join();
 
-    } catch (exception &e) {
-		VFVW_LOG("error %s", e.what());
+    } catch (exception &e) 
+	{
+		g_logger->Fatal() << "Error " << e.what() << endl;
         exit(0);
     }
 
     // Server leaks, but should always have exactly the same lifetime as app
+	g_logger->Close();
     return EXIT_SUCCESS;
 
 }

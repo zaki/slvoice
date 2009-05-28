@@ -596,12 +596,15 @@ struct AccountListAutoAcceptRulesRequest : public Request
 	AccountListAutoAcceptRulesResponse* CreateResponse(const string& return_code);
 };
 
+// v1.22
 struct SessionMediaDisconnectRequest : public Request
 {
     SessionMediaDisconnectRequest(const string& request_id)
        : Request(SessionMediaDisconnect1, request_id, SessionMediaDisconnect1String) 
 	{
 	}
+
+	string SessionHandle;
 
 	SessionMediaDisconnectResponse* CreateResponse(const string& return_code);
 };

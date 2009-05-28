@@ -21,6 +21,7 @@
 using namespace std;
 
 #include <config.hpp>
+#include <logger.hpp>
 #include <parameters.hpp>
 #include <parsing.hpp>
 #include <sip.hpp>
@@ -29,30 +30,13 @@ using namespace std;
 #include <server.hpp>
 
 extern Config *g_config;
+extern Logger *g_logger;
 
 // global reference to server instance 
 // created in main.cpp
 extern Server *glb_server;
 
 extern EventManager g_eventManager;
-
-// log output macro
-#ifdef DEBUG
-extern FILE *logfp;
-#define  VFVW_LOGINIT()  logfp = fopen("test.log", "a")
-/*
-#define  VFVW_LOG(fmt, ...)  fprintf(stderr, "[VFVW] %s:%d - ", __FILE__, __LINE__);	\
-	fprintf(stderr, fmt, ## __VA_ARGS__);	\
-	fprintf(stderr, "\r\n")
-*/
-#define  VFVW_LOG(fmt, ...)  fprintf(logfp, "[VFVW] %s:%d - ", __FILE__, __LINE__);	\
-	fprintf(logfp, fmt, ## __VA_ARGS__);	\
-	fprintf(logfp, "\r\n");	\
-	fflush(logfp)
-#else
-#define VFVW_LOGINIT()		void()
-#define VFVW_LOG(fmt, ...)	void()
-#endif
 
 // defines
 #define	VFVW_CONNECTOR_HANDLE	"xxxx"
