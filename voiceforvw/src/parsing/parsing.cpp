@@ -1030,15 +1030,21 @@ ConnectorMuteLocalSpeakerRequest::SetState (Audio& state) const
 void 
 ConnectorSetLocalMicVolumeRequest::SetState (Audio& state) const
 {
+	g_logger->Debug() << "Entering ConnectorSetLocalMicVolumeRequest::SetState()" << endl;
 	state.mic_volume = (float)atof(Value.c_str());
-	g_logger->Debug() << "state.mic_volume = " << state.mic_volume << endl;
+	ConnectorInfo *con = glb_server->getConnector();
+	con->audio.mic_volume = state.mic_volume;
+	g_logger->Info() << "state.mic_volume = " << state.mic_volume << endl;
 }
 
 void 
 ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state) const
 {
+	g_logger->Debug() << "Entering ConnectorSetLocalSpeakerVolumeRequest::SetState()" << endl;
 	state.speaker_volume = (float)atof(Value.c_str());
-	g_logger->Debug() << "state.speaker_volume = " << state.speaker_volume << endl;
+	ConnectorInfo *con = glb_server->getConnector();
+	con->audio.speaker_volume = state.speaker_volume;
+	g_logger->Info() << "state.speaker_volume = " << state.speaker_volume << endl;
 }
 
 void 

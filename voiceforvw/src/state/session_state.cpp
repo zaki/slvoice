@@ -178,6 +178,7 @@ SessionIncomingState::SessionIncomingState(my_context ctx) :
     sessionNewEvent.HasVideo = "false";
 
 	glb_server->userURI = "sip:" + uinfo.name + "@" + uinfo.domain;
+	glb_server->participantURI = uinfo.name;
     glb_server->Send(sessionNewEvent.ToString());
 
 	ConnectorInfo *con = glb_server->getConnector();
@@ -342,36 +343,41 @@ void VolumeCheckingThread::operator()()
 		pj_status_t status;
 		pjsua_call_info ci;
 
-		call_id = 0;
-
 		if (call_id >= 0)
 		{
 			status = pjsua_call_get_info((pjsua_call_id)call_id, &ci);
-
-			status = pjsua_conf_get_signal_level(ci.conf_slot, &tx_level, &rx_level);
 			if (status == PJ_SUCCESS)
 			{
-				ParticipantPropertiesEvent partPropEvent;
-				partPropEvent.SessionHandle = handle;
-				partPropEvent.ParticipantURI = glb_server->userURI;
-				partPropEvent.IsLocallyMuted = "false";
-				partPropEvent.IsModeratorMuted = "false";
-				char buf[255];
-				sprintf(buf, "%d", 75);
-				partPropEvent.Volume = buf;
-				
-				// tx_level is a value between 0 and 255
-				// energy is between 0 and 1.0
-
-				sprintf(buf, "%2.2f", (((float)tx_level) / 255.0));
-				partPropEvent.Energy = buf;
-
-				if (tx_level > 20)
+				status = pjsua_conf_get_signal_level(ci.conf_slot, &tx_level, &rx_level);
+				if (status == PJ_SUCCESS)
 				{
-					partPropEvent.IsSpeaking = "true";
-				}
+					ConnectorInfo *con = glb_server->getConnector();
+					mic_volume = con->audio.mic_volume;
 
-				glb_server->Send (partPropEvent.ToString());
+					mic_volume = ((mic_volume+100) / 200) * 100;
+
+					ParticipantPropertiesEvent partPropEvent;
+					partPropEvent.SessionHandle = handle;
+					partPropEvent.ParticipantURI = glb_server->participantURI;
+					partPropEvent.IsLocallyMuted = "false";
+					partPropEvent.IsModeratorMuted = "false";
+					char buf[255];
+					sprintf(buf, "%d", (int)mic_volume);
+					partPropEvent.Volume = buf;
+
+					// tx_level is a value between 0 and 255
+					// energy is between 0 and 1.0
+
+					sprintf(buf, "%1.2f", (((float)tx_level) / 256.0));
+					partPropEvent.Energy = buf;
+
+					if (tx_level > 20)
+					{
+						partPropEvent.IsSpeaking = "true";
+					}
+
+					glb_server->Send (partPropEvent.ToString());
+				}
 			}
 		}
 		    
@@ -399,17 +405,17 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
     glb_server-> Send (sessionStateEvent.ToString());
 
     ParticipantStateChangeEvent partStateEvent;
-	sessionStateEvent.StatusCode = sessionStateEvent.OKCode;
-	sessionStateEvent.StatusString = sessionStateEvent.OKString;
+	partStateEvent.StatusCode = sessionStateEvent.OKCode;
+	partStateEvent.StatusString = sessionStateEvent.OKString;
     partStateEvent.State = "7";
-    //sessionStateEvent.ParticipantURI = "";
-    //sessionStateEvent.AccountName = "";
-    //sessionStateEvent.DisplayName = "";
-    //sessionStateEvent.ParticipantType = "";
+    partStateEvent.ParticipantURI = glb_server->participantURI;
+    //partStateEvent.AccountName = "";
+    partStateEvent.DisplayName = "";
+    partStateEvent.ParticipantType = "0";
     glb_server-> Send (partStateEvent.ToString());
 
     ParticipantPropertiesEvent partPropEvent;
-    sessionStateEvent.SessionHandle = machine.info->handle;
+    partPropEvent.SessionHandle = machine.info->handle;
     //partPropEvent.ParticipantURI = "";
     //partPropEvent.IsLocallyMuted = "";
     //partPropEvent.IsModeratorMuted = "";

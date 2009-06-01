@@ -59,6 +59,7 @@ result AccountLogoutState::react(const AccountLoginEvent& ev)
     ((AccountLoginResponse *)ev.result)->AccountHandle = machine.info->handle;
 
 	glb_server->userURI = uinfo.sipuri;
+	glb_server->participantURI = uinfo.name;
 
     return transit<AccountRegisteringState>();
 }
