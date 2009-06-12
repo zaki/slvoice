@@ -740,11 +740,9 @@ string AuxGetCaptureDevicesResponse::ToString()
 			+ "<ReturnCode>" + ReturnCode + "</ReturnCode>"
 			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
 			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
-
-			+ "<Device>" + Device + "</Device>"
-			+ "<CurrentCaptureDevice>" + CurrentCaptureDevice + "</CurrentCaptureDevice>"
-
-			+ "</Results>"
+			+ "<CaptureDevices>" + g_eventManager.CaptureDevices + "</CaptureDevices>"
+			+ "<CurrentCaptureDevice><Device>" + g_eventManager.CurrentCaptureDevice + "</Device></CurrentCaptureDevice>"
+			+"</Results>"
 			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
 	
 	return retval;

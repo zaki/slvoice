@@ -81,8 +81,6 @@ int APIENTRY WinMain( HINSTANCE hInstance,
         exit(0);
     }
 
-	g_logger->Log(LL_DEBUG, "MAIN") << "Logger is online" << endl;
-
     try {
 		EventManager evm;
 		boost::thread thr(boost::ref(g_eventManager));

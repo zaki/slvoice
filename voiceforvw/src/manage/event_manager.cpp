@@ -28,6 +28,56 @@ void* BlockingQueue::dequeue() {
 
 void EventManager::operator()() 
 {
+	pj_thread_init();
+	if (!pj_thread_is_registered())
+	{
+		pj_thread_t *thread;
+		pj_status_t status = pj_thread_register("", desc, &thread);
+
+		if (status != PJ_SUCCESS)
+		{
+			g_logger->Error("EVENTMANAGER") << "Could not register audio device thread. ERROR: {" << status << "}" << endl;
+		}
+	}
+	else
+	{
+		g_logger->Warn() << "Thread already registered" << endl;
+	}
+
+	pj_status_t status;
+	pj_caching_pool cp;
+	pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
+	pjmedia_aud_subsys_init(&cp.factory);
+
+	unsigned int devcount = pjmedia_aud_dev_count();
+	pjmedia_aud_dev_info info;
+
+	g_logger->Info() << "Audio device count " << devcount << endl;
+	
+	for(unsigned int i = 0; i < devcount; i++)
+	{
+		status = pjmedia_aud_dev_get_info((pjmedia_aud_dev_index)i, &info);
+		if (status != PJ_SUCCESS)
+		{
+			g_logger->Warn() << "Could not retreive audio device information. {ERROR:" << status << "}" << endl;
+		}
+		else
+		{
+			string devicename = string(info.name);
+			g_logger->Info() << "Audio device " << i << " name=" << string(info.name) << endl;
+		    g_eventManager.CaptureDevices += "<CaptureDevice><Device>" + devicename + "</Device></CaptureDevice>";
+			g_eventManager.RenderDevices += "<RenderDevice><Device>" + devicename + "</Device></RenderDevice>";
+		}
+	}
+
+	pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, &info);
+	g_eventManager.CurrentCaptureDevice = string(info.name);
+
+	pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV, &info);
+	g_eventManager.CurrentRenderDevice = string(info.name);
+
+	pjmedia_aud_subsys_shutdown();
+
 	g_logger->Debug() << "entering EventManager::operator()()" << endl;
 
 	Event *item = NULL;

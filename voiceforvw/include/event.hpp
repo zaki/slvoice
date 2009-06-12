@@ -218,6 +218,12 @@ class EventManager
 		BlockingQueue blockQueue;
 
 		void operator()();
+		pj_thread_desc desc;
+
+		string CaptureDevices;
+		string RenderDevices;
+		string CurrentCaptureDevice;
+		string CurrentRenderDevice;
 
 	private:
 		void eventProc(Event*);
