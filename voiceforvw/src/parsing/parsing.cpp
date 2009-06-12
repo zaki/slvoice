@@ -368,6 +368,22 @@ RequestParser::parse_SessionConnect_ ()
     return auto_ptr <const Request> (req);
 }
 
+//=============================================================================
+auto_ptr <const Request>
+RequestParser::parse_SessionRenderAudioStart_ ()
+{
+	SessionRenderAudioStartRequest *req (new SessionRenderAudioStartRequest (requestid_));
+    return auto_ptr <const Request> (req);
+}
+
+//=============================================================================
+auto_ptr <const Request>
+RequestParser::parse_SessionRenderAudioStop_ ()
+{
+	SessionRenderAudioStopRequest *req (new SessionRenderAudioStopRequest (requestid_));
+    return auto_ptr <const Request> (req);
+}
+
 // v1.22
 //=============================================================================
 auto_ptr <const Request>
@@ -432,9 +448,11 @@ RequestParser::Parse ()
         case SessionSetParticipantVolumeForMe1: return parse_SessionSetParticipantVolumeForMe_ ();
         case SessionTerminate1: return parse_SessionTerminate_ ();
         case SessionConnect1: return parse_SessionConnect_ ();
-		case AccountBlockListRules1: return parse_AccountBlockListRules_ ();			//v1.22
-		case AccountListAutoAcceptRules1: return parse_AccountListAutoAcceptRules_ ();	//v1.22
-		case SessionMediaDisconnect1: return parse_SessionMediaDisconnect_ ();			//v1.22
+        case SessionRenderAudioStart1: return parse_SessionRenderAudioStart_ ();
+        case SessionRenderAudioStop1: return parse_SessionRenderAudioStop_ ();
+        case AccountBlockListRules1: return parse_AccountBlockListRules_ ();			//v1.22
+        case AccountListAutoAcceptRules1: return parse_AccountListAutoAcceptRules_ ();	//v1.22
+        case SessionMediaDisconnect1: return parse_SessionMediaDisconnect_ ();			//v1.22
 
         default: throw parse_error ("unable to parse type: " + get_action_() ); 
     }
@@ -544,6 +562,12 @@ ActionType RequestParser::get_action_type_ ()
 
 		else if (has_substring (action, "MediaDisconnect", n))
             return SessionMediaDisconnect1;
+
+		else if (has_substring (action, "RenderAudioStart", n))
+			return SessionRenderAudioStart1;
+
+		else if (has_substring (action, "RenderAudioStop", n))
+			return SessionRenderAudioStop1;
 
 	}
 
@@ -682,6 +706,16 @@ SessionTerminateResponse* SessionTerminateRequest::CreateResponse(const string& 
 SessionConnectResponse* SessionConnectRequest::CreateResponse(const string& return_code)
 {
 	return new SessionConnectResponse(Action, RequestId, return_code);
+}
+
+SessionRenderAudioStartResponse* SessionRenderAudioStartRequest::CreateResponse(const string& return_code)
+{
+	return new SessionRenderAudioStartResponse(Action, RequestId, return_code);
+}
+
+SessionRenderAudioStopResponse* SessionRenderAudioStopRequest::CreateResponse(const string& return_code)
+{
+	return new SessionRenderAudioStopResponse(Action, RequestId, return_code);
 }
 
 // v1.22

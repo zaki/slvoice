@@ -148,6 +148,10 @@ void Server::process_request_queue_(const char* mesg)
         case ConnectorMuteLocalSpeaker1:
         case ConnectorSetLocalMicVolume1:
         case ConnectorSetLocalSpeakerVolume1:
+        case AuxGetCaptureDevices1:
+        case AuxGetRenderDevices1:
+        case AuxCaptureAudioStart1:
+        case AuxCaptureAudioStop1:
 			ev = new AudioEvent();
             break;
 

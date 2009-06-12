@@ -43,6 +43,8 @@ const string SessionSet3DPosition1String ("Session.Set3DPosition.1");
 const string SessionSetParticipantMuteForMe1String ("Session.SetParticipantMuteForMe.1");
 const string SessionSetParticipantVolumeForMe1String ("Session.SetParticipantVolumeForMe.1");
 const string SessionTerminate1String ("Session.Terminate.1");
+const string SessionRenderAudioStart1String ("Session.RenderAudioStart.1");
+const string SessionRenderAudioStop1String ("Session.RenderAudioStop.1");
 const string AccountBlockListRules1String ("Account.BlockListRules.1");				// v1.22
 const string AccountListAutoAcceptRules1String ("Account.ListAutoAcceptRules.1");	// v1.22
 const string SessionMediaDisconnect1String ("Session.MediaDisconnect.1");			// v1.22
@@ -60,6 +62,8 @@ enum ActionType
     AccountLogout1,
     AuxCaptureAudioStart1,
     AuxCaptureAudioStop1,
+    SessionRenderAudioStart1,
+    SessionRenderAudioStop1,
     AuxGetCaptureDevices1,
     AuxGetRenderDevices1,
     AuxSetCaptureDevice1,
@@ -571,6 +575,20 @@ struct SessionConnectRequest : public Request
 	SessionConnectResponse* CreateResponse(const string& return_code);
 };
 
+struct SessionRenderAudioStartRequest : public Request
+{
+	SessionRenderAudioStartRequest(const string& request_id) : Request(SessionRenderAudioStart1, request_id, SessionRenderAudioStart1String) {}
+
+	SessionRenderAudioStartResponse* CreateResponse(const string& return_code);
+};
+
+struct SessionRenderAudioStopRequest : public Request
+{
+    SessionRenderAudioStopRequest(const string& request_id)  : Request(SessionRenderAudioStop1, request_id, SessionRenderAudioStop1String) {}
+
+	SessionRenderAudioStopResponse* CreateResponse(const string& return_code);
+};
+
 // v1.22
 struct AccountBlockListRulesRequest : public Request
 {
@@ -782,9 +800,11 @@ class RequestParser
         auto_ptr <const Request> parse_SessionSetParticipantMuteForMe_ ();
         auto_ptr <const Request> parse_SessionSetParticipantVolumeForMe_ ();
         auto_ptr <const Request> parse_SessionTerminate_ ();
-		auto_ptr <const Request> parse_AccountBlockListRules_ ();				// v1.22
-		auto_ptr <const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
-		auto_ptr <const Request> parse_SessionMediaDisconnect_ ();				// v1.22
+        auto_ptr <const Request> parse_SessionRenderAudioStart_ ();
+        auto_ptr <const Request> parse_SessionRenderAudioStop_ ();
+        auto_ptr <const Request> parse_AccountBlockListRules_ ();				// v1.22
+        auto_ptr <const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
+        auto_ptr <const Request> parse_SessionMediaDisconnect_ ();				// v1.22
 
     private:
 		string requestid_;
