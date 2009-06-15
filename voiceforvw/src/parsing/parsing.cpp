@@ -161,6 +161,8 @@ RequestParser::parse_AuxSetCaptureDevice_ ()
     AuxSetCaptureDeviceRequest *req 
         (new AuxSetCaptureDeviceRequest (requestid_));
 
+    req->CaptureDevice = get_root_text_ ("CaptureDeviceSpecifier");
+
     return auto_ptr <const Request> (req);
 }
 
@@ -181,6 +183,8 @@ RequestParser::parse_AuxSetRenderDevice_ ()
 {
     AuxSetRenderDeviceRequest *req 
         (new AuxSetRenderDeviceRequest (requestid_));
+
+    req->RenderDevice = get_root_text_ ("RenderDeviceSpecifier");
 
     return auto_ptr <const Request> (req);
 }
@@ -868,8 +872,8 @@ string AuxGetRenderDevicesResponse::ToString()
 			+ "<Results><StatusCode>" + (StatusCode.empty() ? "0" : StatusCode) + "</StatusCode>"
 			+ "<StatusString>" + (StatusString.empty() ? "OK" : StatusString) + "</StatusString>"
 
-			+ "<Device>" + Device + "</Device>"
-			+ "<CurrentRenderDevice>" + CurrentRenderDevice + "</CurrentRenderDevice>"
+			+ "<RenderDevices>" + g_eventManager.RenderDevices + "</RenderDevices>"
+			+ "<CurrentRenderDevice><Device>" + g_eventManager.CurrentRenderDevice + "</Device></CurrentRenderDevice>"
 
 			+ "</Results>"
 			+ "<InputXml>" + InputXml + "</InputXml></Response>\n\n\n";
@@ -1046,6 +1050,72 @@ ConnectorMuteLocalMicRequest::SetState (Audio& state) const
     ss >> boolalpha >> state.mic_mute;
 
 	g_logger->Debug() << "state.mic_mute = " << state.mic_mute << endl;
+}
+
+void AuxSetRenderDeviceRequest::SetState (Audio& state) const
+{
+	if (state.renderDevice != RenderDevice)
+	{
+		state.renderDevice = RenderDevice;
+		
+		int renderDev = 0;
+		int captureDev = 0;
+		bool reset = false;
+
+		captureDev = pjsua_get_snd_dev(&captureDev, &renderDev);
+
+		pjmedia_aud_dev_info info[64];
+		unsigned int count;
+		pjsua_enum_aud_devs(info, &count);
+
+		for (int i = 0; i < count; i++)
+		{
+			if (info[i].name == RenderDevice)
+			{
+				renderDev = i;
+				reset = true;
+				break;
+			}
+		}
+
+		if (reset && captureDev > 0)
+			pjsua_set_snd_dev(captureDev, renderDev);
+		
+		g_logger->Debug() << "Setting render device to " << RenderDevice << endl;
+	}
+}
+
+void AuxSetCaptureDeviceRequest::SetState (Audio& state) const
+{
+	if (state.captureDevice != CaptureDevice)
+	{
+		state.captureDevice = CaptureDevice;
+
+		int renderDev = 0;
+		int captureDev = 0;
+		bool reset = false;
+
+		captureDev = pjsua_get_snd_dev(&captureDev, &renderDev);
+
+		pjmedia_aud_dev_info info[64];
+		unsigned int count;
+		pjsua_enum_aud_devs(info, &count);
+
+		for (int i = 0; i < count; i++)
+		{
+			if (info[i].name == CaptureDevice)
+			{
+				captureDev = i;
+				reset = true;
+				break;
+			}
+		}
+
+		if (reset && renderDev > 0)
+			pjsua_set_snd_dev(captureDev, renderDev);
+		// TODO
+		g_logger->Debug() << "Setting capture device to " << CaptureDevice << endl;
+	}
 }
 
 void 

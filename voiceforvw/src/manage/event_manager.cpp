@@ -65,16 +65,48 @@ void EventManager::operator()()
 		{
 			string devicename = string(info.name);
 			g_logger->Info() << "Audio device " << i << " name=" << string(info.name) << endl;
-		    g_eventManager.CaptureDevices += "<CaptureDevice><Device>" + devicename + "</Device></CaptureDevice>";
-			g_eventManager.RenderDevices += "<RenderDevice><Device>" + devicename + "</Device></RenderDevice>";
+			g_logger->Debug() << "Properties: CAPS=" << info.caps << " Samplerate=" << info.default_samples_per_sec << " Driver=" << string(info.driver) << endl;
+			g_logger->Debug() << "Formats=" << info.ext_fmt_cnt << " Inputs=" << info.input_count << " Outputs=" << info.output_count << endl;
+			g_logger->Debug() << "Routes=" << info.routes << endl;
+			for(int j = 0; j < info.ext_fmt_cnt; j++)
+			{
+				g_logger->Debug() << "Format(" << j << ")=" << info.ext_fmt[j].id << endl;
+			}
+			g_logger->Debug() << endl;
+
+			if (info.input_count > 0)
+			{
+				bool supported = false;
+				for (int k = 0; k < info.ext_fmt_cnt; k++)
+				{
+					if (info.ext_fmt[k].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[k].id == PJMEDIA_FORMAT_ILBC)
+						supported = true;
+				}
+				if (supported)
+				{
+					g_eventManager.CaptureDevices += "<CaptureDevice><Device>" + devicename + "</Device></CaptureDevice>";
+					g_logger->Debug() << "Supported capture device: " << devicename << endl;
+				}
+			}
+			if (info.output_count > 0)
+			{
+				bool supported = false;
+				for (int l = 0; l < info.ext_fmt_cnt; l++)
+				{
+					if (info.ext_fmt[l].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[l].id == PJMEDIA_FORMAT_ILBC)
+						supported = true;
+				}
+				if (supported)
+				{
+					g_eventManager.RenderDevices += "<RenderDevice><Device>" + devicename + "</Device></RenderDevice>";
+					g_logger->Debug() << "Supported render device: " << devicename << endl;
+				}
+			}
 		}
 	}
 
-	pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, &info);
-	g_eventManager.CurrentCaptureDevice = string(info.name);
-
-	pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV, &info);
-	g_eventManager.CurrentRenderDevice = string(info.name);
+	g_eventManager.CurrentCaptureDevice = "default";
+	g_eventManager.CurrentRenderDevice = "default";
 
 	pjmedia_aud_subsys_shutdown();
 

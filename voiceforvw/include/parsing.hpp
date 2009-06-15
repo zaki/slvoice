@@ -385,7 +385,9 @@ struct AuxSetCaptureDeviceRequest : public Request
     AuxSetCaptureDeviceRequest(const string& request_id)
         : Request(AuxSetCaptureDevice1, request_id, AuxSetCaptureDevice1String) {}
 
-    // TODO: a list of Cap devs
+	string CaptureDevice;
+
+	void SetState (Audio& state) const;
 
 	AuxSetCaptureDeviceResponse* CreateResponse(const string& return_code);
 };
@@ -405,7 +407,9 @@ struct AuxSetRenderDeviceRequest : public Request
     AuxSetRenderDeviceRequest(const string& request_id)
         : Request(AuxSetRenderDevice1, request_id, AuxSetRenderDevice1String) {}
 
-    // TODO: a list of Rend devs
+	string RenderDevice;
+
+	void SetState (Audio& state) const;
 
 	AuxSetRenderDeviceResponse* CreateResponse(const string& return_code);
 };

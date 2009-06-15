@@ -41,11 +41,16 @@ struct Audio
     float speaker_volume;
     bool speaker_mute;
 
+    string renderDevice;
+    string captureDevice;
+
     Audio () :
         mic_volume (0.0f),
         mic_mute (false),
         speaker_volume (0.0f),
-        speaker_mute (false)
+        speaker_mute (false),
+        renderDevice("default"),
+        captureDevice("default")
     {}
 };
 

@@ -152,6 +152,8 @@ void Server::process_request_queue_(const char* mesg)
         case AuxGetRenderDevices1:
         case AuxCaptureAudioStart1:
         case AuxCaptureAudioStop1:
+        case AuxSetCaptureDevice1:
+        case AuxSetRenderDevice1:
 			ev = new AudioEvent();
             break;
 
