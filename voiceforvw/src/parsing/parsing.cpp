@@ -1062,13 +1062,27 @@ void AuxSetRenderDeviceRequest::SetState (Audio& state) const
 		int captureDev = 0;
 		bool reset = false;
 
-		captureDev = pjsua_get_snd_dev(&captureDev, &renderDev);
+		pjsua_get_snd_dev(&captureDev, &renderDev);
+		g_logger->Debug() << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
+
+		if (captureDev == PJMEDIA_AUD_DEFAULT_CAPTURE_DEV)
+		{
+			pjmedia_aud_dev_info info;
+			pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, &info);
+			pjmedia_aud_dev_lookup(info.driver, info.name, &captureDev);
+		}
+		if (renderDev == PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV)
+		{
+			pjmedia_aud_dev_info info;
+			pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV, &info);
+			pjmedia_aud_dev_lookup(info.driver, info.name, &renderDev);
+		}
 
 		pjmedia_aud_dev_info info[64];
 		unsigned int count;
 		pjsua_enum_aud_devs(info, &count);
 
-		for (int i = 0; i < count; i++)
+		for (unsigned int i = 0; i < count; i++)
 		{
 			if (info[i].name == RenderDevice)
 			{
@@ -1078,10 +1092,29 @@ void AuxSetRenderDeviceRequest::SetState (Audio& state) const
 			}
 		}
 
-		if (reset && captureDev > 0)
-			pjsua_set_snd_dev(captureDev, renderDev);
-		
-		g_logger->Debug() << "Setting render device to " << RenderDevice << endl;
+		if (reset)
+		{
+			if (captureDev > 0)
+			{
+				g_logger->Debug() << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
+				g_logger->Debug() << "Setting render device to " << RenderDevice << endl;
+				try
+				{
+					pjsua_set_snd_dev(captureDev, renderDev);
+				}
+				catch(exception e)
+				{
+					g_logger->Warn() << "Error setting audio device " << e.what() << endl;
+				}
+
+			}
+			else
+				g_logger->Warn() << "Invalid capture device was set: " << captureDev << " while setting render device to " << RenderDevice << endl;
+		}
+		else
+		{
+			g_logger->Warn() << "Trying to set invalid or nonexistent render device " << RenderDevice << endl;
+		}
 	}
 }
 
@@ -1095,13 +1128,27 @@ void AuxSetCaptureDeviceRequest::SetState (Audio& state) const
 		int captureDev = 0;
 		bool reset = false;
 
-		captureDev = pjsua_get_snd_dev(&captureDev, &renderDev);
+		pjsua_get_snd_dev(&captureDev, &renderDev);
+		g_logger->Debug() << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
+
+		if (captureDev == PJMEDIA_AUD_DEFAULT_CAPTURE_DEV)
+		{
+			pjmedia_aud_dev_info info;
+			pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, &info);
+			pjmedia_aud_dev_lookup(info.driver, info.name, &captureDev);
+		}
+		if (renderDev == PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV)
+		{
+			pjmedia_aud_dev_info info;
+			pjmedia_aud_dev_get_info(PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV, &info);
+			pjmedia_aud_dev_lookup(info.driver, info.name, &renderDev);
+		}
 
 		pjmedia_aud_dev_info info[64];
 		unsigned int count;
 		pjsua_enum_aud_devs(info, &count);
 
-		for (int i = 0; i < count; i++)
+		for (unsigned int i = 0; i < count; i++)
 		{
 			if (info[i].name == CaptureDevice)
 			{
@@ -1111,10 +1158,30 @@ void AuxSetCaptureDeviceRequest::SetState (Audio& state) const
 			}
 		}
 
-		if (reset && renderDev > 0)
-			pjsua_set_snd_dev(captureDev, renderDev);
-		// TODO
-		g_logger->Debug() << "Setting capture device to " << CaptureDevice << endl;
+		if (reset)
+		{
+			if (renderDev > 0)
+			{
+				g_logger->Debug() << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
+				g_logger->Debug() << "Setting capture device to " << CaptureDevice << endl;
+				try
+				{
+					pjsua_set_snd_dev(captureDev, renderDev);
+				}
+				catch(exception e)
+				{
+					g_logger->Warn() << "Error setting audio device " << e.what() << endl;
+				}
+			}
+			else
+				g_logger->Warn() << "Invalid render device was set: " << renderDev << " while setting capture device to " << CaptureDevice << endl;
+		}
+		else
+		{
+			g_logger->Warn() << "Trying to set invalid or nonexistent capture device " << CaptureDevice << endl;
+		}
+
+
 	}
 }
 

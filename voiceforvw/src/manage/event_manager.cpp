@@ -79,8 +79,12 @@ void EventManager::operator()()
 				bool supported = false;
 				for (int k = 0; k < info.ext_fmt_cnt; k++)
 				{
-					if (info.ext_fmt[k].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[k].id == PJMEDIA_FORMAT_ILBC)
-						supported = true;
+					//if (info.ext_fmt[k].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[k].id == PJMEDIA_FORMAT_ILBC)
+					if (info.ext_fmt[k].id == PJMEDIA_FORMAT_PCM || info.ext_fmt[k].id == PJMEDIA_FORMAT_PCMU || info.ext_fmt[k].id == PJMEDIA_FORMAT_PCMA)
+					{
+						if (strcmp(info.name, "Wave mapper"))
+							supported = true;
+					}
 				}
 				if (supported)
 				{
@@ -93,8 +97,12 @@ void EventManager::operator()()
 				bool supported = false;
 				for (int l = 0; l < info.ext_fmt_cnt; l++)
 				{
-					if (info.ext_fmt[l].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[l].id == PJMEDIA_FORMAT_ILBC)
-						supported = true;
+					//if (info.ext_fmt[l].id == PJMEDIA_FORMAT_ULAW || info.ext_fmt[l].id == PJMEDIA_FORMAT_ILBC)
+					if (info.ext_fmt[l].id == PJMEDIA_FORMAT_PCM || info.ext_fmt[l].id == PJMEDIA_FORMAT_PCMU || info.ext_fmt[l].id == PJMEDIA_FORMAT_PCMA)
+					{
+						if (strcmp(info.name, "Wave mapper"))
+							supported = true;
+					}
 				}
 				if (supported)
 				{
