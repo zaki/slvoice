@@ -72,14 +72,44 @@ int APIENTRY WinMain( HINSTANCE hInstance,
     g_config = new Config();
 	g_config->LoadConfig("./SLVoice.xml");
 
+    if (lpCmdLine == NULL || *lpCmdLine == 0x00) 
+	{
+        exit(0);
+    }
+
+	char *token = strtok(lpCmdLine, ",");
+	while (token != NULL)
+	{
+		string arg = string(token);
+		int eq = arg.find_first_of("=");
+		if (eq > 0)
+		{
+			string key = arg.substr(0, eq);
+			string value = arg.substr(eq+1, arg.length() - eq-1);
+	
+			if (key == "--log") 
+			{
+				g_config->LogFilePath = value;
+			}
+			else if (key == "--loglevel") g_config->LogLevel = value;
+			else if (key == "--version") g_config->Version = atoi(value.c_str());
+			else if (key == "--port") g_config->Port = atoi(value.c_str());
+		}
+		token = strtok(NULL, ",");
+	}
+
 	g_logger = new Logger();
 	g_logger->Init();
 
-    if (lpCmdLine == NULL || *lpCmdLine == 0x00) 
-	{
-		g_logger->Fatal() << "Parameter error" << endl;
-        exit(0);
-    }
+	g_logger->Debug() << "===================== Config =====================" << endl;
+	g_logger->Debug() << "Version               : " << g_config->Version << endl;
+	g_logger->Debug() << "Port                  : " << g_config->Port << endl;
+	g_logger->Debug() << "LogLevel              : " << g_config->LogLevel << endl;
+	g_logger->Debug() << "LogFilePath           : " << g_config->LogFilePath << endl;
+	g_logger->Debug() << "Realm                 : " << g_config->Realm << endl;
+	g_logger->Debug() << "Codec                 : " << g_config->Codec << endl;
+	g_logger->Debug() << "Disable               : " << g_config->DisableOtherCodecs << endl;
+
 
     try {
 		EventManager evm;

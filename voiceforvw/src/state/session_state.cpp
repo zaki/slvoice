@@ -33,7 +33,7 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 
     ev.message->SetState(machine.info->session); // this should have done the parsing
 
-    try 
+	try 
 	{
 		g_logger->Info() << "Conference URI = " << machine.info->session.uri << endl;
 		g_logger->Info() << "Account ID = " << machine.info->account->id << endl;

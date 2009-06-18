@@ -209,10 +209,23 @@ RequestParser::parse_ConnectorCreate_ ()
 
     //req-> ClientName = get_root_text_ ("ClientName");
     //req-> AttemptStun = get_root_text_ ("AttemptStun");
-    //req-> AccountManagementServer = get_root_text_ ("AccountManagementServer");
+    req-> AccountManagementServer = get_root_text_ ("AccountManagementServer");
     //req-> MinimumPort = get_root_text_ ("MinimumPort");
     //req-> MaximumPort = get_root_text_ ("MaximumPort");
 
+	// Check if VoiceServerURI is defined via config file
+	// This is for SLViewer <1.22 compatility only
+	if (g_config->VoiceServerURI == "")
+	{
+		ConnectorInfo *con = glb_server->getConnector();
+		con->voiceserver_url = req->AccountManagementServer + "voiceinfo/";
+		g_logger->Info() << "VoIP frontend URL = " << con->voiceserver_url << endl;
+	}
+	else
+	{
+		ConnectorInfo *con = glb_server->getConnector();
+		con->voiceserver_url = g_config->VoiceServerURI;
+	}
     return auto_ptr <const Request> (req);
 }
 

@@ -15,7 +15,7 @@ class Config
 {
     public:
         Config ()
-			: Port(44215), 
+			: Port(44124), 
 			  ConfigFilePath(""),
 			  LogFilePath("SLVoice.log"),
 			  LogLevel("WARN"),
@@ -24,7 +24,7 @@ class Config
 			  Realm("asterisk"),
 			  Codec("PCMU"),
 			  DisableOtherCodecs(false),
-			  Version(122)
+			  Version(120)
 		{};
 
         ~Config ();

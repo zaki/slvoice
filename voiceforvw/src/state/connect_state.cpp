@@ -28,9 +28,8 @@ result ConnectorIdleState::react(const InitializeEvent& ev)
 {
 	g_logger->Debug() << "ConnectorIdle react (InitializeEvent)" << endl;
 
-	machine.info->voiceserver_url = g_config->VoiceServerURI;
-
-	g_logger->Info() << "VoIP frontend URL = " << machine.info->voiceserver_url << endl;
+	//machine.info->voiceserver_url = g_config->VoiceServerURI;
+	//g_logger->Info() << "VoIP frontend URL = " << machine.info->voiceserver_url << endl;
 
     machine.info->handle = VFVW_CONNECTOR_HANDLE;
 

@@ -9,68 +9,69 @@
 void Config::LoadConfig(string configFilePath)
 {
 	ConfigFilePath = configFilePath;
-	doc_.LoadFile(ConfigFilePath);
-
-	string value;
-	// LogFilePath
-	value = get_value("LogFilePath");
-	if (value != "")
+	if (doc_.LoadFile(ConfigFilePath))
 	{
-		LogFilePath = value;
-	}
+		string value;
+		// LogFilePath
+		value = get_value("LogFilePath");
+		if (value != "")
+		{
+			LogFilePath = value;
+		}
 
-	// LogFilter
-	value = get_value("LogFilter");
-	if (value != "")
-	{
-		LogFilter = value;
-	}
+		// LogFilter
+		value = get_value("LogFilter");
+		if (value != "")
+		{
+			LogFilter = value;
+		}
 
-	// LogLevel
-	value = get_value("LogLevel");
-	if (value != "")
-	{
-		LogLevel = value;
-	}
+		// LogLevel
+		value = get_value("LogLevel");
+		if (value != "")
+		{
+			LogLevel = value;
+		}
 
-	// Port
-	value = get_value("Port");
-	if (value != "")
-	{
-		Port = atoi(value.c_str());
-	}
+		// Port
+		value = get_value("Port");
+		if (value != "")
+		{
+			Port = atoi(value.c_str());
+		}
 
-	// Version
-	value = get_value("Version");
-	if (value != "")
-	{
-		Version = atoi(value.c_str());
-	}
+		// Version
+		value = get_value("Version");
+		if (value != "")
+		{
+			Version = atoi(value.c_str());
+		}
 
-	// Realm
-	value = get_value("VoiceServerURI");
-	if (value != "")
-	{
-		VoiceServerURI = value;
-	}
+		// VoiceServerURI
+		value = get_value("VoiceServerURI");
+		if (value != "")
+		{
+			VoiceServerURI = value;
+		}
 
-	// Realm
-	value = get_value("Realm");
-	if (value != "")
-	{
-		Realm = value;
-	}
+		// Realm
+		value = get_value("Realm");
+		if (value != "")
+		{
+			Realm = value;
+		}
 
-	// Codec
-	value = get_value("Codec");
-	if (value != "")
-	{
-		Codec = value;
-	}
+		// Codec
+		value = get_value("Codec");
+		if (value != "")
+		{
+			Codec = value;
+		}
 
-	// Disable other codecs
-	value = get_value("Disable");
-	DisableOtherCodecs = (value.compare("true") == 0);
+		// Disable other codecs
+		value = get_value("Disable");
+		DisableOtherCodecs = (value.compare("true") == 0);
+	}
 }
 
 //=============================================================================
