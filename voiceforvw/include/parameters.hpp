@@ -46,7 +46,7 @@ struct Audio
 
     Audio () :
         mic_volume (0.0f),
-        mic_mute (false),
+        mic_mute (true),
         speaker_volume (0.0f),
         speaker_mute (false),
         renderDevice("default"),

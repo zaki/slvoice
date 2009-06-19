@@ -394,6 +394,15 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
 {
 	g_logger->Debug() << "SessionConfirmed entered" << endl;
 
+    // Mute mic on first connect
+    ConnectorInfo *con = glb_server->getConnector();
+    SIPConference *psc = machine.info->account->sipconf;
+
+    if (psc != NULL && con->audio.mic_mute) 
+    {
+        psc->AdjustTranVolume(machine.info->id, 0.0f);
+    }
+
 	SessionStateChangeEvent sessionStateEvent;
     sessionStateEvent.SessionHandle = machine.info->handle;
 	sessionStateEvent.StatusCode = sessionStateEvent.OKCode;
