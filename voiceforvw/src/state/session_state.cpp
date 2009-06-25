@@ -255,7 +255,14 @@ SessionEarlyState::~SessionEarlyState()
 
 result SessionEarlyState::react(const SessionTerminateEvent& ev) 
 {
-	g_logger->Debug() << "SessionEarly react (SessionTerminateEvent)" << endl;
+    g_logger->Debug() << "SessionEarly react (SessionTerminateEvent)" << endl;
+ 
+    SIPConference *psc = machine.info->account->sipconf;
+    if (psc != NULL) 
+    {
+        // disconnect
+        psc->Leave(machine.info->id);
+    }
     return transit<SessionTerminatedState>();
 }
 
