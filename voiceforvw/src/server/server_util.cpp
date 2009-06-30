@@ -3,7 +3,9 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
+#ifndef _3DI
 #include <curl/curl.h>
+#endif
 
 #include "main.h"
 #include "server_util.hpp"
@@ -26,6 +28,7 @@ static int handle_returned_data(
 
 void ServerUtil::getContent(string& url, string& content)
 {
+#ifndef _3DI
 	CURL *curl = NULL;
 	CURLcode res;
 
@@ -91,10 +94,12 @@ void ServerUtil::getContent(string& url, string& content)
 		}
 		throw e;
 	}
+#endif
 }
 
 void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
 {
+#ifndef _3DI
 	string ret = "";
 
 	try {
@@ -109,5 +114,6 @@ void ServerUtil::getServerInfo(string& url, SIPServerInfo& sipinfo)
 		g_logger->Fatal() << "getServerInfo error " << e.what() << endl;
 		throw e;
 	}
+#endif
 }
 

@@ -92,7 +92,7 @@ RequestParser::parse_AccountLogin_ ()
     req-> ConnectorHandle = get_root_text_ ("ConnectorHandle");
     req-> AccountName = get_root_text_ ("AccountName");
     req-> AccountPassword = get_root_text_ ("AccountPassword");
-    //req-> AccountURI = get_root_text_ ("AccountURI");
+    req-> AccountURI = get_root_text_ ("AccountURI");
     //req-> AudioSessionAnswerMode = get_root_text_ ("AudioSessionAnswerMode");
     //req-> ParticipantPropertyFrequency = get_root_text_ ("ParticipantPropertyFrequency");
     //req-> EnableBuddiesAndPresence = get_root_text_ ("EnableBuddiesAndPresence");

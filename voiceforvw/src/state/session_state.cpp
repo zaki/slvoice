@@ -48,6 +48,7 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 
 			SIPServerInfo sipinfo;
 
+#ifndef _3DI
 			// access to the voip frontend
 			ServerUtil::getServerInfo(con->voiceserver_url + sinfo.name, sipinfo);
 
@@ -55,7 +56,12 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
             psc->Join(
 				sipinfo.sipuri, machine.info->account->id, 
 				&machine.info->id);
-
+#else
+			// connect to conference
+            psc->Join(
+                machine.info->session.uri, machine.info->account->id, 
+                &machine.info->id);
+#endif
 			con->session.registId(machine.info->id, machine.info->handle);
             ((SessionCreateResponse *)ev.result)->SessionHandle = machine.info->handle;
         }

@@ -36,6 +36,7 @@ result AccountLogoutState::react(const AccountLoginEvent& ev)
 	SIPServerInfo sipinfo;
 	string url;
 
+#ifndef _3DI
 	// access to the voip frontend
 	ServerUtil::getServerInfo(con->voiceserver_url + machine.info->account.name, sipinfo);
 
@@ -49,6 +50,25 @@ result AccountLogoutState::react(const AccountLoginEvent& ev)
 	g_logger->Info("ACCOUNTLOGOUTSTATE") << "proxyuri : "  << sipinfo.proxyuri << endl;
 	g_logger->Info("ACCOUNTLOGOUTSTATE") << "reguri   : "  << sipinfo.reguri << endl;
 	g_logger->Info("ACCOUNTLOGOUTSTATE") << "domain   : " << uinfo.domain << endl;
+#else
+    sipinfo.sipuri = machine.info->account.uri;
+    sipinfo.proxyuri = "";
+
+    string domain (take_after_ ("@", sipinfo.sipuri));
+
+    sipinfo.reguri = "sip:" + domain;  
+
+    machine.info->sipconf = new SIPConference(sipinfo);
+
+    uinfo.name = machine.info->account.name;
+    uinfo.password = machine.info->account.password;
+    uinfo.sipuri = machine.info->account.uri;
+
+    g_logger->Info("ACCOUNTLOGOUTSTATE") << "sipuri   : "  << uinfo.sipuri << endl;
+    g_logger->Info("ACCOUNTLOGOUTSTATE") << "proxyuri : CANNOT USE" << endl;
+    g_logger->Info("ACCOUNTLOGOUTSTATE") << "reguri   : CANNOT USE" << endl;
+    g_logger->Info("ACCOUNTLOGOUTSTATE") << "domain   : " << uinfo.domain << endl;
+#endif
 
 	// sending REGISTER
     machine.info->sipconf->Register(uinfo, &machine.info->id);

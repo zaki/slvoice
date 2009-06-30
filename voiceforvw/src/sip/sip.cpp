@@ -414,39 +414,6 @@ void SIPConference::stop_sip_stack_ ()
 }
 
 //=============================================================================
-static string get_line_ (istream& in) {
-    string line;
-
-    ios_base::fmtflags ff (in.flags());
-    in.setf (ios_base::skipws);
-    getline (in, line);
-    in.flags (ff);
-
-    return line;
-}
-
-static string take_after_ (string pre, string s) {
-    size_t p (s.find (pre));
-    return (p != string::npos)? s.substr (p + pre.size()) : string();
-}
-
-static string take_before_ (string pre, string s) {
-    size_t p (s.find (pre));
-    return (p != string::npos)? s.substr (0, p) : s;
-}
-
-static pair <string,string> parse_sip_uri_ (string uri) {
-    static const string sip_ ("sip:");
-    static const string at_ ("@");
-
-    string addr (take_after_ (sip_, uri));
-    string target (take_before_ (at_, addr));
-    string domain (take_after_ (at_, addr));
-
-    return make_pair (target, domain);
-}
-
-//=============================================================================
 istream& operator>> (istream& in, SIPUserInfo& usr) {
     string line (get_line_ (in));
     pair <string,string> result (parse_sip_uri_ (line));

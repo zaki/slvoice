@@ -3,7 +3,9 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
+#ifndef _3DI
 #include <curl/curl.h>
+#endif
 
 #include "main.h"
 #include "server.hpp"
@@ -160,6 +162,8 @@ void Server::process_request_queue_(const char* mesg)
 		// Account Events
         case AccountLogin1:
 			ev = new AccountLoginEvent();
+			((AccountLoginEvent*)ev)->account_handle = ((AccountLoginRequest*)request)->ConnectorHandle;
+			((AccountLoginEvent*)ev)->accountURI = ((AccountLoginRequest*)request)->AccountURI;
             break;
 
 		case AccountLogout1:

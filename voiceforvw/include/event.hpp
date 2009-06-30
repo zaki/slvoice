@@ -96,10 +96,15 @@ struct AudioEvent : public ConnectorEvent, event <AudioEvent> {
 	};
 };
 
-struct AccountLoginEvent : public AccountEvent, event<AccountLoginEvent> {
-	AccountLoginEvent() {
+struct AccountLoginEvent : public AccountEvent, event<AccountLoginEvent> 
+{
+	AccountLoginEvent() 
+	{
 		type = EventType_AccountLogin;
+		accountURI = string("");
 	};
+
+	string accountURI;
 };
 
 struct AccountLogoutEvent : public AccountEvent, event<AccountLogoutEvent> {
