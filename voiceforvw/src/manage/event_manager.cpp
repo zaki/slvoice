@@ -36,12 +36,12 @@ void EventManager::operator()()
 
 		if (status != PJ_SUCCESS)
 		{
-			g_logger->Error("EVENTMANAGER") << "Could not register audio device thread. ERROR: {" << status << "}" << endl;
+			g_logger->Error("EventManager") << "Could not register audio device thread. ERROR: {" << status << "}" << endl;
 		}
 	}
 	else
 	{
-		g_logger->Warn() << "Thread already registered" << endl;
+		g_logger->Warn("EventManager") << "Thread already registered" << endl;
 	}
 
 	pj_status_t status;
@@ -52,27 +52,27 @@ void EventManager::operator()()
 	unsigned int devcount = pjmedia_aud_dev_count();
 	pjmedia_aud_dev_info info;
 
-	g_logger->Info() << "Audio device count " << devcount << endl;
+	g_logger->Debug("AudioDevices") << "Audio device count " << devcount << endl;
 	
 	for(unsigned int i = 0; i < devcount; i++)
 	{
 		status = pjmedia_aud_dev_get_info((pjmedia_aud_dev_index)i, &info);
 		if (status != PJ_SUCCESS)
 		{
-			g_logger->Warn() << "Could not retreive audio device information. {ERROR:" << status << "}" << endl;
+			g_logger->Warn("AudioDevices") << "Could not retreive audio device information. {ERROR:" << status << "}" << endl;
 		}
 		else
 		{
 			string devicename = string(info.name);
-			g_logger->Info() << "Audio device " << i << " name=" << string(info.name) << endl;
-			g_logger->Debug() << "Properties: CAPS=" << info.caps << " Samplerate=" << info.default_samples_per_sec << " Driver=" << string(info.driver) << endl;
-			g_logger->Debug() << "Formats=" << info.ext_fmt_cnt << " Inputs=" << info.input_count << " Outputs=" << info.output_count << endl;
-			g_logger->Debug() << "Routes=" << info.routes << endl;
+			g_logger->Info("AudioDevices") << "Audio device " << i << " name=" << string(info.name) << endl;
+			g_logger->Debug("AudioDevices") << "Properties: CAPS=" << info.caps << " Samplerate=" << info.default_samples_per_sec << " Driver=" << string(info.driver) << endl;
+			g_logger->Debug("AudioDevices") << "Formats=" << info.ext_fmt_cnt << " Inputs=" << info.input_count << " Outputs=" << info.output_count << endl;
+			g_logger->Debug("AudioDevices") << "Routes=" << info.routes << endl;
 			for(int j = 0; j < info.ext_fmt_cnt; j++)
 			{
-				g_logger->Debug() << "Format(" << j << ")=" << info.ext_fmt[j].id << endl;
+				g_logger->Debug("AudioDevices") << "Format(" << j << ")=" << info.ext_fmt[j].id << endl;
 			}
-			g_logger->Debug() << endl;
+			g_logger->Debug("AudioDevices") << endl;
 
 			if (info.input_count > 0)
 			{
@@ -89,7 +89,7 @@ void EventManager::operator()()
 				if (supported)
 				{
 					g_eventManager.CaptureDevices += "<CaptureDevice><Device>" + devicename + "</Device></CaptureDevice>";
-					g_logger->Debug() << "Supported capture device: " << devicename << endl;
+					g_logger->Debug("AudioDevices") << "Supported capture device: " << devicename << endl;
 				}
 			}
 			if (info.output_count > 0)
@@ -107,7 +107,7 @@ void EventManager::operator()()
 				if (supported)
 				{
 					g_eventManager.RenderDevices += "<RenderDevice><Device>" + devicename + "</Device></RenderDevice>";
-					g_logger->Debug() << "Supported render device: " << devicename << endl;
+					g_logger->Debug("AudioDevices") << "Supported render device: " << devicename << endl;
 				}
 			}
 		}
@@ -118,7 +118,7 @@ void EventManager::operator()()
 
 	pjmedia_aud_subsys_shutdown();
 
-	g_logger->Debug() << "entering EventManager::operator()()" << endl;
+	g_logger->Debug("EventManager") << "entering EventManager::operator()()" << endl;
 
 	Event *item = NULL;
 
@@ -127,48 +127,48 @@ void EventManager::operator()()
 		eventProc(item);
 	}
 
-	g_logger->Debug() << "exiting EventManager::operator()()" << endl;
+	g_logger->Debug("EventManager") << "exiting EventManager::operator()()" << endl;
 }
 
 void EventManager::processConnector(ConnectorEvent *ev) 
 {
-	g_logger->Debug() << "entering processConnector()" << endl;
+	g_logger->Debug("EventManager") << "entering processConnector()" << endl;
 
 	ConnectorInfo* con = glb_server->getConnector();
 
 	// Connector Events
     //******************************************************
-    g_logger->Info() << "======= EVENT ======== Connector " << ev->event_name << endl;
+    g_logger->Terse("EVENT") << "======= EVENT ======== Connector " << ev->event_name << endl;
     //******************************************************
  
     switch (ev->type)
     {
         case EventType_Initialize:
-			g_logger->Debug() << "EventType_Initialize" << endl;
+			g_logger->Debug("EventManager") << "EventType_Initialize" << endl;
 			con->machine.process_event(*(InitializeEvent*)ev);
             break;
 
         case EventType_Shutdown:
-			g_logger->Debug() << "EventType_ShutdownEvent" << endl;
+			g_logger->Debug("EventManager") << "EventType_ShutdownEvent" << endl;
             con->machine.process_event(*(ShutdownEvent*)ev);
             break;
 
 		case EventType_Audio:
-			g_logger->Debug() << "EventType_AudioEvent" << endl;
+			g_logger->Debug("EventManager") << "EventType_AudioEvent" << endl;
             con->machine.process_event(*(AudioEvent*)ev);
             break;
 		default:
 			// logic error route
-			g_logger->Warn() << "unknown event (logic error)" << endl;
+			g_logger->Warn("EventManager") << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	g_logger->Debug() << "exiting processConnector()" << endl;
+	g_logger->Debug("EventManager") << "exiting processConnector()" << endl;
 }
 
 void EventManager::processAccount(AccountEvent *ev) 
 {
-	g_logger->Debug() << "entering processAccount()" << endl;
+	g_logger->Debug("EventManager") << "entering processAccount()" << endl;
 
 	ConnectorInfo* con = glb_server->getConnector();
 
@@ -182,59 +182,59 @@ void EventManager::processAccount(AccountEvent *ev)
 		ev->account_handle = con->account.convertId(ev->acc_id);
 	}
 	
-	g_logger->Info() << " Account handle = " << ev->account_handle << endl;
+	g_logger->Debug("EventManager") << " Account handle = " << ev->account_handle << endl;
 
 	AccountInfo *info = con->account.find(ev->account_handle);
 
 	if (info == NULL) {
-		g_logger->Warn() << "Account info is not found" << endl;
+		g_logger->Warn("EventManager") << "Account info is not found" << endl;
 		return;
 	}
 
 	// Account Events
     //******************************************************
-    g_logger->Info() << "======= EVENT ======== Account   " << ev->event_name << endl;
+    g_logger->Terse("EVENT") << "======= EVENT ======== Account   " << ev->event_name << endl;
     //******************************************************
 
 	switch (ev->type)
     {
         case EventType_AccountLogin:
-			g_logger->Debug() << "EventType_AccountLogin" << endl;
+			g_logger->Debug("EventManager") << "EventType_AccountLogin" << endl;
 			info->machine.process_event(*(AccountLoginEvent*)ev);
             break;
 
 		case EventType_AccountLogout:
-			g_logger->Debug() << "EventType_AccountLogout" << endl;
+			g_logger->Debug("EventManager") << "EventType_AccountLogout" << endl;
 			info->machine.process_event(*(AccountLogoutEvent*)ev);
             break;
 
         case EventType_RegSucceed:
-			g_logger->Debug() << "EventType_RegSucceed" << endl;
+			g_logger->Debug("EventManager") << "EventType_RegSucceed" << endl;
 			info->machine.process_event(*(RegSucceedEvent*)ev);
             break;
 
 		case EventType_RegFailed:
-			g_logger->Debug() << "EventType_RegFailed" << endl;
+			g_logger->Debug("EventManager") << "EventType_RegFailed" << endl;
 			info->machine.process_event(*(RegFailedEvent*)ev);
             break;
 
 		case EventType_AccountRemove:
-			g_logger->Debug() << "EventType_AccountRemove" << endl;
+			g_logger->Debug("EventManager") << "EventType_AccountRemove" << endl;
 			con->account.remove(ev->account_handle);
             break;
 
 		default:
 			// logic error route
-			g_logger->Warn() << "unknown event (logic error)" << endl;
+			g_logger->Warn("EventManager") << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	g_logger->Debug() << "exiting processAccount()" << endl;
+	g_logger->Debug("EventManager") << "exiting processAccount()" << endl;
 }
 
 void EventManager::processSession(SessionEvent *ev) 
 {
-	g_logger->Debug() << "entering processSession()" << endl;
+	g_logger->Debug("EventManager") << "entering processSession()" << endl;
 
     ConnectorInfo* con = glb_server->getConnector();
 
@@ -245,7 +245,7 @@ void EventManager::processSession(SessionEvent *ev)
 			ev->account_handle = con->account.convertId(ev->acc_id);
 		}
 
-		g_logger->Info() << "AccountHandle = " << ev->account_handle << endl;
+		g_logger->Info("EventManager") << "AccountHandle = " << ev->account_handle << endl;
 
 		AccountInfo *accinfo = con->account.find(ev->account_handle);
 
@@ -253,7 +253,7 @@ void EventManager::processSession(SessionEvent *ev)
 
 			// create new session
 			ev->session_handle = con->session.create(accinfo);
-			g_logger->Info() << "AccountHandle = " << ev->session_handle << endl;
+			g_logger->Info("EventManager") << "AccountHandle = " << ev->session_handle << endl;
 
 			SessionInfo *sinfo = con->session.find(ev->session_handle);
 
@@ -266,7 +266,7 @@ void EventManager::processSession(SessionEvent *ev)
 		}
 		else 
 		{
-			g_logger->Warn() << "This handle is not registered" << endl;
+			g_logger->Warn("EventManager") << "This handle is not registered" << endl;
 		}
 
 		// create new session
@@ -282,88 +282,88 @@ void EventManager::processSession(SessionEvent *ev)
 
 	if (info == NULL) 
 	{
-		g_logger->Warn() << "Session info is not found" << endl;
+		g_logger->Warn("EventManager") << "Session info is not found" << endl;
 		return;
 	}
 
     //******************************************************
-    g_logger->Info() << "======= EVENT ======== Session   " << ev->event_name << endl;
+    g_logger->Terse("EVENT") << "======= EVENT ======== Session   " << ev->event_name << endl;
     //******************************************************
 
     switch (ev->type)
     {
 		// Session Events
 		case EventType_SessionCreate:
-			g_logger->Debug() << "EventType_SessionCreate" << endl;
+			g_logger->Debug("EventManager") << "EventType_SessionCreate" << endl;
 			info->machine.process_event(*(SessionCreateEvent*)ev);
             break;
 
         case EventType_Position:
-			g_logger->Debug() << "EventType_Position" << endl;
+			g_logger->Debug("EventManager") << "EventType_Position" << endl;
 			info->machine.process_event(*(PositionEvent*)ev);
             break;
 
         case EventType_SessionTerminate:
-			g_logger->Debug() << "EventType_SessionTerminate" << endl;
+			g_logger->Debug("EventManager") << "EventType_SessionTerminate" << endl;
 			info->machine.process_event(*(SessionTerminateEvent*)ev);
             break;
 
 		// v1.22
         case EventType_SessionMediaDisconnect:
-			g_logger->Debug() << "EventType_SessionMediaDisconnect" << endl;
+			g_logger->Debug("EventManager") << "EventType_SessionMediaDisconnect" << endl;
 			info->machine.process_event(*(SessionMediaDisconnectEvent*)ev);
             break;
 
         case EventType_SessionConnect:
-			g_logger->Debug() << "EventType_SessionConnect" << endl;
+			g_logger->Debug("EventManager") << "EventType_SessionConnect" << endl;
 			info->machine.process_event(*(SessionConnectEvent*)ev);
             break;
 
         case EventType_DialIncoming:
-			g_logger->Debug() << "EventType_DialIncoming" << endl;
+			g_logger->Debug("EventManager") << "EventType_DialIncoming" << endl;
 			info->machine.process_event(*(DialIncomingEvent*)ev);
             break;
 
         case EventType_DialEarly:
-			g_logger->Debug() << "EventType_DialEarly" << endl;
+			g_logger->Debug("EventManager") << "EventType_DialEarly" << endl;
 			info->machine.process_event(*(DialEarlyEvent*)ev);
             break;
 
         case EventType_DialConnecting:
-			g_logger->Debug() << "EventType_DialConnecting" << endl;
+			g_logger->Debug("EventManager") << "EventType_DialConnecting" << endl;
 			info->machine.process_event(*(DialConnectingEvent*)ev);
             break;
 
         case EventType_DialSucceed:
-			g_logger->Debug() << "EventType_DialSucceed" << endl;
+			g_logger->Debug("EventManager") << "EventType_DialSucceed" << endl;
 			info->machine.process_event(*(DialSucceedEvent*)ev);
             break;
 
         case EventType_DialDisconnected:
-			g_logger->Debug() << "EventType_DialDisconnected" << endl;
+			g_logger->Debug("EventManager") << "EventType_DialDisconnected" << endl;
 			info->machine.process_event(*(DialDisconnectedEvent*)ev);
             break;
 
         case EventType_SessionRemove:
-			g_logger->Debug() << "EventType_SessionRemove" << endl;
+			g_logger->Debug("EventManager") << "EventType_SessionRemove" << endl;
 			con->session.remove(ev->session_handle);
             break;
 
 		default:
 			// logic error route
-			g_logger->Warn() << "unknown event (logic error)" << endl;
+			g_logger->Warn("EventManager") << "unknown event (logic error)" << endl;
 			break;
 	}
 
-	g_logger->Debug() << "exiting processSession()" << endl;
+	g_logger->Debug("EventManager") << "exiting processSession()" << endl;
 }
 
 void EventManager::eventProc(Event *ev) 
 {
-	g_logger->Debug() << "entering eventProc()" << endl;
+	g_logger->Debug("EventManager") << "entering eventProc()" << endl;
 
     //******************************************************
-    g_logger->Info() << "======= EVENT ======== EventProc " << ev->event_name << endl;
+    g_logger->Terse("EVENT") << "======= EVENT ======== EventProc " << ev->event_name << endl;
     //******************************************************
 
     switch (ev->type)
@@ -400,7 +400,7 @@ void EventManager::eventProc(Event *ev)
 			break;
 
         default:
-			g_logger->Warn() << "unknown event " << ev->type << endl;
+			g_logger->Warn("EventManager") << "unknown event " << ev->type << endl;
             break;
     }
 
@@ -410,13 +410,13 @@ void EventManager::eventProc(Event *ev)
 
 		string respStr = ev->result->ToString();
 
-		g_logger->Debug() << "Deleting response message [" << ev->result << "]" << endl;
+		g_logger->Debug("EventManager") << "Deleting response message [" << ev->result << "]" << endl;
 		delete ev->result;
 		ev->result = NULL;
 
 		try {
 			glb_server->Send(respStr);
-			g_logger->Debug() << "Sent a response message" << endl;
+			g_logger->Debug("EventManager") << "Sent a response message" << endl;
 		}
         catch (SocketRunTimeException& e) 
         { 
@@ -426,16 +426,16 @@ void EventManager::eventProc(Event *ev)
 
 	if (ev->message != NULL) 
 	{
-		g_logger->Debug() << "Deleting request message [" << ev->message << "]" << endl;
+		g_logger->Debug("EventManager") << "Deleting request message [" << ev->message << "]" << endl;
 		delete ev->message;
 		ev->message = NULL;
 	}
 
 	if (ev != NULL) 
 	{
-		g_logger->Debug() << "Deleting event [" << ev << "]" << endl;
+		g_logger->Debug("EventManager") << "Deleting event [" << ev << "]" << endl;
 		delete ev;
 	}
 
-	g_logger->Debug() << "exiting eventProc()" << endl;
+	g_logger->Debug("EventManager") << "exiting eventProc()" << endl;
 }

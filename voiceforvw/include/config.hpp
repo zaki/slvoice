@@ -18,7 +18,7 @@ class Config
 			: Port(44124), 
 			  ConfigFilePath(""),
 			  LogFilePath("SLVoice.log"),
-			  LogLevel("WARN"),
+			  LogLevel("TERSE"),
 			  LogFilter(""),
 			  VoiceServerURI(""),
 			  Realm("asterisk"),

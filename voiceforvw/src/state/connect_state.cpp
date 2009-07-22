@@ -16,17 +16,17 @@ ConnectorIdleState::ConnectorIdleState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<ConnectorMachine>()) 
 {
-	g_logger->Debug() << "ConnectorIdle entered" << endl;
+	g_logger->Debug("STATE") << "ConnectorIdle entered" << endl;
 }
 
 ConnectorIdleState::~ConnectorIdleState() 
 {
-	g_logger->Debug() << "ConnectorIdle exited" << endl;
+	g_logger->Debug("STATE") << "ConnectorIdle exited" << endl;
 }
 
 result ConnectorIdleState::react(const InitializeEvent& ev) 
 {
-	g_logger->Debug() << "ConnectorIdle react (InitializeEvent)" << endl;
+	g_logger->Debug("STATE") << "ConnectorIdle react (InitializeEvent)" << endl;
 
 	//machine.info->voiceserver_url = g_config->VoiceServerURI;
 	//g_logger->Info() << "VoIP frontend URL = " << machine.info->voiceserver_url << endl;
@@ -46,20 +46,20 @@ ConnectorActiveState::ConnectorActiveState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<ConnectorMachine>()) 
 {
-	g_logger->Debug() << "ConnectorActive entered" << endl;
+	g_logger->Debug("STATE") << "ConnectorActive entered" << endl;
 }
 
 ConnectorActiveState::~ConnectorActiveState() 
 {
-	g_logger->Debug() << "ConnectorActive exited" << endl;
+	g_logger->Debug("STATE") << "ConnectorActive exited" << endl;
 }
 
 result ConnectorActiveState::react(const ShutdownEvent& ev) 
 {
-	g_logger->Debug() << "ConnectorActive react (ShutdownEvent)" << endl;
+	g_logger->Debug("STATE") << "ConnectorActive react (ShutdownEvent)" << endl;
 
     machine.info->handle = "";
-    g_logger->Info() << "=======  CONNECT STATE  ======== Stop SIP" << endl;
+    g_logger->Terse("STATE") << "=======  CONNECT STATE  ======== Stop SIP" << endl;
 
     // Added 
     //SIPConference *psc;
@@ -73,7 +73,7 @@ result ConnectorActiveState::react(const ShutdownEvent& ev)
 
 result ConnectorActiveState::react(const AudioEvent& ev) 
 {
-	g_logger->Debug() << "ConnectorActive react (AudioEvent)" << endl;
+	g_logger->Debug("STATE") << "ConnectorActive react (AudioEvent)" << endl;
 
     ev.message->SetState(machine.info->audio);
 

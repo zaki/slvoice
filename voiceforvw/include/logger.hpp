@@ -11,13 +11,14 @@
 
 enum LogLevels 
 {
-	LL_DEBUG, LL_INFO, LL_WARN, LL_ERROR, LL_FATAL, LL_LEVELCOUNT
+	LL_DEBUG, LL_INFO, LL_TERSE, LL_WARN, LL_ERROR, LL_FATAL, LL_LEVELCOUNT
 };
 
 static const string LogLevelStrings[] = 
 {
 	"DEBUG", 
-	"INFO", 
+	"INFO",
+	"TERSE",
 	"WARN", 
 	"ERROR", 
 	"FATAL"
@@ -38,7 +39,7 @@ class Logger
 {
     public:
         Logger ()
-			: logLevel(LL_WARN), outputFilePath("")
+			: logLevel(LL_TERSE), outputFilePath("")
 		{};
 
         ~Logger ();
@@ -50,6 +51,7 @@ class Logger
 
 		ostream& Debug(string section = "");
 		ostream& Info(string section  = "");
+		ostream& Terse(string section  = "");
 		ostream& Warn(string section  = "");
 		ostream& Error(string section = "");
 		ostream& Fatal(string section = "");

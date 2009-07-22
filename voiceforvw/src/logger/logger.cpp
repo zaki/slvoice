@@ -28,6 +28,7 @@ void Logger::Init()
 
 ostream& Logger::Debug(string section) {return(Log(LL_DEBUG, section));}
 ostream& Logger::Info(string section) {return(Log(LL_INFO, section));}
+ostream& Logger::Terse(string section) {return(Log(LL_TERSE, section));}
 ostream& Logger::Warn(string section) {return(Log(LL_WARN, section));}
 ostream& Logger::Error(string section) {return(Log(LL_ERROR, section));}
 ostream& Logger::Fatal(string section) {return(Log(LL_FATAL, section));}

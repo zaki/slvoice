@@ -16,12 +16,12 @@ SessionIdleState::SessionIdleState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionIdle entered" << endl;
+	g_logger->Debug("STATE") << "SessionIdle entered" << endl;
 }
 
 SessionIdleState::~SessionIdleState() 
 {
-    g_logger->Debug() << "SessionIdle exited" << endl;
+    g_logger->Debug("STATE") << "SessionIdle exited" << endl;
 }
 
 result SessionIdleState::react(const SessionCreateEvent& ev) {
@@ -29,14 +29,14 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 	SIPUserInfo sinfo;
 	stringstream ss;
 
-	g_logger->Debug() << "SessionIdle react (SessionCreateEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionIdle react (SessionCreateEvent)" << endl;
 
     ev.message->SetState(machine.info->session); // this should have done the parsing
 
 	try 
 	{
-		g_logger->Info() << "Conference URI = " << machine.info->session.uri << endl;
-		g_logger->Info() << "Account ID = " << machine.info->account->id << endl;
+		g_logger->Info("SESSION") << "Conference URI = " << machine.info->session.uri << endl;
+		g_logger->Info("SESSION") << "Account ID = " << machine.info->account->id << endl;
 		
 		ConnectorInfo *con = glb_server->getConnector();
 		SIPConference *psc = machine.info->account->sipconf;
@@ -79,7 +79,7 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 
 result SessionIdleState::react(const DialIncomingEvent& ev) 
 {
-	g_logger->Debug() << "SessionIdle react (DialIncomingEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionIdle react (DialIncomingEvent)" << endl;
     return transit<SessionIncomingState>();
 }
 
@@ -90,7 +90,7 @@ SessionTerminatedState::SessionTerminatedState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionTerminated entered" << endl;
+	g_logger->Debug("STATE") << "SessionTerminated entered" << endl;
 
 	SessionStateChangeEvent sessionStateEvent;
     sessionStateEvent.SessionHandle = machine.info->handle;
@@ -113,8 +113,8 @@ SessionTerminatedState::SessionTerminatedState(my_context ctx) :
 
 SessionTerminatedState::~SessionTerminatedState() 
 {
-	g_logger->Debug() << "SessionTerminated exited" << endl;
-	g_logger->Info() << "=======  SESSION  ======== Session Terminate Destructor" << endl;
+	g_logger->Debug("STATE") << "SessionTerminated exited" << endl;
+	g_logger->Terse("STATE") << "=======  SESSION  ======== Session Terminate Destructor" << endl;
 
 }
 
@@ -125,21 +125,21 @@ SessionCallingState::SessionCallingState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionCalling entered" << endl;
-	g_logger->Info() << "=======  SESSION  ======== CallingState Constructor" << endl;
+	g_logger->Debug("STATE") << "SessionCalling entered" << endl;
+	g_logger->Terse("STATE") << "=======  SESSION  ======== CallingState Constructor" << endl;
 }
 
 SessionCallingState::~SessionCallingState() 
 {
-	g_logger->Debug() << "SessionCalling exited" << endl;
-	g_logger->Info() << "=======  SESSION  ======== CallingState Destructor" << endl;
+	g_logger->Debug("STATE") << "SessionCalling exited" << endl;
+	g_logger->Terse("STATE") << "=======  SESSION  ======== CallingState Destructor" << endl;
 }
 
 result SessionCallingState::react(const SessionTerminateEvent& ev) 
 {
-	g_logger->Debug() << "SessionCalling react (SessionTerminateEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionCalling react (SessionTerminateEvent)" << endl;
 
-    g_logger->Info() << "=======  SESSION  ======== CallingState Terminate" << endl;
+    g_logger->Terse("STATE") << "=======  SESSION  ======== CallingState Terminate" << endl;
     //Added July 7, 2009
     SIPConference *psc = machine.info->account->sipconf;	
     if (psc != NULL) 
@@ -153,25 +153,25 @@ result SessionCallingState::react(const SessionTerminateEvent& ev)
 
 result SessionCallingState::react(const DialEarlyEvent& ev) 
 {
-	g_logger->Debug() << "SessionCalling react (DialEarlyEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionCalling react (DialEarlyEvent)" << endl;
     return transit<SessionEarlyState>();
 }
 
 result SessionCallingState::react(const DialConnectingEvent& ev) 
 {
-	g_logger->Debug() << "SessionCalling react (DialConnectingEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionCalling react (DialConnectingEvent)" << endl;
     return transit<SessionConnectingState>();
 }
 
 result SessionCallingState::react(const DialSucceedEvent& ev) 
 {
-	g_logger->Debug() << "SessionCalling react (DialSucceededEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionCalling react (DialSucceededEvent)" << endl;
     return transit<SessionConfirmedState>();
 }
 
 result SessionCallingState::react(const DialDisconnectedEvent& ev)
 {
-	g_logger->Debug() << "SessionCalling react (DialDisconnectedEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionCalling react (DialDisconnectedEvent)" << endl;
     return transit<SessionTerminatedState>();
 }
 
@@ -182,7 +182,7 @@ SessionIncomingState::SessionIncomingState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionIncoming entered" << endl;	
+	g_logger->Debug("STATE") << "SessionIncoming entered" << endl;	
 
 	SIPUserInfo uinfo;
 	stringstream ss(machine.info->incoming_uri);
@@ -215,18 +215,18 @@ SessionIncomingState::SessionIncomingState(my_context ctx) :
 
 SessionIncomingState::~SessionIncomingState() 
 {
-	g_logger->Debug() << "SessionIncoming exited" << endl;	
+	g_logger->Debug("STATE") << "SessionIncoming exited" << endl;	
 }
 
 result SessionIncomingState::react(const SessionTerminateEvent& ev) 
 {
-	g_logger->Debug() << "SessionIncoming react (SessionTerminateEvent)" << endl;	
+	g_logger->Debug("STATE") << "SessionIncoming react (SessionTerminateEvent)" << endl;	
     return transit<SessionTerminatedState>();
 }
 
 result SessionIncomingState::react(const SessionConnectEvent& ev) 
 {
-	g_logger->Debug() << "SessionIncoming react (SessionConnectEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionIncoming react (SessionConnectEvent)" << endl;
 
 	SIPConference *psc = machine.info->account->sipconf;
 
@@ -240,25 +240,25 @@ result SessionIncomingState::react(const SessionConnectEvent& ev)
 
 result SessionIncomingState::react(const DialEarlyEvent& ev) 
 {
-	g_logger->Debug() << "SessionIncoming react (DialEarlyEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionIncoming react (DialEarlyEvent)" << endl;
     return transit<SessionEarlyState>();
 }
 
 result SessionIncomingState::react(const DialConnectingEvent& ev) 
 {
-    g_logger->Debug() << "SessionIncoming react (DialConnectingEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionIncoming react (DialConnectingEvent)" << endl;
     return transit<SessionConnectingState>();
 }
 
 result SessionIncomingState::react(const DialSucceedEvent& ev) 
 {
-    g_logger->Debug() << "SessionIncoming react (DialSucceedEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionIncoming react (DialSucceedEvent)" << endl;
     return transit<SessionConfirmedState>();
 }
 
 result SessionIncomingState::react(const DialDisconnectedEvent& ev) 
 {
-	g_logger->Debug() << "SessionIncoming react (DialDisconnectedEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionIncoming react (DialDisconnectedEvent)" << endl;
     return transit<SessionTerminatedState>();
 }
 
@@ -269,17 +269,17 @@ SessionEarlyState::SessionEarlyState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionEarly entered" << endl;
+	g_logger->Debug("STATE") << "SessionEarly entered" << endl;
 }
 
 SessionEarlyState::~SessionEarlyState() 
 {
-	g_logger->Debug() << "SessionEarly exited" << endl;
+	g_logger->Debug("STATE") << "SessionEarly exited" << endl;
 }
 
 result SessionEarlyState::react(const SessionTerminateEvent& ev) 
 {
-    g_logger->Debug() << "SessionEarly react (SessionTerminateEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionEarly react (SessionTerminateEvent)" << endl;
  
     SIPConference *psc = machine.info->account->sipconf;
     if (psc != NULL) 
@@ -292,7 +292,7 @@ result SessionEarlyState::react(const SessionTerminateEvent& ev)
 
 result SessionEarlyState::react(const SessionConnectEvent& ev) 
 {
-	g_logger->Debug() << "SessionEarly react (SessionConnectEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionEarly react (SessionConnectEvent)" << endl;
 
 	SIPConference *psc = machine.info->account->sipconf;
 
@@ -306,19 +306,19 @@ result SessionEarlyState::react(const SessionConnectEvent& ev)
 
 result SessionEarlyState::react(const DialConnectingEvent& ev) 
 {
-	g_logger->Debug() << "SessionEarly react (DialConnectingEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionEarly react (DialConnectingEvent)" << endl;
     return transit<SessionConnectingState>();
 }
 
 result SessionEarlyState::react(const DialSucceedEvent& ev) 
 {
-	g_logger->Debug() << "SessionEarly react (DialSucceedEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionEarly react (DialSucceedEvent)" << endl;
     return transit<SessionConfirmedState>();
 }
 
 result SessionEarlyState::react(const DialDisconnectedEvent& ev) 
 {
-    g_logger->Debug() << "SessionEarly react (DialDisconnectedEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionEarly react (DialDisconnectedEvent)" << endl;
     return transit<SessionTerminatedState>();
 }
 
@@ -329,32 +329,32 @@ SessionConnectingState::SessionConnectingState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionConnecting entered" << endl;
-    g_logger->Info() << "=======  SESSION  ======== ConnectingState Constructor" << endl;
+	g_logger->Debug("STATE") << "SessionConnecting entered" << endl;
+    g_logger->Terse("STATE") << "=======  SESSION  ======== ConnectingState Constructor" << endl;
 }
 
 SessionConnectingState::~SessionConnectingState() 
 {
-    g_logger->Debug() << "SessionConnecting exited" << endl;
-    g_logger->Info() << "=======  SESSION  ======== ConnectingState Destructor" << endl;
+    g_logger->Debug("STATE") << "SessionConnecting exited" << endl;
+    g_logger->Terse("STATE") << "=======  SESSION  ======== ConnectingState Destructor" << endl;
 }
 
 result SessionConnectingState::react(const SessionTerminateEvent& ev) 
 {
-    g_logger->Debug() << "SessionConnecting react (SessionTerminateEvent)" << endl;
-    g_logger->Info() << "=======  SESSION  ======== ConnectingState Terminate" << endl;
+    g_logger->Debug("STATE") << "SessionConnecting react (SessionTerminateEvent)" << endl;
+    g_logger->Terse("STATE") << "=======  SESSION  ======== ConnectingState Terminate" << endl;
     return transit<SessionTerminatedState>();
 }
 
 result SessionConnectingState::react(const DialSucceedEvent& ev) 
 {
-    g_logger->Debug() << "SessionConnecting react (DialSucceedEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionConnecting react (DialSucceedEvent)" << endl;
     return transit<SessionConfirmedState>();
 }
 
 result SessionConnectingState::react(const DialDisconnectedEvent& ev) 
 {
-    g_logger->Debug() << "SessionConnecting react (DialDisconnectedEvent)" << endl;
+    g_logger->Debug("STATE") << "SessionConnecting react (DialDisconnectedEvent)" << endl;
     return transit<SessionTerminatedState>();
 }
 
@@ -426,7 +426,7 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
         my_base(ctx), // required because we call context() from a constructor
         machine(context<SessionMachine>()) 
 {
-	g_logger->Debug() << "SessionConfirmed entered" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed entered" << endl;
 
     // Mute mic on first connect
     ConnectorInfo *con = glb_server->getConnector();
@@ -491,12 +491,12 @@ SessionConfirmedState::SessionConfirmedState(my_context ctx) :
 
 SessionConfirmedState::~SessionConfirmedState() 
 {
-    g_logger->Debug() << "SessionConfirmed exited" << endl;
+    g_logger->Debug("STATE") << "SessionConfirmed exited" << endl;
 }
 
 result SessionConfirmedState::react(const SessionTerminateEvent& ev) 
 {
-	g_logger->Debug() << "SessionConfirmed react (SessionTerminateEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed react (SessionTerminateEvent)" << endl;
 
 	SIPConference *psc = machine.info->account->sipconf;
 
@@ -513,14 +513,14 @@ result SessionConfirmedState::react(const SessionTerminateEvent& ev)
 
 result SessionConfirmedState::react(const DialDisconnectedEvent& ev) 
 {
-	g_logger->Debug() << "SessionConfirmed react (DialDisconnectedEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed react (DialDisconnectedEvent)" << endl;
     return transit<SessionTerminatedState>();
 }
 
 
 result SessionConfirmedState::react(const AudioEvent& ev) 
 {
-	g_logger->Debug() << "SessionConfirmed react (AudioEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed react (AudioEvent)" << endl;
 
     float mic_volume = 0.0f;
     float spk_volume = 0.0f;
@@ -554,7 +554,7 @@ result SessionConfirmedState::react(const AudioEvent& ev)
 
 result SessionConfirmedState::react(const PositionEvent& ev) 
 {
-	g_logger->Debug() << "SessionConfirmed react (PositionEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed react (PositionEvent)" << endl;
 
     // TODO
 
@@ -564,7 +564,7 @@ result SessionConfirmedState::react(const PositionEvent& ev)
 // v1.22
 result SessionConfirmedState::react(const SessionMediaDisconnectEvent& ev) 
 {
-	g_logger->Debug() << "SessionConfirmed react (SessionMediaDisconnectEvent)" << endl;
+	g_logger->Debug("STATE") << "SessionConfirmed react (SessionMediaDisconnectEvent)" << endl;
 
 	volumeCheckingThread.stopped = true;
 

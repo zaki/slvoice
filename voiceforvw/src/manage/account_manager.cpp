@@ -16,11 +16,11 @@ string AccountManager::create() {
 		
 		ret = registHandle(info);
 
-		g_logger->Info("ACCOUNTMANAGER::Create") << "Created AccountInfo handle=" << info->handle << endl;
+		g_logger->Debug("AccountManager") << "Created AccountInfo handle=" << info->handle << endl;
 	}
 	catch (exception e) {
 
-		g_logger->Fatal("ACCOUNTMANAGER::Create") << e.what() << endl;
+		g_logger->Fatal("AccountManager") << e.what() << endl;
 
 		if (info != NULL) {
 			delete info;

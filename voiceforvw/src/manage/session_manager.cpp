@@ -16,11 +16,11 @@ string SessionManager::create(const AccountInfo *account) {
 
 		ret = registHandle(info);
 
-		g_logger->Info() << "Created SessionInfo handle=" << info->handle << endl;
+		g_logger->Info("SessionManager") << "Created SessionInfo handle=" << info->handle << endl;
 	}
 	catch (exception e) 
 	{
-		g_logger->Fatal() << "SessionManager::create Error " << e.what() << endl;
+		g_logger->Fatal("SessionManager") << "SessionManager::create Error " << e.what() << endl;
 
 		if (info != NULL) {
 			delete info;
@@ -49,7 +49,7 @@ void SessionManager::controlAudioLevel() {
 	}
 	catch (exception e) 
 	{
-		g_logger->Fatal() << "SessionManager::controlAudioLevel Error " << e.what() << endl;
+		g_logger->Fatal("SessionManager") << "SessionManager::controlAudioLevel Error " << e.what() << endl;
 		throw e;
 	}
 }

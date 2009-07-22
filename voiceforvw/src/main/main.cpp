@@ -91,25 +91,26 @@ int APIENTRY WinMain( HINSTANCE hInstance,
 			{
 				g_config->LogFilePath = value;
 			}
-			else if (key == "--loglevel") g_config->LogLevel = value;
+			//else if (key == "--loglevel") g_config->LogLevel = value;
 			else if (key == "--version") g_config->Version = atoi(value.c_str());
 			else if (key == "--port") g_config->Port = atoi(value.c_str());
 		}
 		token = strtok(NULL, ",");
 	}
 
+
 	g_logger = new Logger();
 	g_logger->Init();
 
-	g_logger->Debug() << "===================== Config =====================" << endl;
-	g_logger->Debug() << "Version               : " << g_config->Version << endl;
-	g_logger->Debug() << "Port                  : " << g_config->Port << endl;
-	g_logger->Debug() << "LogLevel              : " << g_config->LogLevel << endl;
-	g_logger->Debug() << "LogFilePath           : " << g_config->LogFilePath << endl;
-	g_logger->Debug() << "Realm                 : " << g_config->Realm << endl;
-	g_logger->Debug() << "Codec                 : " << g_config->Codec << endl;
-	g_logger->Debug() << "Disable               : " << g_config->DisableOtherCodecs << endl;
-
+    g_logger->Terse("MAIN") << "===================== Config =====================" << endl;
+    g_logger->Terse("MAIN") << "Version               : " << g_config->Version << endl;
+    g_logger->Terse("MAIN") << "Port                  : " << g_config->Port << endl;
+    g_logger->Terse("MAIN") << "LogLevel              : " << g_config->LogLevel << endl;
+    g_logger->Terse("MAIN") << "LogFilePath           : " << g_config->LogFilePath << endl;
+    g_logger->Terse("MAIN") << "Realm                 : " << g_config->Realm << endl;
+    g_logger->Terse("MAIN") << "Codec                 : " << g_config->Codec << endl;
+    g_logger->Terse("MAIN") << "Disable               : " << g_config->DisableOtherCodecs << endl;
+    g_logger->Terse("MAIN") << "===================== Config =====================" << endl;
 
     try {
 		EventManager evm;
@@ -124,7 +125,7 @@ int APIENTRY WinMain( HINSTANCE hInstance,
 
     } catch (exception &e) 
 	{
-		g_logger->Fatal() << "Error " << e.what() << endl;
+		g_logger->Fatal("MAIN") << "Error " << e.what() << endl;
         exit(0);
     }
 

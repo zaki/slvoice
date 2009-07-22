@@ -18,7 +18,7 @@ Server::Server (int port) :
     buf_ (NULL),
 	userURI("")
 {
-	g_logger->Debug() << "entering Server()" << endl;
+	g_logger->Debug("SERVER") << "entering Server()" << endl;
 
     try
     {
@@ -39,7 +39,7 @@ Server::Server (int port) :
 //=============================================================================
 Server::~Server () 
 { 
-	g_logger->Debug() << "entering ~Server()" << endl;
+	g_logger->Debug("SERVER") << "entering ~Server()" << endl;
 
     try 
     {
@@ -88,7 +88,7 @@ void Server::Start ()
 
 			*pos = 0x00;
 
-			g_logger->Debug() << "received " << cur << endl;
+			g_logger->Debug("SERVER") << "received " << cur << endl;
 
 			process_request_queue_(cur);
 
@@ -111,7 +111,7 @@ void Server::Send (const string& m)
 	}
 	else
 	{
-		g_logger->Debug() << "Sent: " << m << endl;
+		g_logger->Debug("SERVER") << "Sent: " << m << endl;
 	}
 	try
 	{
@@ -119,7 +119,7 @@ void Server::Send (const string& m)
 	}
 	catch(exception e)
 	{
-		g_logger->Error() << "Error in Server::Send " << e.what() << endl;
+		g_logger->Error("SERVER") << "Error in Server::Send " << e.what() << endl;
 	}
 }
 
@@ -142,7 +142,7 @@ void Server::process_request_queue_(const char* mesg)
         response->InputXml = string(mesg);
 
     //******************************************************
-    g_logger->Info() << "======= SERVER ======== Process Session " << request->Action << endl;
+    g_logger->Terse("SERVER") << "======= SERVER ======== Process Session " << request->Action << endl;
     //******************************************************
 
     switch (request->Type)
@@ -214,7 +214,7 @@ void Server::process_request_queue_(const char* mesg)
 			break;
 
         default:
-			g_logger->Warn() << "Unknown request " << request->Action << endl;
+			g_logger->Warn("SERVER") << "Unknown request " << request->Action << endl;
             break;
     }
 

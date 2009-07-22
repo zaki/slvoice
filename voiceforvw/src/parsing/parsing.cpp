@@ -127,7 +127,7 @@ RequestParser::parse_AuxCaptureAudioStart_ ()
 auto_ptr <const Request>
 RequestParser::parse_AuxCaptureAudioStop_ ()
 {
-	g_logger->Info() << "Version " << g_config->Version << endl;
+	g_logger->Info("PARSE") << "Version " << g_config->Version << endl;
     AuxCaptureAudioStopRequest *req 
         (new AuxCaptureAudioStopRequest (requestid_));
     
@@ -219,7 +219,7 @@ RequestParser::parse_ConnectorCreate_ ()
 	{
 		ConnectorInfo *con = glb_server->getConnector();
 		con->voiceserver_url = req->AccountManagementServer + "voiceinfo/";
-		g_logger->Info() << "VoIP frontend URL = " << con->voiceserver_url << endl;
+		g_logger->Info("PARSE") << "VoIP frontend URL = " << con->voiceserver_url << endl;
 	}
 	else
 	{
@@ -311,7 +311,7 @@ RequestParser::parse_SessionCreate_ ()
     //Emulate the connected Type
     //if (req-> JoinText  == "False")
     // req->ConnectedType = "1"; //0 for privatechat session / 1 for Server
-    g_logger->Info() << "=======  PARSING  ======== Connected Type=" << req->ConnectedType << endl;
+    g_logger->Terse("PARSE") << "=======  PARSING  ======== Connected Type=" << req->ConnectedType << endl;
     //End of Emulation
 
     //req-> PasswordHashAlgorithm = get_root_text_ ("PasswordHashAlgorithm");
@@ -1071,7 +1071,7 @@ ConnectorMuteLocalMicRequest::SetState (Audio& state) const
     ss.str (Value);
     ss >> boolalpha >> state.mic_mute;
 
-	g_logger->Debug() << "state.mic_mute = " << state.mic_mute << endl;
+	g_logger->Debug("SETSTATE") << "state.mic_mute = " << state.mic_mute << endl;
 }
 
 void AuxSetRenderDeviceRequest::SetState (Audio& state) const
@@ -1085,7 +1085,7 @@ void AuxSetRenderDeviceRequest::SetState (Audio& state) const
 		bool reset = false;
 
 		pjsua_get_snd_dev(&captureDev, &renderDev);
-		g_logger->Debug() << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
+		g_logger->Debug("SETSTATE") << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
 
 		if (captureDev == PJMEDIA_AUD_DEFAULT_CAPTURE_DEV)
 		{
@@ -1118,24 +1118,24 @@ void AuxSetRenderDeviceRequest::SetState (Audio& state) const
 		{
 			if (captureDev > 0)
 			{
-				g_logger->Debug() << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
-				g_logger->Debug() << "Setting render device to " << RenderDevice << endl;
+				g_logger->Debug("SETSTATE") << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
+				g_logger->Debug("SETSTATE") << "Setting render device to " << RenderDevice << endl;
 				try
 				{
 					pjsua_set_snd_dev(captureDev, renderDev);
 				}
 				catch(exception e)
 				{
-					g_logger->Warn() << "Error setting audio device " << e.what() << endl;
+					g_logger->Warn("SETSTATE") << "Error setting audio device " << e.what() << endl;
 				}
 
 			}
 			else
-				g_logger->Warn() << "Invalid capture device was set: " << captureDev << " while setting render device to " << RenderDevice << endl;
+				g_logger->Warn("SETSTATE") << "Invalid capture device was set: " << captureDev << " while setting render device to " << RenderDevice << endl;
 		}
 		else
 		{
-			g_logger->Warn() << "Trying to set invalid or nonexistent render device " << RenderDevice << endl;
+			g_logger->Warn("SETSTATE") << "Trying to set invalid or nonexistent render device " << RenderDevice << endl;
 		}
 	}
 }
@@ -1151,7 +1151,7 @@ void AuxSetCaptureDeviceRequest::SetState (Audio& state) const
 		bool reset = false;
 
 		pjsua_get_snd_dev(&captureDev, &renderDev);
-		g_logger->Debug() << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
+		g_logger->Debug("SETSTATE") << "Got audio devices C:" << captureDev << " R" << renderDev << endl;
 
 		if (captureDev == PJMEDIA_AUD_DEFAULT_CAPTURE_DEV)
 		{
@@ -1184,23 +1184,23 @@ void AuxSetCaptureDeviceRequest::SetState (Audio& state) const
 		{
 			if (renderDev > 0)
 			{
-				g_logger->Debug() << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
-				g_logger->Debug() << "Setting capture device to " << CaptureDevice << endl;
+				g_logger->Debug("SETSTATE") << "SET SND DEV R:"  << renderDev << "C:" << captureDev << endl;
+				g_logger->Debug("SETSTATE") << "Setting capture device to " << CaptureDevice << endl;
 				try
 				{
 					pjsua_set_snd_dev(captureDev, renderDev);
 				}
 				catch(exception e)
 				{
-					g_logger->Warn() << "Error setting audio device " << e.what() << endl;
+					g_logger->Warn("SETSTATE") << "Error setting audio device " << e.what() << endl;
 				}
 			}
 			else
-				g_logger->Warn() << "Invalid render device was set: " << renderDev << " while setting capture device to " << CaptureDevice << endl;
+				g_logger->Warn("SETSTATE") << "Invalid render device was set: " << renderDev << " while setting capture device to " << CaptureDevice << endl;
 		}
 		else
 		{
-			g_logger->Warn() << "Trying to set invalid or nonexistent capture device " << CaptureDevice << endl;
+			g_logger->Warn("SETSTATE") << "Trying to set invalid or nonexistent capture device " << CaptureDevice << endl;
 		}
 
 
@@ -1215,27 +1215,27 @@ ConnectorMuteLocalSpeakerRequest::SetState (Audio& state) const
     ss.str (Value);
     ss >> boolalpha >> state.speaker_mute;
 
-	g_logger->Debug() << "state.speaker_mute = " << state.speaker_mute << endl;
+	g_logger->Debug("SETSTATE") << "state.speaker_mute = " << state.speaker_mute << endl;
 }
 
 void 
 ConnectorSetLocalMicVolumeRequest::SetState (Audio& state) const
 {
-	g_logger->Debug() << "Entering ConnectorSetLocalMicVolumeRequest::SetState()" << endl;
+	g_logger->Debug("SETSTATE") << "Entering ConnectorSetLocalMicVolumeRequest::SetState()" << endl;
 	state.mic_volume = (float)atof(Value.c_str());
 	ConnectorInfo *con = glb_server->getConnector();
 	con->audio.mic_volume = state.mic_volume;
-	g_logger->Info() << "state.mic_volume = " << state.mic_volume << endl;
+	g_logger->Info("SETSTATE") << "state.mic_volume = " << state.mic_volume << endl;
 }
 
 void 
 ConnectorSetLocalSpeakerVolumeRequest::SetState (Audio& state) const
 {
-	g_logger->Debug() << "Entering ConnectorSetLocalSpeakerVolumeRequest::SetState()" << endl;
+	g_logger->Debug("SETSTATE") << "Entering ConnectorSetLocalSpeakerVolumeRequest::SetState()" << endl;
 	state.speaker_volume = (float)atof(Value.c_str());
 	ConnectorInfo *con = glb_server->getConnector();
 	con->audio.speaker_volume = state.speaker_volume;
-	g_logger->Info() << "state.speaker_volume = " << state.speaker_volume << endl;
+	g_logger->Info("SETSTATE") << "state.speaker_volume = " << state.speaker_volume << endl;
 }
 
 void 
