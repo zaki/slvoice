@@ -141,6 +141,10 @@ void Server::process_request_queue_(const char* mesg)
 	if (response)
         response->InputXml = string(mesg);
 
+    //******************************************************
+    g_logger->Info() << "======= SERVER ======== Process Session " << request->Action << endl;
+    //******************************************************
+
     switch (request->Type)
     {
 		// Connector Events

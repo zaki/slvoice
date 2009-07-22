@@ -512,6 +512,7 @@ struct SessionCreateRequest : public Request
     string JoinAudio;
     string JoinText;
     string PasswordHashAlgorithm;
+    string ConnectedType;
         
     void SetState (Session& state) const;
 

@@ -6,6 +6,14 @@
 #include <main.h>
 #include <sip.hpp>
 
+static char*  g_current_call = NULL;
+static int regcount = 0;
+
+static int glb_tempConType = 0;
+static int glb_realConType = 0;
+static int glb_callingState = 0;
+static int gbl_CallInProgress = 0;
+
 //=============================================================================
 /* Custom log function */
 static void my_pj_log_ (int level, const char *data, int len) 
@@ -26,11 +34,48 @@ static void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
                               pjsip_rx_data *rdata) {
 
 	pj_status_t status;
+	//pj_status_t status2;
 	pjsua_call_info ci;
+	int status3 = 0;
 
     status = pjsua_call_get_info(call_id, &ci);
+	//status2 = pjsua_call_is_active(call_id);
+	status3 = pjsua_call_get_count();
+
 
 	g_logger->Info() << "Incoming call from " << ci.remote_info.ptr << endl;
+	g_logger->Info() << "=======  SIP  ======== Incoming call from " << ci.remote_info.ptr << endl;
+
+	//Call State - Early - Turn on Flag
+	//Call State - Disconnected - Turn off Flag
+	gbl_CallInProgress = 0;
+	if (glb_callingState == 1)
+	{
+        pj_str_t reason;
+		reason = pj_str("Another call is in progress");
+		gbl_CallInProgress = 1;
+		pjsua_call_answer((pjsua_call_id)call_id, PJSIP_SC_BUSY_HERE, &reason, NULL);
+		g_logger->Info() << "=======  SIP  ======== Another call is in progress " << ci.remote_info.ptr << endl;
+		return;
+	}
+
+	/*
+	if (status3 > 2)  {  //Ringing
+		pj_str_t reason;
+		reason = pj_str("Another call is in progress");
+		pjsua_call_answer((pjsua_call_id)call_id, PJSIP_SC_BUSY_HERE, &reason, NULL);
+		g_logger->Info() << "=======  SIP  ======== Another call is in progress - incoming " << ci.remote_info.ptr << endl;
+		return;
+    }*/
+
+	if (glb_realConType == 0)  { //On Call  0 -> Private Chat
+		pj_str_t reason;
+		reason = pj_str("Another call is in session");
+		pjsua_call_answer((pjsua_call_id)call_id, PJSIP_SC_BUSY_HERE, &reason, NULL);
+		g_logger->Info() << "=======  SIP  ======== Another call is in session " << ci.remote_info.ptr << endl;				
+		return;
+    }
+
 
 	SessionEvent *ev = new DialIncomingEvent();
 
@@ -39,6 +84,8 @@ static void on_incoming_call (pjsua_acc_id acc_id, pjsua_call_id call_id,
 	ev->call_id = (int)call_id;
 
 	g_eventManager.blockQueue.enqueue(ev);
+
+    glb_tempConType = 0;   //incoming only for private calls
 }
 
 //=============================================================================
@@ -54,6 +101,7 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e) {
     status = pjsua_call_get_info(call_id, &ci);
 
 	g_logger->Info() << "Call " << call_id << " state=" << ci.state_text.ptr << endl;
+    g_logger->Info() << "=======  SIP  ======== Call " << call_id << " state=" << ci.state_text.ptr << endl;
 
     /*PJSIP_INV_STATE_NULL 	Before INVITE is sent or received
       PJSIP_INV_STATE_CALLING 	After INVITE is sent
@@ -71,21 +119,30 @@ static void on_call_state (pjsua_call_id call_id, pjsip_event *e) {
         DialEarlyEvent ev;
         info->machine.process_event(ev);
 		*/
+		glb_callingState = 1;
 		ev = new DialEarlyEvent();
     }
     break;
     case PJSIP_INV_STATE_CONNECTING: {
         // After response with To tag
+		//glb_callingState = 0;
 		ev = new DialConnectingEvent();
     }
     break;
     case PJSIP_INV_STATE_CONFIRMED: {
         // After response with To tag
 		ev = new DialSucceedEvent();
+		//actual change of status	
+		//glb_callingState = 0;
+		glb_realConType = glb_tempConType;			 
+
     }
     break;
     case PJSIP_INV_STATE_DISCONNECTED: {
         // After response with To tag
+		if (gbl_CallInProgress == 0)		
+            glb_callingState = 0;
+        gbl_CallInProgress = 0;
 		ev = new DialDisconnectedEvent();
     }
     break;
@@ -188,6 +245,8 @@ void SIPConference::Register(const SIPUserInfo& user, int* accid) {
 
 	g_logger->Debug() << "Entering Register(const SIPUserInfo&)" << endl;
 
+	g_logger->Info() << "=======  SIP  ======== Register" << endl;
+
     string temp_useruri(user.sipuri);
     string temp_username(user.name);
     string temp_userpasswd(user.password);
@@ -224,18 +283,28 @@ void SIPConference::UnRegister(const int accid) {
 
 	g_logger->Debug() << "Entering UnRegister(const int)" << endl;
 
-    status = pjsua_acc_del((pjsua_acc_id)accid);
+    g_logger->Info() << "=======  SIP  ======== UnRegister" << endl;
 
+    try
+    {
+         status = pjsua_acc_del((pjsua_acc_id)accid);
+    }
+    catch(char* str)
+    {
+         g_logger->Fatal() << "=======  SIP  ======== " << str << endl;
+    }
     if (status != PJ_SUCCESS)
         error_exit ("Error deleting account", status);
 }
 
 //=============================================================================
-void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
+void SIPConference::Join(const string& joinuri, int acc_id, int* callid, const string ConType) {
 
 	pj_status_t status;
 
 	g_logger->Debug() << "Entering Join() URI=" << joinuri << endl;
+
+    g_logger->Info() << "=======  SIP  ======== Join" << endl;
 
 	pj_str_t uri = pj_str(const_cast <char*> (joinuri.c_str()));
 
@@ -277,6 +346,18 @@ void SIPConference::Join(const string& joinuri, int acc_id, int* callid) {
 
 	if (status != PJ_SUCCESS)
 		error_exit ("Error making call", status);
+	else
+	{   //If connection is successful changed the global connectionType
+        //Type of Connection	
+        if (ConType == "1")    //1 for Conference Call
+              glb_tempConType =  1;
+        else                   // 0 for Private Chat
+              glb_tempConType = 0;	
+
+        //Disconnected - calls are now available
+        // glb_callingState = 0;
+	}
+
 }
 
 //=============================================================================
@@ -285,6 +366,8 @@ void SIPConference::Answer(const int call_id, const unsigned int status_code) {
 	pj_status_t status;
 
 	g_logger->Info() << "Entering Answer call_id=" << call_id << endl;
+	
+	g_logger->Info() << "=======  SIP  ======== Answer" << endl;
 
     status = pjsua_call_answer((pjsua_call_id)call_id, status_code, NULL, NULL);
 
@@ -299,9 +382,12 @@ void SIPConference::Leave(const int call_id) {
 	
 	g_logger->Info() << "Entering Leave call_id=" << call_id << endl;
 
+	g_logger->Info() << "=======  SIP  ======== Leave" << endl;
+
 //    pjsua_call_hangup_all();
 	status = pjsua_call_hangup((pjsua_call_id)call_id, 0, NULL, NULL);
 
+	//glb_callingState = 0;
     if (status != PJ_SUCCESS)
         error_exit ("Error hanging up", status);
 }
@@ -315,7 +401,9 @@ void SIPConference::AdjustTranVolume(int call_id, float level)
     pjsua_call_info ci;
     pjsua_call_get_info((pjsua_call_id)call_id, &ci);
 
-	g_logger->Info() << "AdjustTranVolume call_id" << call_id << ",Level=" << level << endl;
+	g_logger->Debug() << "AdjustTranVolume call_id" << call_id << ",Level=" << level << endl;
+
+	g_logger->Info() << "=======  SIP  ======== AdjustTranVolume call_id=" << call_id << ", Level=" << level << endl;
 
 #ifdef DEBUG
     unsigned tx_level = 0;
@@ -343,6 +431,8 @@ void SIPConference::AdjustRecvVolume(int call_id, float level)
 
 	g_logger->Info() << "AdjustRecvVolume call_id=" << call_id << ", level=" << level << endl;
 
+	g_logger->Info() << "=======  SIP  ======== AdjustRecvVolume call_id=" << call_id << ", Level=" << level << endl;
+
 #ifdef DEBUG
     unsigned tx_level = 0;
     unsigned rx_level = 0;
@@ -362,6 +452,8 @@ void SIPConference::AdjustRecvVolume(int call_id, float level)
 void SIPConference::start_sip_stack_() 
 {
 	g_logger->Debug() << "Entering start_sip_stack_()" << endl;
+
+	g_logger->Info() << "=======  SIP  ======== Start SIP" << endl;
 
 	pj_status_t status;
 

@@ -31,6 +31,7 @@ struct Session
     string name;
     string password;
     string uri;
+    string connectedType;  //Type 0 for Private Chat and 1 for conference Session
 };
 
 struct Audio

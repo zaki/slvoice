@@ -305,6 +305,15 @@ RequestParser::parse_SessionCreate_ ()
     //req-> Password = get_root_text_ ("Password");
     //req-> JoinAudio = get_root_text_ ("JoinAudio");
     //req-> JoinText = get_root_text_ ("JoinText");
+    // not yet implemented in XML
+    req-> ConnectedType = get_root_text_ ("Type");
+
+    //Emulate the connected Type
+    //if (req-> JoinText  == "False")
+    // req->ConnectedType = "1"; //0 for privatechat session / 1 for Server
+    g_logger->Info() << "=======  PARSING  ======== Connected Type=" << req->ConnectedType << endl;
+    //End of Emulation
+
     //req-> PasswordHashAlgorithm = get_root_text_ ("PasswordHashAlgorithm");
 
     return auto_ptr <const Request> (req);
@@ -1235,6 +1244,7 @@ SessionCreateRequest::SetState (Session& state) const
 	state.name = Name;
 	state.password = Password;
 	state.uri = URI;
+	state.connectedType = ConnectedType;
 }
 
 

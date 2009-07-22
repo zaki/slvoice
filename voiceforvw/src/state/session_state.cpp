@@ -55,12 +55,16 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
 			// connect to conference
             psc->Join(
 				sipinfo.sipuri, machine.info->account->id, 
-				&machine.info->id);
+                &machine.info->id,
+                machine.info->session.connectedType
+                );
 #else
 			// connect to conference
             psc->Join(
                 machine.info->session.uri, machine.info->account->id, 
-                &machine.info->id);
+                &machine.info->id,
+                machine.info->session.connectedType
+                );
 #endif
 			con->session.registId(machine.info->id, machine.info->handle);
             ((SessionCreateResponse *)ev.result)->SessionHandle = machine.info->handle;
@@ -110,6 +114,8 @@ SessionTerminatedState::SessionTerminatedState(my_context ctx) :
 SessionTerminatedState::~SessionTerminatedState() 
 {
 	g_logger->Debug() << "SessionTerminated exited" << endl;
+	g_logger->Info() << "=======  SESSION  ======== Session Terminate Destructor" << endl;
+
 }
 
 //=============================================================================
@@ -120,16 +126,28 @@ SessionCallingState::SessionCallingState(my_context ctx) :
         machine(context<SessionMachine>()) 
 {
 	g_logger->Debug() << "SessionCalling entered" << endl;
+	g_logger->Info() << "=======  SESSION  ======== CallingState Constructor" << endl;
 }
 
 SessionCallingState::~SessionCallingState() 
 {
 	g_logger->Debug() << "SessionCalling exited" << endl;
+	g_logger->Info() << "=======  SESSION  ======== CallingState Destructor" << endl;
 }
 
 result SessionCallingState::react(const SessionTerminateEvent& ev) 
 {
 	g_logger->Debug() << "SessionCalling react (SessionTerminateEvent)" << endl;
+
+    g_logger->Info() << "=======  SESSION  ======== CallingState Terminate" << endl;
+    //Added July 7, 2009
+    SIPConference *psc = machine.info->account->sipconf;	
+    if (psc != NULL) 
+    {
+        psc->Leave(machine.info->id);
+    }
+    //Added July 7, 2009
+
     return transit<SessionTerminatedState>();
 }
 
@@ -312,16 +330,19 @@ SessionConnectingState::SessionConnectingState(my_context ctx) :
         machine(context<SessionMachine>()) 
 {
 	g_logger->Debug() << "SessionConnecting entered" << endl;
+    g_logger->Info() << "=======  SESSION  ======== ConnectingState Constructor" << endl;
 }
 
 SessionConnectingState::~SessionConnectingState() 
 {
     g_logger->Debug() << "SessionConnecting exited" << endl;
+    g_logger->Info() << "=======  SESSION  ======== ConnectingState Destructor" << endl;
 }
 
 result SessionConnectingState::react(const SessionTerminateEvent& ev) 
 {
     g_logger->Debug() << "SessionConnecting react (SessionTerminateEvent)" << endl;
+    g_logger->Info() << "=======  SESSION  ======== ConnectingState Terminate" << endl;
     return transit<SessionTerminatedState>();
 }
 

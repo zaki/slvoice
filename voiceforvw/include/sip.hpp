@@ -24,7 +24,8 @@ struct SIPUserInfo
     string name;
     string domain;
     string password;
-	string sipuri;
+    string sipuri;
+    string connectedType;
 };
 
 
@@ -46,12 +47,12 @@ class SIPConference
         void Register(const SIPUserInfo&, int*); 
         void UnRegister(const int); 
 
-		void Join(const string&, int, int*);
-		void Answer(const int, const unsigned int);
+        void Join(const string&, int, int*, const string);
+        void Answer(const int, const unsigned int);
         void Leave(const int);
 
-		void AdjustTranVolume(pjsua_call_id, float);
-		void AdjustRecvVolume(pjsua_call_id, float);
+        void AdjustTranVolume(pjsua_call_id, float);
+        void AdjustRecvVolume(pjsua_call_id, float);
 
     private:
         void start_sip_stack_(); 

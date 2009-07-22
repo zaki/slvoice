@@ -59,6 +59,14 @@ result ConnectorActiveState::react(const ShutdownEvent& ev)
 	g_logger->Debug() << "ConnectorActive react (ShutdownEvent)" << endl;
 
     machine.info->handle = "";
+    g_logger->Info() << "=======  CONNECT STATE  ======== Stop SIP" << endl;
+
+    // Added 
+    //SIPConference *psc;
+    //if (psc != NULL) 
+    //{
+    //   psc->stop_sip_stack_();
+    //}
 
     return transit<ConnectorIdleState>();
 }

@@ -137,6 +137,10 @@ void EventManager::processConnector(ConnectorEvent *ev)
 	ConnectorInfo* con = glb_server->getConnector();
 
 	// Connector Events
+    //******************************************************
+    g_logger->Info() << "======= EVENT ======== Connector " << ev->event_name << endl;
+    //******************************************************
+ 
     switch (ev->type)
     {
         case EventType_Initialize:
@@ -188,7 +192,11 @@ void EventManager::processAccount(AccountEvent *ev)
 	}
 
 	// Account Events
-    switch (ev->type)
+    //******************************************************
+    g_logger->Info() << "======= EVENT ======== Account   " << ev->event_name << endl;
+    //******************************************************
+
+	switch (ev->type)
     {
         case EventType_AccountLogin:
 			g_logger->Debug() << "EventType_AccountLogin" << endl;
@@ -278,6 +286,10 @@ void EventManager::processSession(SessionEvent *ev)
 		return;
 	}
 
+    //******************************************************
+    g_logger->Info() << "======= EVENT ======== Session   " << ev->event_name << endl;
+    //******************************************************
+
     switch (ev->type)
     {
 		// Session Events
@@ -349,6 +361,10 @@ void EventManager::processSession(SessionEvent *ev)
 void EventManager::eventProc(Event *ev) 
 {
 	g_logger->Debug() << "entering eventProc()" << endl;
+
+    //******************************************************
+    g_logger->Info() << "======= EVENT ======== EventProc " << ev->event_name << endl;
+    //******************************************************
 
     switch (ev->type)
     {
