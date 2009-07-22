@@ -3,12 +3,12 @@
  *			Copyright 2008, 3di.jp Inc
  */
 
+#include "main.h"
+#include "server_util.hpp"
+
 #ifndef _3DI
 #include <curl/curl.h>
 #endif
-
-#include "main.h"
-#include "server_util.hpp"
 
 //=============================================================================
 static string responseBuf;
