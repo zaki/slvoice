@@ -105,8 +105,14 @@ void Server::Send (const string& m)
     if (!(sock_.get()))
         throw SocketLogicException ("server has no connection");
 
-	g_logger->Debug() << m << endl;
-
+	if (g_config->LogFilter != "" && m.find(g_config->LogFilter) != string.npos)
+	{
+		// Filtered log entry
+	}
+	else
+	{
+		g_logger->Debug() << "Sent: " << m << endl;
+	}
 	try
 	{
 		sock_->write (m.c_str(), m.size()); 

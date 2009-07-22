@@ -41,7 +41,7 @@ ostream& Logger::Log(LogLevels level, string section)
 
 	if (g_config->LogFilter != "" && section != "")
 	{
-		if (section.find(g_config->LogFilter) == -1)
+		if (section.find(g_config->LogFilter) != string.npos)
 			return((ostream&)ns);
 	}
 
