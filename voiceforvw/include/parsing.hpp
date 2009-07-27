@@ -110,9 +110,9 @@ struct ResponseBase
 struct ConnectorCreateResponse : public ResponseBase
 {
     ConnectorCreateResponse(const string& a, const string& request_id, const string& return_code)
-        : ResponseBase(a, request_id, return_code) {}
+        : ResponseBase(a, request_id, return_code), VersionID("0.0.1") {}
 
-	string VersionID;
+	string VersionID;	// Prototype: 0.0.1, Release: 1.0.0, Patch: 1.0.1
 	string ConnectorHandle;
 
 	string ToString();
