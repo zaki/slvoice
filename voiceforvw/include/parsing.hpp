@@ -432,6 +432,7 @@ struct ConnectorCreateRequest : public Request
     string ClientName;
     string AttemptStun;
     string AccountManagementServer;
+    string ProxyManagementServer;
     string MinimumPort;
     string MaximumPort;
 

@@ -210,6 +210,7 @@ RequestParser::parse_ConnectorCreate_ ()
     //req-> ClientName = get_root_text_ ("ClientName");
     //req-> AttemptStun = get_root_text_ ("AttemptStun");
     req-> AccountManagementServer = get_root_text_ ("AccountManagementServer");
+    req->ProxyManagementServer = get_root_text_ ("ProxyManagementServer");
     //req-> MinimumPort = get_root_text_ ("MinimumPort");
     //req-> MaximumPort = get_root_text_ ("MaximumPort");
 

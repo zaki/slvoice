@@ -8,23 +8,23 @@ SET (CMAKE_BUILD_TYPE Debug)
 # settings of third-party libs
 
 # pjsip
-SET (PJDIR "C:/path/to/pjproject-1.2")
+SET (PJDIR "C:/path/to/pjproject-1.5")
 
 # curl
-SET (CURLDIR "C:/path/to/curl-7.19.5")
-SET (CURLINCDIR ${CURLDIR}/include)
-SET (CURLLIBDIR ${CURLDIR}/lib/LIB-Release)
-SET (CURLLIBS ${CURLLIBDIR}/libcurl.lib)
+#SET (CURLDIR "C:/path/to/curl-7.19.5")
+#SET (CURLINCDIR ${CURLDIR}/include)
+#SET (CURLLIBDIR ${CURLDIR}/lib/LIB-Release)
+#SET (CURLLIBS ${CURLLIBDIR}/libcurl.lib)
 
 # boost
-SET (BOOSTDIR "C:/path/to/boost_1_39_0")
+SET (BOOSTDIR "C:/path/to/boost_1_41_0")
 SET (BOOSTINCDIR ${BOOSTDIR})
 SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
 SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
 
-SET (EXTLIBDIR ${CURLLIBDIR} ${BOOSTLIBDIR})
-SET (EXTINCDIR ${CURLINCDIR} ${BOOSTINCDIR})
-SET (EXTLIBS ${CURLLIBS} ${BOOSTLIBS})
+SET (EXTLIBDIR ${BOOSTLIBDIR})
+SET (EXTINCDIR ${BOOSTINCDIR})
+SET (EXTLIBS ${BOOSTLIBS})
 
 # included source variables
 SET (VOICEDIR ${CMAKE_SOURCE_DIR}/voiceforvw)
@@ -90,7 +90,7 @@ IF (WIN32)
     SET (PJTARGET i386-win32-vc8-release)
     SET (LIBS ${LIBS} wsock32.lib ws2_32.lib winmm.lib wldap32.lib)
 
-    SET(CMAKE_CXX_FLAGS "/D WIN32 /D CURL_STATICLIB /D BOOST_ALL_NO_LIB /nologo /W3 /Gy /EHsc")
+    SET(CMAKE_CXX_FLAGS "/D WIN32 /D BOOST_ALL_NO_LIB /nologo /W3 /Gy /EHsc")
     SET(CMAKE_CXX_FLAGS_DEBUG "/MTd /Z7 /Od")
 
     # you can use MT, if pjsip is built with MT option.
