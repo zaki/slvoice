@@ -59,9 +59,15 @@ result SessionIdleState::react(const SessionCreateEvent& ev) {
                 machine.info->session.connectedType
                 );
 #else
-			// connect to conference
+            // connect to conference
+            // Swap the domain from what is coming in session.uri to
+            // what we saved earlier in Account.Login
+            string domain (take_after_ ("@", machine.info->account->account.uri));
+            string invite (take_before_ ("@", machine.info->session.uri));
+			
             psc->Join(
-                machine.info->session.uri, machine.info->account->id, 
+                invite+"@"+domain,		// Saved PBX URI from Account.Login
+                machine.info->account->id, 
                 &machine.info->id,
                 machine.info->session.connectedType
                 );

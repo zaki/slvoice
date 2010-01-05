@@ -1,3 +1,5 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 INCLUDE (CheckLibraryExists)
 INCLUDE (CheckIncludeFiles)
 
@@ -9,12 +11,6 @@ SET (CMAKE_BUILD_TYPE Debug)
 
 # pjsip
 SET (PJDIR "C:/path/to/pjproject-1.5")
-
-# curl
-#SET (CURLDIR "C:/path/to/curl-7.19.5")
-#SET (CURLINCDIR ${CURLDIR}/include)
-#SET (CURLLIBDIR ${CURLDIR}/lib/LIB-Release)
-#SET (CURLLIBS ${CURLLIBDIR}/libcurl.lib)
 
 # boost
 SET (BOOSTDIR "C:/path/to/boost_1_41_0")
