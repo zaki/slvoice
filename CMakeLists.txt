@@ -10,10 +10,10 @@ SET (CMAKE_BUILD_TYPE Debug)
 # settings of third-party libs
 
 # pjsip
-SET (PJDIR "C:/path/to/pjproject-1.5")
+SET (PJDIR "C:/path/to/pjproject-1.6")
 
 # boost
-SET (BOOSTDIR "C:/path/to/boost_1_41_0")
+SET (BOOSTDIR "C:/path/to/boost_1_43_0")
 SET (BOOSTINCDIR ${BOOSTDIR})
 SET (BOOSTLIBDIR ${BOOSTDIR}/stage/lib)
 SET (BOOSTLIBS ${BOOSTLIBDIR}/libboost_thread-vc90-mt-s.lib)
