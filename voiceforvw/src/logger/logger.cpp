@@ -40,11 +40,11 @@ ostream& Logger::Log(LogLevels level, string section)
 		return((ostream&)ns);
 	}
 
-	if (g_config->LogFilter != "" && section != "")
-	{
-		if (section.find(g_config->LogFilter) != string.npos)
-			return((ostream&)ns);
-	}
+//	if (g_config->LogFilter != "" && section != "")
+//	{
+//		if (section.find(g_config->LogFilter) != string.npos)
+//			return((ostream&)ns);
+//	}
 
 	time_t currTime;
 	struct tm* timeinfo;

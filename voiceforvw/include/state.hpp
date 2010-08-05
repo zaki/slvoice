@@ -32,7 +32,7 @@ struct SessionIdleState : state <SessionIdleState, SessionMachine>
 {
     typedef boost::mpl::list<
 		custom_reaction<SessionCreateEvent>, 
-		custom_reaction<DialIncomingEvent>> reactions;
+		custom_reaction<DialIncomingEvent> > reactions;
 
     SessionIdleState(my_context ctx);
     ~SessionIdleState();
@@ -58,7 +58,7 @@ struct SessionCallingState : state <SessionCallingState, SessionMachine>
 		custom_reaction<DialEarlyEvent>, 
 		custom_reaction<DialConnectingEvent>, 
 		custom_reaction<DialSucceedEvent>, 
-		custom_reaction<DialDisconnectedEvent>> reactions;
+		custom_reaction<DialDisconnectedEvent> > reactions;
 
     SessionCallingState(my_context ctx);
     ~SessionCallingState();
@@ -80,7 +80,7 @@ struct SessionIncomingState : state <SessionIncomingState, SessionMachine>
 		custom_reaction<DialEarlyEvent>, 
 		custom_reaction<DialConnectingEvent>, 
 		custom_reaction<DialSucceedEvent>, 
-		custom_reaction<DialDisconnectedEvent>> reactions;
+		custom_reaction<DialDisconnectedEvent> > reactions;
 
     SessionIncomingState(my_context ctx);
     ~SessionIncomingState();
@@ -102,7 +102,7 @@ struct SessionEarlyState : state <SessionEarlyState, SessionMachine>
 		custom_reaction<SessionConnectEvent>, 
 		custom_reaction<DialConnectingEvent>, 
 		custom_reaction<DialSucceedEvent>, 
-		custom_reaction<DialDisconnectedEvent>> reactions;
+		custom_reaction<DialDisconnectedEvent> > reactions;
 
     SessionEarlyState(my_context ctx);
     ~SessionEarlyState();
@@ -121,7 +121,7 @@ struct SessionConnectingState : state <SessionConnectingState, SessionMachine>
     typedef boost::mpl::list<
 		custom_reaction<SessionTerminateEvent>, 
 		custom_reaction<DialSucceedEvent>, 
-		custom_reaction<DialDisconnectedEvent>> reactions;
+		custom_reaction<DialDisconnectedEvent> > reactions;
 
     SessionConnectingState(my_context ctx);
     ~SessionConnectingState();
@@ -150,7 +150,7 @@ struct SessionConfirmedState : state <SessionConfirmedState, SessionMachine>
 		custom_reaction<SessionMediaDisconnectEvent>,		// v1.22
 		custom_reaction<AudioEvent>, 
 		custom_reaction<PositionEvent>, 
-		custom_reaction<DialDisconnectedEvent>> reactions;
+		custom_reaction<DialDisconnectedEvent> > reactions;
 
     SessionConfirmedState(my_context ctx);
     ~SessionConfirmedState();
@@ -178,7 +178,7 @@ struct AccountMachine : state_machine<AccountMachine, AccountLogoutState>
 struct AccountLogoutState : state <AccountLogoutState, AccountMachine> 
 {
 	typedef boost::mpl::list<
-		custom_reaction<AccountLoginEvent>> reactions;
+		custom_reaction<AccountLoginEvent> > reactions;
 
     AccountLogoutState(my_context ctx);
     ~AccountLogoutState();
@@ -192,7 +192,7 @@ struct AccountRegisteringState : state <AccountRegisteringState, AccountMachine>
 {
 	typedef boost::mpl::list<
 		custom_reaction<RegSucceedEvent>, 
-		custom_reaction<RegFailedEvent>> reactions;
+		custom_reaction<RegFailedEvent> > reactions;
 
     AccountRegisteringState(my_context ctx);
     ~AccountRegisteringState();
@@ -207,7 +207,7 @@ struct AccountLoginState : state <AccountLoginState, AccountMachine>
 {
     typedef boost::mpl::list<
 		custom_reaction<AccountLogoutEvent>, 
-		custom_reaction<RegFailedEvent>> reactions;
+		custom_reaction<RegFailedEvent> > reactions;
 
     AccountLoginState(my_context ctx);
     ~AccountLoginState();
@@ -222,7 +222,7 @@ struct AccountUnregisteringState : state <AccountUnregisteringState, AccountMach
 {
 	typedef boost::mpl::list<
 		custom_reaction<RegSucceedEvent>, 
-		custom_reaction<RegFailedEvent>> reactions;
+		custom_reaction<RegFailedEvent> > reactions;
 
     AccountUnregisteringState(my_context ctx);
     ~AccountUnregisteringState();
@@ -258,7 +258,7 @@ struct ConnectorActiveState : state <ConnectorActiveState, ConnectorMachine>
 {
     typedef boost::mpl::list<
 		custom_reaction<ShutdownEvent>, 
-		custom_reaction<AudioEvent>> reactions;
+		custom_reaction<AudioEvent> > reactions;
 
     ConnectorActiveState(my_context ctx);
     ~ConnectorActiveState();

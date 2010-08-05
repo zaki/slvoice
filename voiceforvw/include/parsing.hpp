@@ -6,8 +6,10 @@
 #ifndef _MESSAGING_HPP_
 #define _MESSAGING_HPP_
 
+#include <boost/ref.hpp>
 #include "tinyxml/tinyxml.h"
-
+#include <memory>
+using namespace std;
 //=============================================================================
 // Message Constants
 
@@ -766,7 +768,7 @@ class RequestParser
 {
     public:
         RequestParser (const char *message);
-        auto_ptr <const Request> Parse ();
+        auto_ptr<const Request> Parse ();
 
 //		static void parse_VoiceInfoResponse(SIPServerInfo& sinfo);
 
@@ -784,33 +786,33 @@ class RequestParser
         Orientation parse_voice_orientation_ (const TiXmlElement *orient);
 
     private:
-        auto_ptr <const Request> parse_AccountLogin_ ();
-        auto_ptr <const Request> parse_AccountLogout_ ();
-        auto_ptr <const Request> parse_AuxCaptureAudioStart_ ();
-        auto_ptr <const Request> parse_AuxCaptureAudioStop_ ();
-        auto_ptr <const Request> parse_AuxGetCaptureDevices_ ();
-        auto_ptr <const Request> parse_AuxGetRenderDevices_ ();
-        auto_ptr <const Request> parse_AuxSetCaptureDevice_ ();
-        auto_ptr <const Request> parse_AuxSetMicLevel_ ();
-        auto_ptr <const Request> parse_AuxSetRenderDevice_ ();
-        auto_ptr <const Request> parse_AuxSetSpeakerLevel_ ();
-        auto_ptr <const Request> parse_ConnectorCreate_ ();
-        auto_ptr <const Request> parse_ConnectorInitiateShutdown_ ();
-        auto_ptr <const Request> parse_ConnectorMuteLocalMic_ ();
-        auto_ptr <const Request> parse_ConnectorMuteLocalSpeaker_ ();
-        auto_ptr <const Request> parse_ConnectorSetLocalMicVolume_ ();
-        auto_ptr <const Request> parse_ConnectorSetLocalSpeakerVolume_ ();
-        auto_ptr <const Request> parse_SessionCreate_ ();
-        auto_ptr <const Request> parse_SessionConnect_ ();
-        auto_ptr <const Request> parse_SessionSet3DPosition_ ();
-        auto_ptr <const Request> parse_SessionSetParticipantMuteForMe_ ();
-        auto_ptr <const Request> parse_SessionSetParticipantVolumeForMe_ ();
-        auto_ptr <const Request> parse_SessionTerminate_ ();
-        auto_ptr <const Request> parse_SessionRenderAudioStart_ ();
-        auto_ptr <const Request> parse_SessionRenderAudioStop_ ();
-        auto_ptr <const Request> parse_AccountBlockListRules_ ();				// v1.22
-        auto_ptr <const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
-        auto_ptr <const Request> parse_SessionMediaDisconnect_ ();				// v1.22
+        auto_ptr<const Request> parse_AccountLogin_ ();
+        auto_ptr<const Request> parse_AccountLogout_ ();
+        auto_ptr<const Request> parse_AuxCaptureAudioStart_ ();
+        auto_ptr<const Request> parse_AuxCaptureAudioStop_ ();
+        auto_ptr<const Request> parse_AuxGetCaptureDevices_ ();
+        auto_ptr<const Request> parse_AuxGetRenderDevices_ ();
+        auto_ptr<const Request> parse_AuxSetCaptureDevice_ ();
+        auto_ptr<const Request> parse_AuxSetMicLevel_ ();
+        auto_ptr<const Request> parse_AuxSetRenderDevice_ ();
+        auto_ptr<const Request> parse_AuxSetSpeakerLevel_ ();
+        auto_ptr<const Request> parse_ConnectorCreate_ ();
+        auto_ptr<const Request> parse_ConnectorInitiateShutdown_ ();
+        auto_ptr<const Request> parse_ConnectorMuteLocalMic_ ();
+        auto_ptr<const Request> parse_ConnectorMuteLocalSpeaker_ ();
+        auto_ptr<const Request> parse_ConnectorSetLocalMicVolume_ ();
+        auto_ptr<const Request> parse_ConnectorSetLocalSpeakerVolume_ ();
+        auto_ptr<const Request> parse_SessionCreate_ ();
+        auto_ptr<const Request> parse_SessionConnect_ ();
+        auto_ptr<const Request> parse_SessionSet3DPosition_ ();
+        auto_ptr<const Request> parse_SessionSetParticipantMuteForMe_ ();
+        auto_ptr<const Request> parse_SessionSetParticipantVolumeForMe_ ();
+        auto_ptr<const Request> parse_SessionTerminate_ ();
+        auto_ptr<const Request> parse_SessionRenderAudioStart_ ();
+        auto_ptr<const Request> parse_SessionRenderAudioStop_ ();
+        auto_ptr<const Request> parse_AccountBlockListRules_ ();				// v1.22
+        auto_ptr<const Request> parse_AccountListAutoAcceptRules_ ();			// v1.22
+        auto_ptr<const Request> parse_SessionMediaDisconnect_ ();				// v1.22
 
     private:
 		string requestid_;

@@ -70,8 +70,8 @@ SET (TINYXMLSRC
     ${TINYXMLDIR}/tinystr.cpp )
 
 # where to find PJSIP files locally
-FILE (GLOB PJINCLDIR ${PJDIR}/*/include)
-FILE (GLOB PJLIBDIR ${PJDIR}/*/lib)
+FILE (GLOB PJINCLDIR "${PJDIR}/*/include")
+FILE (GLOB PJLIBDIR "${PJDIR}/*/lib")
 
 # cause tinyxml to use the STL
 ADD_DEFINITIONS (-DTIXML_USE_STL)
